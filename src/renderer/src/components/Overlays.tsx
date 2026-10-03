@@ -1,47 +1,49 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { WallpaperState } from '../../../shared/types'
 import type { AmbientKey } from '../audio/engine'
+import { useI18n, type TKey } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { EQ_PRESETS, type Player } from '../player/usePlayer'
 import { Clock, Modal, PixelCover, RainCanvas, TRange } from './ui'
 
-const AMBIENT: { key: AmbientKey; label: string; glyph: string; color: string }[] = [
-  { key: 'rain', label: 'Mưa rơi trên kính', glyph: '⁞', color: 'text-cyan' },
-  { key: 'vinyl', label: 'Đĩa than & băng từ', glyph: '◎', color: 'text-magenta' },
-  { key: 'fire', label: 'Lò sưởi tí tách', glyph: '▲', color: 'text-[#ffb4ab]' },
-  { key: 'cafe', label: 'Quán cà phê đêm', glyph: '♨', color: 'text-ph' }
+const AMBIENT: { key: AmbientKey; label: TKey; glyph: string; color: string }[] = [
+  { key: 'rain', label: 'amb.rain', glyph: '⁞', color: 'text-cyan' },
+  { key: 'vinyl', label: 'amb.vinyl', glyph: '◎', color: 'text-magenta' },
+  { key: 'fire', label: 'amb.fire', glyph: '▲', color: 'text-[#ffb4ab]' },
+  { key: 'cafe', label: 'amb.cafe', glyph: '♨', color: 'text-ph' }
 ]
 
-const AMBIENT_PRESETS: { label: string; values: Record<AmbientKey, number> }[] = [
-  { label: 'Mưa đêm', values: { rain: 60, vinyl: 25, fire: 0, cafe: 0 } },
-  { label: 'Góc cà phê', values: { rain: 20, vinyl: 15, fire: 0, cafe: 55 } },
-  { label: 'Lò sưởi', values: { rain: 15, vinyl: 30, fire: 60, cafe: 0 } },
-  { label: 'Tắt hết', values: { rain: 0, vinyl: 0, fire: 0, cafe: 0 } }
+const AMBIENT_PRESETS: { label: TKey; values: Record<AmbientKey, number> }[] = [
+  { label: 'amb.p.rain', values: { rain: 60, vinyl: 25, fire: 0, cafe: 0 } },
+  { label: 'amb.p.cafe', values: { rain: 20, vinyl: 15, fire: 0, cafe: 55 } },
+  { label: 'amb.p.fire', values: { rain: 15, vinyl: 30, fire: 60, cafe: 0 } },
+  { label: 'amb.p.off', values: { rain: 0, vinyl: 0, fire: 0, cafe: 0 } }
 ]
 
 export function AmbientModal({ open, onClose, p }: { open: boolean; onClose: () => void; p: Player }) {
+  const { t } = useI18n()
   return (
-    <Modal open={open} onClose={onClose} title="ambient mixer">
-      <p className="mb-4 text-[12px] text-ph-dim">Các lớp âm nền chạy song song với nhạc — tạo trực tiếp bằng Web Audio, không cần file.</p>
+    <Modal open={open} onClose={onClose} title={t('amb.title')}>
+      <p className="mb-4 text-[12px] text-ph-dim">{t('amb.intro')}</p>
       <div className="space-y-3">
         {AMBIENT.map((a) => (
           <div key={a.key} className="border border-crt-line p-2.5">
             <div className="mb-1 flex items-center justify-between text-[12px]">
               <span>
                 <span className={`mr-2 ${a.color}`}>{a.glyph}</span>
-                {a.label}
+                {t(a.label)}
               </span>
               <span className={a.color}>{p.soundscape[a.key]}%</span>
             </div>
-            <TRange label={a.label} min={0} max={100} step={1} className="w-full" value={p.soundscape[a.key]} onChange={(v) => p.setAmbient(a.key, v)} />
+            <TRange label={t(a.label)} min={0} max={100} step={1} className="w-full" value={p.soundscape[a.key]} onChange={(v) => p.setAmbient(a.key, v)} />
           </div>
         ))}
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {AMBIENT_PRESETS.map((pr) => (
           <button key={pr.label} className="tbtn sm" onClick={() => (Object.keys(pr.values) as AmbientKey[]).forEach((k) => p.setAmbient(k, pr.values[k]))}>
-            {pr.label}
+            {t(pr.label)}
           </button>
         ))}
       </div>
@@ -50,17 +52,18 @@ export function AmbientModal({ open, onClose, p }: { open: boolean; onClose: () 
 }
 
 export function EQModal({ open, onClose, p }: { open: boolean; onClose: () => void; p: Player }) {
+  const { t } = useI18n()
   const bands: { key: 'low' | 'mid' | 'high'; label: string }[] = [
     { key: 'low', label: 'BASS · 250Hz' },
     { key: 'mid', label: 'MID · 1.2kHz' },
     { key: 'high', label: 'TREBLE · 4.5kHz' }
   ]
   return (
-    <Modal open={open} onClose={onClose} title="lo-fi equalizer">
+    <Modal open={open} onClose={onClose} title={t('eq.title')}>
       <div className="mb-4 grid grid-cols-4 gap-1.5">
         {(Object.keys(EQ_PRESETS) as (keyof typeof EQ_PRESETS)[]).map((k) => (
           <button key={k} className={`tbtn sm justify-center ${p.eq.preset === k ? 'on' : ''}`} onClick={() => p.applyPreset(k)}>
-            {EQ_PRESETS[k].label}
+            {t(EQ_PRESETS[k].label)}
           </button>
         ))}
       </div>
@@ -79,9 +82,9 @@ export function EQModal({ open, onClose, p }: { open: boolean; onClose: () => vo
         ))}
         <label className="block text-[12px]">
           <span className="flex justify-between text-ph-dim">
-            ĐỘ ẤM BĂNG TỪ (saturation) <span className="text-cyan">{p.eq.warmth}%</span>
+            {t('eq.warmth')} <span className="text-cyan">{p.eq.warmth}%</span>
           </span>
-          <TRange label="Độ ấm" min={0} max={100} step={1} className="w-full" value={p.eq.warmth} onChange={(v) => p.setEQ({ warmth: v })} />
+          <TRange label={t('eq.warmth')} min={0} max={100} step={1} className="w-full" value={p.eq.warmth} onChange={(v) => p.setEQ({ warmth: v })} />
         </label>
       </div>
     </Modal>
@@ -89,20 +92,17 @@ export function EQModal({ open, onClose, p }: { open: boolean; onClose: () => vo
 }
 
 export function SleepModal({ open, onClose, p }: { open: boolean; onClose: () => void; p: Player }) {
+  const { t } = useI18n()
   const opts: { label: string; val: number | 'track' | null }[] = [
-    { label: 'Tắt hẹn giờ', val: null },
-    { label: '15 phút', val: 15 },
-    { label: '30 phút', val: 30 },
-    { label: '45 phút', val: 45 },
-    { label: '60 phút', val: 60 },
-    { label: '90 phút', val: 90 },
-    { label: 'Hết bài này', val: 'track' }
+    { label: t('sleep.off'), val: null },
+    ...[15, 30, 45, 60, 90].map((n) => ({ label: t('sleep.min', { n }), val: n })),
+    { label: t('sleep.track'), val: 'track' as const }
   ]
   return (
-    <Modal open={open} onClose={onClose} title="sleep timer" width={360}>
+    <Modal open={open} onClose={onClose} title={t('sleep.title')} width={360}>
       <p className="mb-3 text-[12px] text-ph-dim">
-        Nhạc và âm nền nhỏ dần rồi tự dừng.
-        {p.sleepLeft !== null && <span className="text-cyan"> Còn {p.sleepLeft} phút.</span>}
+        {t('sleep.intro')}
+        {p.sleepLeft !== null && <span className="text-cyan">{t('sleep.left', { n: p.sleepLeft })}</span>}
       </p>
       <div className="flex flex-col gap-1">
         {opts.map((o) => {
@@ -130,25 +130,26 @@ export function SleepModal({ open, onClose, p }: { open: boolean; onClose: () =>
 }
 
 export function QueueModal({ open, onClose, p }: { open: boolean; onClose: () => void; p: Player }) {
+  const { t } = useI18n()
   return (
-    <Modal open={open} onClose={onClose} title={`hàng chờ (${p.queue.length})`} width={460}>
+    <Modal open={open} onClose={onClose} title={t('queue.title', { n: p.queue.length })} width={460}>
       <div className="max-h-[60vh] overflow-y-auto">
-        {p.queue.length === 0 && <div className="py-6 text-center text-ph-dim">&gt; trống</div>}
-        {p.queue.map((t, i) => (
+        {p.queue.length === 0 && <div className="py-6 text-center text-ph-dim">{t('queue.empty')}</div>}
+        {p.queue.map((tr, i) => (
           <div
-            key={t.path}
+            key={tr.path}
             className={`flex cursor-pointer items-center gap-3 px-2 py-1.5 ${i === p.index ? 'row-active' : 'row-hover'}`}
             onClick={() => {
               p.playAt(i)
               onClose()
             }}
           >
-            <PixelCover src={t.cover} seed={t.title} res={16} className="h-8 w-8 shrink-0" />
+            <PixelCover src={tr.cover} seed={tr.title} res={16} className="h-8 w-8 shrink-0" />
             <div className="min-w-0 flex-1">
-              <div className="truncate">{t.title}</div>
-              <div className="truncate text-[11px] text-ph-dim">{t.artist}</div>
+              <div className="truncate">{tr.title}</div>
+              <div className="truncate text-[11px] text-ph-dim">{tr.artist || t('player.unknownArtist')}</div>
             </div>
-            <span className="text-[11px] text-ph-dim">{fmtTime(t.duration)}</span>
+            <span className="text-[11px] text-ph-dim">{fmtTime(tr.duration)}</span>
           </div>
         ))}
       </div>
@@ -156,47 +157,62 @@ export function QueueModal({ open, onClose, p }: { open: boolean; onClose: () =>
   )
 }
 
-/** In-app fullscreen "screensaver": current wallpaper + pixel rain + big clock + mini player. */
+/**
+ * In-app fullscreen "screensaver": the chosen wallpaper + pixel rain + big clock + mini player.
+ * The whole window goes fullscreen via Electron (not the DOM Fullscreen API), exactly once on
+ * open and once on close — re-running this on every render is what made it flicker in and out.
+ */
 export function WallpaperMode({ open, onClose, p, wallpaper }: { open: boolean; onClose: () => void; p: Player; wallpaper: WallpaperState | null }) {
-  const [date, setDate] = useState('')
+  const { t, lang } = useI18n()
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
   useEffect(() => {
     if (!open) return
-    document.documentElement.requestFullscreen?.().catch(() => {})
-    setDate(new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }))
+    window.lounge.window.setFullScreen(true)
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') closeRef.current()
     }
     window.addEventListener('keydown', onKey)
+    // Esc in fullscreen is handled by the main process; any way of leaving fullscreen closes the mode.
+    let entered = false
+    const offFs = window.lounge.window.onFullScreen((on) => {
+      if (on) entered = true
+      else if (entered) closeRef.current()
+    })
     return () => {
       window.removeEventListener('keydown', onKey)
-      if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+      offFs()
+      window.lounge.window.setFullScreen(false)
     }
-  }, [open, onClose])
+  }, [open])
 
-  const src = wallpaper?.source
+  const date = new Date().toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })
+  const src = wallpaper?.source ?? wallpaper?.desktop ?? null
   const url = src ? window.lounge.mediaUrl(src.path) : null
+  const style = { filter: `brightness(${(wallpaper?.effects.brightness ?? 100) / 100})`, objectFit: wallpaper?.fit ?? 'cover' } as const
   return (
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-[180] flex flex-col justify-between overflow-hidden bg-crt-bg p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          {url && src?.kind === 'video' && <video src={url} className="absolute inset-0 h-full w-full object-cover opacity-80" autoPlay loop muted />}
-          {url && src?.kind === 'image' && <img src={url} className="absolute inset-0 h-full w-full object-cover opacity-80" />}
+          {url && src?.kind === 'video' && <video src={url} className="absolute inset-0 h-full w-full" style={style} autoPlay loop muted />}
+          {url && src?.kind === 'image' && <img src={url} className="absolute inset-0 h-full w-full" style={style} />}
           {!url && <PixelCover src={p.current?.cover ?? null} seed={p.current?.title ?? 'chill'} res={48} className="absolute inset-0 h-full w-full object-cover opacity-50" />}
-          <RainCanvas density={Math.max(35, wallpaper?.effects.rain ?? 0)} className="absolute inset-0 h-full w-full" />
-          <div className="scanlines absolute inset-0" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
+          <RainCanvas density={Math.max(40, wallpaper?.effects.rain ?? 0)} className="absolute inset-0 h-full w-full" />
+          {(wallpaper?.effects.scanlines ?? true) && <div className="scanlines absolute inset-0" />}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
 
           <div className="relative flex justify-between">
             <span className="badge live bg-crt-bg/70">
-              <span className="led animate-blink" /> SCREENSAVER MODE
+              <span className="led animate-blink" /> {t('saver.badge')}
             </span>
             <button className="tbtn bg-crt-bg/70" onClick={onClose}>
-              [esc] thoát
+              {t('saver.exit')}
             </button>
           </div>
 
           <div className="relative text-center">
-            <div className="font-pixel text-[150px] leading-none text-ph-bright rgb-split">
+            <div className="font-pixel text-[min(18vw,170px)] leading-none text-ph-bright rgb-split">
               <Clock />
             </div>
             <div className="mt-2 text-[18px] text-ph capitalize">{date}</div>
@@ -205,16 +221,16 @@ export function WallpaperMode({ open, onClose, p, wallpaper }: { open: boolean; 
           <div className="relative mx-auto flex w-full max-w-[620px] items-center gap-4 border border-crt-line-strong bg-crt-bg/80 p-3">
             <PixelCover src={p.current?.cover ?? null} seed={p.current?.title ?? 'chill'} res={24} className="h-12 w-12 shrink-0" />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-ph-bright">{p.current?.title ?? '— chưa có bài —'}</div>
+              <div className="truncate text-ph-bright">{p.current?.title ?? t('player.noTrack')}</div>
               <div className="truncate text-[11px] text-ph-dim">{p.current?.artist ?? ''}</div>
             </div>
-            <button className="tbtn sm" onClick={p.prev}>
+            <button className="tbtn sm" onClick={p.prev} aria-label={t('player.prev')}>
               |◀◀
             </button>
             <button className="tbtn primary" onClick={p.toggle}>
               {p.playing ? '❚❚' : '▶'}
             </button>
-            <button className="tbtn sm" onClick={p.next}>
+            <button className="tbtn sm" onClick={p.next} aria-label={t('player.next')}>
               ▶▶|
             </button>
           </div>
@@ -225,7 +241,7 @@ export function WallpaperMode({ open, onClose, p, wallpaper }: { open: boolean; 
 }
 
 const BOOT_LINES = [
-  'CHILL_LOUNGE BIOS v0.2 (c) 2026',
+  'CHILL_LOUNGE BIOS v0.3 (c) 2026',
   'Phosphor display ............ OK',
   'Audio engine (Web Audio) ..... OK',
   'Desktop compositor hook ...... OK',
@@ -275,6 +291,20 @@ export function CrtOverlay({ strength }: { strength: number }) {
       <div className="lines scanlines" />
       <div className="roll" />
       <div className="vignette" />
+    </div>
+  )
+}
+
+/** The media chosen in the Wallpaper tab, shown faintly behind the whole app. */
+export function AppBackdrop({ wallpaper }: { wallpaper: WallpaperState | null }) {
+  const src = wallpaper?.source
+  if (!src) return null
+  const url = window.lounge.mediaUrl(src.path)
+  const style = { filter: `brightness(${(wallpaper!.effects.brightness ?? 100) / 100}) saturate(0.9)`, objectFit: wallpaper!.fit } as const
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0 opacity-30" aria-hidden>
+      {src.kind === 'video' ? <video key={url} src={url} className="h-full w-full" style={style} autoPlay loop muted /> : <img src={url} className="h-full w-full" style={style} />}
+      <RainCanvas density={wallpaper!.effects.rain} className="absolute inset-0 h-full w-full" />
     </div>
   )
 }

@@ -22,7 +22,7 @@ function Wallpaper() {
     if (!v) return
     if (state?.paused) v.pause()
     else v.play().catch(() => {})
-  }, [state?.paused, state?.source?.path])
+  }, [state?.paused, state?.desktop?.path])
 
   useEffect(
     () =>
@@ -33,13 +33,15 @@ function Wallpaper() {
     []
   )
 
-  const src = state?.source ? window.lounge.mediaUrl(state.source.path) : null
+  // This window lives behind the desktop icons, so it shows the desktop media, not the in-app one.
+  const media = state?.desktop ?? null
+  const src = media ? window.lounge.mediaUrl(media.path) : null
   const style = { ...fill, objectFit: state?.fit ?? 'cover', filter: `brightness(${(state?.effects.brightness ?? 100) / 100})` } as const
 
   return (
     <>
-      {src && state?.source?.kind === 'image' && <img src={src} style={style} />}
-      {src && state?.source?.kind === 'video' && <video ref={videoRef} src={src} style={style} autoPlay loop muted playsInline />}
+      {src && media?.kind === 'image' && <img src={src} style={style} />}
+      {src && media?.kind === 'video' && <video ref={videoRef} src={src} style={style} autoPlay loop muted playsInline />}
       <canvas ref={rainRef} style={{ ...fill, imageRendering: 'pixelated', pointerEvents: 'none' }} />
       {state?.effects.scanlines && (
         <div style={{ ...fill, background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0 1px, transparent 1px 3px)' }} />

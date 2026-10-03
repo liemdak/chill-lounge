@@ -6,12 +6,15 @@ import type { Settings } from '../shared/types'
 const DEFAULTS: Settings = {
   wallpaper: {
     source: null,
+    desktop: null,
+    restoreOnLaunch: false,
     fit: 'cover',
     autoPause: true,
     effects: { rain: 0, brightness: 100, scanlines: false },
     history: []
   },
-  volume: 0.7
+  volume: 0.7,
+  language: 'vi'
 }
 
 const file = (): string => join(app.getPath('userData'), 'settings.json')
@@ -23,6 +26,8 @@ export function loadSettings(): Settings {
   try {
     const raw = existsSync(file()) ? JSON.parse(readFileSync(file(), 'utf8')) : {}
     const wp = { ...DEFAULTS.wallpaper, ...raw.wallpaper }
+    // v0.2 put the chosen media straight on the desktop; from v0.3 that needs explicit consent.
+    if (raw.wallpaper && !('desktop' in raw.wallpaper)) wp.desktop = null
     wp.effects = { ...DEFAULTS.wallpaper.effects, ...raw.wallpaper?.effects }
     cache = { ...DEFAULTS, ...raw, wallpaper: wp }
   } catch {

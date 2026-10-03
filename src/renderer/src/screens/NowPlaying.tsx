@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { WallpaperState } from '../../../shared/types'
 import { BarScope, VinylScope } from '../components/scopes'
 import { BlockBar, Panel, PixelCover, RainCanvas, TRange, useTypewriter } from '../components/ui'
+import { useI18n } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { EQ_PRESETS, type Player } from '../player/usePlayer'
 
@@ -18,41 +19,42 @@ interface Props {
 }
 
 export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep, onOpenWallpaperMode, onGoWallpaper }: Props) {
-  const t = p.current
-  const title = useTypewriter(t?.title ?? 'NO SIGNAL')
+  const { t } = useI18n()
+  const tr = p.current
+  const title = useTypewriter(tr?.title ?? 'NO SIGNAL')
   const [glitch, setGlitch] = useState(false)
   useEffect(() => {
     setGlitch(true)
     const id = setTimeout(() => setGlitch(false), 750)
     return () => clearTimeout(id)
-  }, [t?.path])
+  }, [tr?.path])
 
   const ambientTotal = Object.values(p.soundscape).reduce((a, b) => a + b, 0)
-  const eqLabel = p.eq.preset === 'custom' ? 'TÙY CHỈNH' : EQ_PRESETS[p.eq.preset].label.toUpperCase()
+  const eqLabel = p.eq.preset === 'custom' ? t('eq.custom') : t(EQ_PRESETS[p.eq.preset].label)
 
   return (
     <div className="grid h-full min-h-[560px] grid-cols-12 gap-5 p-5 pt-6">
       {/* ── Stage ─────────────────────────────────────────── */}
       <div className="col-span-8 flex min-h-0 min-w-0 flex-col gap-5">
-        <Panel title="đang phát" className="flex min-h-0 flex-1 flex-col items-center px-6 pt-5 pb-4">
+        <Panel title={t('now.title')} className="flex min-h-0 flex-1 flex-col items-center px-6 pt-5 pb-4">
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
               <span className={`badge ${p.playing ? 'live' : ''}`}>
-                <span className={`led ${p.playing ? 'animate-blink' : ''}`} /> {p.playing ? 'ON AIR' : t ? 'PAUSED' : 'IDLE'}
+                <span className={`led ${p.playing ? 'animate-blink' : ''}`} /> {p.playing ? 'ON AIR' : tr ? 'PAUSED' : 'IDLE'}
               </span>
-              {t && <span className="badge">{t.format}</span>}
-              {t?.lossless && <span className="badge ok">LOSSLESS</span>}
+              {tr && <span className="badge">{tr.format}</span>}
+              {tr?.lossless && <span className="badge ok">LOSSLESS</span>}
             </div>
-            <button className="tbtn sm" onClick={onOpenWallpaperMode} title="Chế độ Wallpaper toàn màn hình (F)">
-              [⛶] chế độ wallpaper
+            <button className="tbtn sm" onClick={onOpenWallpaperMode} title={t('player.wpMode')}>
+              {t('now.wpModeBtn')}
             </button>
           </div>
 
           {/* The vinyl shrinks with the available height so the whole screen fits without scrolling. */}
           <div className="my-2 flex min-h-[150px] w-full flex-1 items-center justify-center">
             <div className="relative aspect-square h-full max-h-[340px]">
-              <VinylScope cover={t?.cover ?? null} seed={t?.title ?? 'chill'} playing={p.playing} className="absolute inset-0 h-full w-full" />
-              <button className="absolute inset-[30%] cursor-pointer rounded-full" onClick={p.toggle} aria-label={p.playing ? 'Tạm dừng' : 'Phát'} />
+              <VinylScope cover={tr?.cover ?? null} seed={tr?.title ?? 'chill'} playing={p.playing} className="absolute inset-0 h-full w-full" />
+              <button className="absolute inset-[30%] cursor-pointer rounded-full" onClick={p.toggle} aria-label={p.playing ? t('player.pause') : t('player.play')} />
             </div>
           </div>
 
@@ -62,28 +64,29 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-[11px] text-ph-dim">
                 <span className="text-cyan">&gt;</span> now_playing
-                <span className="badge">{t?.isVideo ? 'VIDEO' : 'OFFLINE'}</span>
+                <span className="badge">{tr?.isVideo ? 'VIDEO' : 'OFFLINE'}</span>
               </div>
               <h1 className={`truncate font-pixel text-[44px] leading-[1.05] text-ph-bright rgb-split ${glitch ? 'glitch' : ''}`}>
                 {title}
                 <span className="ml-1 inline-block h-[0.8em] w-[0.45em] animate-blink bg-ph align-baseline" />
               </h1>
               <div className="truncate text-[12px] text-ph-dim">
-                {t ? [t.artist, t.album].filter(Boolean).join(' · ') : 'Bấm [+ THÊM NHẠC] để nạp file mp3 / flac / mp4 từ máy'}
+                {tr ? [tr.artist || t('player.unknownArtist'), tr.album].filter(Boolean).join(' · ') : t('now.emptyHint')}
               </div>
             </div>
             <div className="flex shrink-0 gap-2">
-              <button className={`tbtn ${p.isLiked ? 'on' : ''}`} onClick={p.toggleLike} disabled={!t}>
-                {p.isLiked ? '♥' : '♡'} thích
+              <button className={`tbtn ${p.isLiked ? 'on' : ''}`} onClick={p.toggleLike} disabled={!tr}>
+                {p.isLiked ? '♥' : '♡'} {t('now.like')}
               </button>
               <button className={`tbtn ${ambientTotal > 0 ? 'on' : ''}`} onClick={onOpenAmbient}>
-                ≈ âm nền{p.soundscape.rain > 0 ? ` ${p.soundscape.rain}%` : ''}
+                ≈ {t('now.ambient')}
+                {p.soundscape.rain > 0 ? ` ${p.soundscape.rain}%` : ''}
               </button>
             </div>
           </div>
         </Panel>
 
-        <Panel title="điều khiển" className="px-5 pt-5 pb-4">
+        <Panel title={t('now.controls')} className="px-5 pt-5 pb-4">
           <div className="flex items-center gap-3 text-[11px]">
             <span className="w-11 text-ph-bright">{fmtTime(p.time)}</span>
             <BlockBar className="flex-1" value={p.time} max={p.duration} onSeek={p.seek} />
@@ -91,24 +94,24 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
           </div>
           <div className="mt-4 flex items-center justify-between gap-3">
             <div className="flex gap-2">
-              <button className={`tbtn ${p.shuffle ? 'on' : ''}`} onClick={p.toggleShuffle}>
+              <button className={`tbtn ${p.shuffle ? 'on' : ''}`} onClick={p.toggleShuffle} title={t('player.shuffle')}>
                 shuf
               </button>
-              <button className={`tbtn ${p.repeat !== 'off' ? 'on' : ''}`} onClick={p.cycleRepeat}>
+              <button className={`tbtn ${p.repeat !== 'off' ? 'on' : ''}`} onClick={p.cycleRepeat} title={t('player.repeat')}>
                 loop:{p.repeat === 'one' ? '1' : p.repeat}
               </button>
-              <button className={`tbtn ${p.sleep ? 'on' : ''}`} onClick={onOpenSleep}>
-                zzz {p.sleep === 'track' ? 'hết bài' : p.sleepLeft ? `${p.sleepLeft}m` : ''}
+              <button className={`tbtn ${p.sleep ? 'on' : ''}`} onClick={onOpenSleep} title={t('sleep.title')}>
+                zzz {p.sleep === 'track' ? t('now.sleepTrack') : p.sleepLeft ? `${p.sleepLeft}m` : ''}
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <button className="tbtn" onClick={p.prev}>
+              <button className="tbtn" onClick={p.prev} aria-label={t('player.prev')}>
                 |◀◀
               </button>
               <button className="tbtn primary lg w-[150px] justify-center" onClick={p.toggle}>
-                {p.playing ? '❚❚ TẠM DỪNG' : '▶ PHÁT'}
+                {p.playing ? t('player.pauseLong') : t('player.play')}
               </button>
-              <button className="tbtn" onClick={p.next}>
+              <button className="tbtn" onClick={p.next} aria-label={t('player.next')}>
                 ▶▶|
               </button>
             </div>
@@ -117,7 +120,7 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
                 eq:{eqLabel}
               </button>
               <span className="text-[11px] text-ph-dim">VOL</span>
-              <TRange label="Âm lượng" className="w-20" value={p.muted ? 0 : p.volume} onChange={p.setVolume} />
+              <TRange label={t('player.volume')} className="w-20" value={p.muted ? 0 : p.volume} onChange={p.setVolume} />
               <span className="w-9 text-right text-[11px]">{Math.round((p.muted ? 0 : p.volume) * 100)}%</span>
             </div>
           </div>
@@ -134,24 +137,27 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
 }
 
 function SideDeck({ p }: { p: Player }) {
+  const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('queue')
-  const t = p.current
+  const tr = p.current
   const activeLyric = useRef<HTMLParagraphElement>(null)
-  const synced = !!t?.lyrics.length && t.lyrics[0].time >= 0
-  const lyricIndex = synced ? t!.lyrics.findLastIndex((l) => p.time >= l.time) : -1
+  const synced = !!tr?.lyrics.length && tr.lyrics[0].time >= 0
+  const lyricIndex = synced ? tr!.lyrics.findLastIndex((l) => p.time >= l.time) : -1
   useEffect(() => activeLyric.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), [lyricIndex])
 
+  const tabLabel = { queue: t('now.tabQueue'), lyrics: t('now.tabLyrics'), info: t('now.tabInfo') }
+
   return (
-    <Panel title="bộ nhớ đệm" className="flex min-h-0 flex-1 flex-col p-3 pt-4">
+    <Panel title={t('now.deck')} className="flex min-h-0 flex-1 flex-col p-3 pt-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex gap-1">
           {(['queue', 'lyrics', 'info'] as Tab[]).map((id) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
-              {id === 'queue' ? 'hàng chờ' : id === 'lyrics' ? 'lời' : 'info'}
+              {tabLabel[id]}
             </button>
           ))}
         </div>
-        <span className="badge">{p.queue.length} bài</span>
+        <span className="badge">{t('now.tracks', { n: p.queue.length })}</span>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
@@ -159,7 +165,7 @@ function SideDeck({ p }: { p: Player }) {
           (p.queue.length === 0 ? (
             <div className="py-10 text-center text-ph-dim">
               <div className="font-pixel text-[28px] text-ph-faint">[ EMPTY ]</div>
-              <div className="mt-1 text-[11px]">hàng chờ trống — nạp file để bắt đầu</div>
+              <div className="mt-1 text-[11px]">{t('now.queueEmpty')}</div>
             </div>
           ) : (
             p.queue.map((q, i) => (
@@ -172,7 +178,7 @@ function SideDeck({ p }: { p: Player }) {
                 <PixelCover src={q.cover} seed={q.title} res={16} className="h-8 w-8 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[12.5px]">{q.title}</div>
-                  <div className="truncate text-[10.5px] text-ph-dim">{q.artist}</div>
+                  <div className="truncate text-[10.5px] text-ph-dim">{q.artist || t('player.unknownArtist')}</div>
                 </div>
                 <span className="text-[11px] text-ph-dim">{fmtTime(q.duration)}</span>
                 <button
@@ -181,7 +187,7 @@ function SideDeck({ p }: { p: Player }) {
                     e.stopPropagation()
                     p.remove(i)
                   }}
-                  aria-label="Xóa khỏi hàng chờ"
+                  aria-label={t('now.removeFromQueue')}
                 >
                   ×
                 </button>
@@ -190,9 +196,9 @@ function SideDeck({ p }: { p: Player }) {
           ))}
 
         {tab === 'lyrics' &&
-          (t?.lyrics.length ? (
+          (tr?.lyrics.length ? (
             <div className="space-y-2 py-2">
-              {t.lyrics.map((l, i) => (
+              {tr.lyrics.map((l, i) => (
                 <p
                   key={i}
                   ref={i === lyricIndex ? activeLyric : undefined}
@@ -205,24 +211,24 @@ function SideDeck({ p }: { p: Player }) {
             </div>
           ) : (
             <div className="py-10 text-center text-[12px] text-ph-dim">
-              &gt; không tìm thấy lời trong file
+              {t('now.noLyrics')}
               <br />
-              (nhạc không lời hoặc file chưa gắn tag lyrics)
+              {t('now.noLyricsHint')}
             </div>
           ))}
 
         {tab === 'info' &&
-          (t ? (
+          (tr ? (
             <table className="w-full text-[12px]">
               <tbody>
                 {[
-                  ['TITLE', t.title],
-                  ['ARTIST', t.artist],
-                  ['ALBUM', t.album || '—'],
-                  ['FORMAT', t.format],
-                  ['LOSSLESS', t.lossless ? 'YES' : 'NO'],
-                  ['LENGTH', fmtTime(t.duration)],
-                  ['PATH', t.path]
+                  ['TITLE', tr.title],
+                  ['ARTIST', tr.artist || '—'],
+                  ['ALBUM', tr.album || '—'],
+                  ['FORMAT', tr.format],
+                  ['LOSSLESS', tr.lossless ? 'YES' : 'NO'],
+                  ['LENGTH', fmtTime(tr.duration)],
+                  ['PATH', tr.path]
                 ].map(([k, v]) => (
                   <tr key={k} className="align-top">
                     <td className="w-20 py-1 text-ph-dim">{k}</td>
@@ -232,32 +238,38 @@ function SideDeck({ p }: { p: Player }) {
               </tbody>
             </table>
           ) : (
-            <div className="py-10 text-center text-[12px] text-ph-dim">&gt; chưa có bài nào được chọn</div>
+            <div className="py-10 text-center text-[12px] text-ph-dim">{t('now.noTrack')}</div>
           ))}
       </div>
 
       <button className="tbtn mt-3 w-full justify-center" onClick={p.addFiles}>
-        + thêm nhạc từ máy
+        {t('now.addMusic')}
       </button>
     </Panel>
   )
 }
 
 function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperState | null; onGoWallpaper: () => void }) {
-  const src = wp?.source
+  const { t } = useI18n()
+  const src = wp?.source ?? wp?.desktop ?? null
   const url = src ? window.lounge.mediaUrl(src.path) : null
+  const filter = { filter: `brightness(${(wp?.effects.brightness ?? 100) / 100})` }
   return (
-    <Panel title="wallpaper desktop" className="p-3 pt-4">
+    <Panel title={t('wpcard.title')} className="p-3 pt-4">
       <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-crt-bg">
-        {url && src?.kind === 'video' && <video src={url} className="h-full w-full object-cover" autoPlay loop muted style={{ filter: `brightness(${wp!.effects.brightness / 100})` }} />}
-        {url && src?.kind === 'image' && <img src={url} className="h-full w-full object-cover" style={{ filter: `brightness(${wp!.effects.brightness / 100})` }} />}
+        {url && src?.kind === 'video' && <video src={url} className="h-full w-full object-cover" autoPlay loop muted style={filter} />}
+        {url && src?.kind === 'image' && <img src={url} className="h-full w-full object-cover" style={filter} />}
         {!src && <div className="flex h-full items-center justify-center font-pixel text-[24px] text-ph-faint">NO WALLPAPER</div>}
-        {src && <RainCanvas density={wp!.effects.rain} paused={wp!.paused} className="absolute inset-0 h-full w-full" />}
+        {src && <RainCanvas density={wp!.effects.rain} className="absolute inset-0 h-full w-full" />}
         <div className="scanlines absolute inset-0" />
-        <div className="absolute top-1.5 left-1.5">
-          <span className={`badge bg-crt-bg/80 ${src && !wp!.paused ? 'ok' : ''}`}>
-            <span className="led" /> {!src ? 'OFF' : wp!.paused ? 'TẠM DỪNG' : `LIVE · ${wp!.displays} MÀN HÌNH`}
-          </span>
+        <div className="absolute top-1.5 left-1.5 flex gap-1.5">
+          {!src && <span className="badge bg-crt-bg/80">{t('wpcard.none')}</span>}
+          {wp?.source && <span className="badge ok bg-crt-bg/80">{t('wpcard.inApp')}</span>}
+          {wp?.desktop && (
+            <span className={`badge bg-crt-bg/80 ${wp.paused ? '' : 'live'}`}>
+              <span className="led" /> {t('wpcard.onDesktop')}
+            </span>
+          )}
         </div>
       </div>
 
@@ -265,29 +277,22 @@ function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperS
         <div className="mt-3 grid grid-cols-2 gap-3 text-[11px]">
           <label className="flex flex-col gap-1">
             <span className="flex justify-between text-ph-dim">
-              MƯA <span className="text-cyan">{wp!.effects.rain}%</span>
+              {t('wpcard.rain')} <span className="text-cyan">{wp!.effects.rain}%</span>
             </span>
-            <TRange label="Mật độ mưa" min={0} max={100} step={1} value={wp!.effects.rain} onChange={(v) => window.lounge.wallpaper.setEffects({ rain: v })} />
+            <TRange label={t('wpcard.rain')} min={0} max={100} step={1} value={wp!.effects.rain} onChange={(v) => window.lounge.wallpaper.setEffects({ rain: v })} />
           </label>
           <label className="flex flex-col gap-1">
             <span className="flex justify-between text-ph-dim">
-              SÁNG <span className="text-magenta">{wp!.effects.brightness}%</span>
+              {t('wpcard.bright')} <span className="text-magenta">{wp!.effects.brightness}%</span>
             </span>
-            <TRange label="Độ sáng" min={30} max={100} step={1} value={wp!.effects.brightness} onChange={(v) => window.lounge.wallpaper.setEffects({ brightness: v })} />
+            <TRange label={t('wpcard.bright')} min={30} max={100} step={1} value={wp!.effects.brightness} onChange={(v) => window.lounge.wallpaper.setEffects({ brightness: v })} />
           </label>
         </div>
       )}
 
-      <div className="mt-3 flex gap-2">
-        {src && (
-          <button className="tbtn sm" onClick={() => window.lounge.wallpaper.togglePause()}>
-            {wp!.paused ? '▶ chạy' : '❚❚ dừng'}
-          </button>
-        )}
-        <button className="tbtn sm flex-1 justify-center" onClick={onGoWallpaper}>
-          cấu hình hình nền &gt;
-        </button>
-      </div>
+      <button className="tbtn sm mt-3 w-full justify-center" onClick={onGoWallpaper}>
+        {t('wpcard.configure')}
+      </button>
     </Panel>
   )
 }

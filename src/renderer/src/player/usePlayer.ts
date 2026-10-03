@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { TrackInfo } from '../../../shared/types'
 import { engine, type AmbientKey, type EQSettings } from '../audio/engine'
+import type { TKey } from '../i18n'
 import { load, loadArray, save } from '../lib/store'
 
 export type RepeatMode = 'off' | 'all' | 'one'
 export type EQPreset = 'lofi' | 'bass' | 'vocal' | 'flat' | 'custom'
 export type Soundscape = Record<AmbientKey, number>
 
-export const EQ_PRESETS: Record<Exclude<EQPreset, 'custom'>, EQSettings & { label: string }> = {
-  lofi: { label: 'Lo-Fi ấm', low: 5, mid: -2, high: -4, warmth: 70 },
-  bass: { label: 'Bass sâu', low: 8, mid: 0, high: -1, warmth: 40 },
-  vocal: { label: 'Giọng rõ', low: -2, mid: 4, high: 2, warmth: 15 },
-  flat: { label: 'Phẳng', low: 0, mid: 0, high: 0, warmth: 0 }
+export const EQ_PRESETS: Record<Exclude<EQPreset, 'custom'>, EQSettings & { label: TKey }> = {
+  lofi: { label: 'eq.lofi', low: 5, mid: -2, high: -4, warmth: 70 },
+  bass: { label: 'eq.bass', low: 8, mid: 0, high: -1, warmth: 40 },
+  vocal: { label: 'eq.vocal', low: -2, mid: 4, high: 2, warmth: 15 },
+  flat: { label: 'eq.flat', low: 0, mid: 0, high: 0, warmth: 0 }
 }
 
 /** Sleep timer: minutes left, 'track' = stop at the end of the current track, null = off. */

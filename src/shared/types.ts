@@ -16,8 +16,15 @@ export interface WallpaperEffects {
   scanlines: boolean
 }
 
+export type Lang = 'vi' | 'en'
+
 export interface WallpaperState {
+  /** Media chosen in the app — shown as Chill Lounge's own background. */
   source: WallpaperSource | null
+  /** Media currently placed on the Windows desktop (only after the user confirms). */
+  desktop: WallpaperSource | null
+  /** Put the desktop wallpaper back automatically when the app starts. */
+  restoreOnLaunch: boolean
   fit: FitMode
   autoPause: boolean
   paused: boolean
@@ -32,12 +39,15 @@ export interface WallpaperState {
 export interface Settings {
   wallpaper: {
     source: WallpaperSource | null
+    desktop: WallpaperSource | null
+    restoreOnLaunch: boolean
     fit: FitMode
     autoPause: boolean
     effects: WallpaperEffects
     history: WallpaperSource[]
   }
   volume: number
+  language: Lang
 }
 
 /** Metadata read from an audio/video file's tags. */

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ditherCover } from '../lib/dither'
+import { useI18n } from '../i18n'
 import { startRain } from '../lib/rain'
 
 export function Panel({ title, right, className = '', children }: { title?: string; right?: ReactNode; className?: string; children: ReactNode }) {
@@ -73,6 +74,7 @@ export function BlockBar({ value, max, onSeek, className = '' }: { value: number
 
 /** Terminal-window modal. */
 export function Modal({ open, title, onClose, children, width = 440 }: { open: boolean; title: string; onClose: () => void; children: ReactNode; width?: number }) {
+  const { t } = useI18n()
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent): void => {
@@ -103,7 +105,7 @@ export function Modal({ open, title, onClose, children, width = 440 }: { open: b
           >
             <div className="flex items-center justify-between border-b border-crt-line bg-crt-panel-2 px-3 py-1.5">
               <span className="text-[12px] tracking-[0.14em] text-ph-bright uppercase">▌{title}</span>
-              <button className="tbtn sm ghost" onClick={onClose} aria-label="Đóng">
+              <button className="tbtn sm ghost" onClick={onClose} aria-label={t('close')}>
                 [x]
               </button>
             </div>

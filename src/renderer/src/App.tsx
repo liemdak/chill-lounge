@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import type { WallpaperState } from '../../shared/types'
 import { Header, NAV, NAV_BOTTOM, PlayerBar, Sidebar, type Screen } from './components/Chrome'
-import { AmbientModal, BootScreen, CrtOverlay, EQModal, QueueModal, SleepModal, WallpaperMode } from './components/Overlays'
+import { AmbientModal, AppBackdrop, BootScreen, CrtOverlay, EQModal, QueueModal, SleepModal, WallpaperMode } from './components/Overlays'
+import { I18nProvider } from './i18n'
 import { load, save } from './lib/store'
 import { usePlayer } from './player/usePlayer'
 import { Library } from './screens/Library'
@@ -14,6 +15,14 @@ import { WallpaperScreen } from './screens/Wallpaper'
 type ModalId = 'ambient' | 'eq' | 'sleep' | 'queue' | 'wpmode' | null
 
 export function App() {
+  return (
+    <I18nProvider>
+      <Shell />
+    </I18nProvider>
+  )
+}
+
+function Shell() {
   const p = usePlayer()
   const [screen, setScreen] = useState<Screen>('now')
   const [modal, setModal] = useState<ModalId>(null)
@@ -23,6 +32,8 @@ export function App() {
     setPrefsState(v)
     save('prefs', v)
   }
+  // Stable identity: dialogs use it inside effects.
+  const close = useCallback(() => setModal(null), [])
 
   useEffect(() => {
     window.lounge.wallpaper.getState().then(setWallpaper)
@@ -51,11 +62,10 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [p, modal])
 
-  const close = (): void => setModal(null)
-
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex h-full flex-col">
+      <AppBackdrop wallpaper={wallpaper} />
+      <div className="relative z-10 flex h-full flex-col">
         <Header wallpaper={wallpaper} />
         <div className="flex min-h-0 flex-1">
           <Sidebar screen={screen} onNavigate={setScreen} />

@@ -58,6 +58,7 @@ const GWL_EXSTYLE = -20
 const WS_EX_LAYERED = 0x00080000n
 const LWA_ALPHA = 0x2
 const WS_CHILD = 0x40000000n
+const WS_MAXIMIZE = 0x01000000n
 const WS_POPUP = 0x80000000n
 const WS_CAPTION = 0x00c00000n
 const WS_THICKFRAME = 0x00040000n
@@ -201,6 +202,9 @@ export function isFullscreenAppRunning(): boolean {
   const cls = Buffer.alloc(512)
   GetClassNameW(fg, cls, 256)
   if (SHELL_CLASSES.has(cls.toString('utf16le').split('\0')[0])) return false
+  // With an auto-hiding taskbar a maximized browser covers the whole monitor too; that is
+  // not a game, so don't pause for it (it made the wallpaper stop/start on every focus change).
+  if (h(GetWindowLongPtrW(fg, GWL_STYLE)) & WS_MAXIMIZE) return false
 
   // A real fullscreen window covers the whole monitor, taskbar included; maximized ones don't.
   const win = { left: 0, top: 0, right: 0, bottom: 0 }

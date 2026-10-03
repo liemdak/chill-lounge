@@ -9,7 +9,7 @@ function fallback(path: string): TrackInfo {
   return {
     path,
     title: basename(path, extname(path)),
-    artist: 'Không rõ nghệ sĩ',
+    artist: '',
     album: '',
     duration: 0,
     format: ext.toUpperCase(),
