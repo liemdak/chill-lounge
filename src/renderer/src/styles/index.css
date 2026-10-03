@@ -1,0 +1,222 @@
+@import 'tailwindcss';
+
+/* ── CRT Terminal design tokens ─────────────────────────────────────────── */
+@theme {
+  --color-crt-bg: #07060f;
+  --color-crt-panel: #0d0a1c;
+  --color-crt-panel-2: #151030;
+  --color-crt-line: rgba(157, 107, 255, 0.32);
+  --color-crt-line-strong: rgba(157, 107, 255, 0.7);
+
+  --color-ph: #c9a8ff; /* phosphor — main text */
+  --color-ph-bright: #f4ecff;
+  --color-ph-dim: #8a76b8;
+  --color-ph-faint: #4a3f6e;
+
+  --color-purple: #7142cf;
+  --color-violet: #9d6bff;
+  --color-magenta: #ff4fd8;
+  --color-cyan: #3df5ff;
+
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --font-pixel: 'VT323', 'IBM Plex Mono', monospace;
+
+  --animate-blink: blink 1s steps(1) infinite;
+  --animate-flicker: flicker 6s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 1; }
+  48% { opacity: 0.93; }
+  49% { opacity: 1; }
+  72% { opacity: 0.97; }
+}
+@keyframes glitch {
+  0% { clip-path: inset(0 0 0 0); transform: none; }
+  20% { clip-path: inset(10% 0 55% 0); transform: translateX(-3px); }
+  40% { clip-path: inset(60% 0 10% 0); transform: translateX(3px); }
+  60% { clip-path: inset(30% 0 40% 0); transform: translateX(-2px); }
+  80% { clip-path: inset(0 0 80% 0); transform: translateX(2px); }
+  100% { clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes scan-roll {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100vh); }
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--color-crt-bg);
+    color: var(--color-ph);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    text-shadow: 0 0 5px rgba(201, 168, 255, 0.35);
+  }
+  button { cursor: pointer; font: inherit; color: inherit; }
+  :focus-visible { outline: 1px dashed var(--color-cyan); outline-offset: 2px; }
+  ::selection { background: var(--color-violet); color: var(--color-crt-bg); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--color-ph-faint); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-ph-dim); }
+}
+
+/* ── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+  .glow { text-shadow: 0 0 6px rgba(201, 168, 255, 0.85), 0 0 18px rgba(157, 107, 255, 0.45); }
+  .rgb-split { text-shadow: 1.5px 0 rgba(255, 79, 216, 0.65), -1.5px 0 rgba(61, 245, 255, 0.55), 0 0 10px rgba(201, 168, 255, 0.6); }
+  .glitch { animation: glitch 0.35s steps(2) 2; }
+  .pixelated { image-rendering: pixelated; }
+
+  /* Bordered panel with a ┤ TITLE ├ legend sitting on the top border. */
+  .panel {
+    position: relative;
+    border: 1px solid var(--color-crt-line);
+    background: linear-gradient(180deg, rgba(21, 16, 48, 0.85), rgba(13, 10, 28, 0.92));
+    box-shadow: inset 0 0 24px rgba(113, 66, 207, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.6);
+  }
+  .panel-title {
+    position: absolute;
+    top: -0.75em;
+    left: 12px;
+    padding: 0 6px;
+    background: var(--color-crt-bg);
+    color: var(--color-ph-dim);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .panel-title::before { content: '┤ '; color: var(--color-ph-faint); }
+  .panel-title::after { content: ' ├'; color: var(--color-ph-faint); }
+
+  /* [ BUTTON ] */
+  .tbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--color-crt-line-strong);
+    background: transparent;
+    color: var(--color-ph);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: background 80ms, color 80ms, box-shadow 80ms;
+  }
+  .tbtn:hover { background: var(--color-ph); color: var(--color-crt-bg); text-shadow: none; box-shadow: 0 0 12px rgba(201, 168, 255, 0.5); }
+  .tbtn:active { transform: translateY(1px); }
+  .tbtn.primary { background: var(--color-ph); color: var(--color-crt-bg); text-shadow: none; box-shadow: 0 0 14px rgba(201, 168, 255, 0.45); }
+  .tbtn.primary:hover { background: var(--color-ph-bright); }
+  .tbtn.on { background: var(--color-purple); border-color: var(--color-violet); color: var(--color-ph-bright); }
+  .tbtn.ghost { border-color: transparent; }
+  .tbtn.ghost:hover { border-color: var(--color-crt-line-strong); }
+  .tbtn.danger:hover { background: var(--color-magenta); border-color: var(--color-magenta); }
+  .tbtn:disabled { opacity: 0.35; pointer-events: none; }
+  .tbtn.sm { height: 24px; padding: 0 7px; font-size: 11px; }
+  .tbtn.lg { height: 46px; padding: 0 20px; font-size: 15px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 7px;
+    border: 1px solid var(--color-crt-line);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ph-dim);
+  }
+  .badge.live { color: var(--color-magenta); border-color: rgba(255, 79, 216, 0.5); }
+  .badge.ok { color: var(--color-cyan); border-color: rgba(61, 245, 255, 0.45); }
+  .led { width: 6px; height: 6px; background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  .tinput {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--color-crt-line);
+    background: rgba(7, 6, 15, 0.8);
+    color: var(--color-ph-bright);
+    font: inherit;
+    outline: none;
+  }
+  .tinput::placeholder { color: var(--color-ph-faint); }
+  .tinput:focus { border-color: var(--color-violet); box-shadow: 0 0 10px rgba(157, 107, 255, 0.35); }
+
+  /* Thin track + square block thumb */
+  input[type='range'].trange {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 14px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type='range'].trange::-webkit-slider-runnable-track {
+    height: 6px;
+    background:
+      linear-gradient(90deg, var(--color-violet) var(--pct, 0%), transparent var(--pct, 0%)),
+      repeating-linear-gradient(90deg, var(--color-ph-faint) 0 4px, transparent 4px 6px);
+  }
+  input[type='range'].trange::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 14px;
+    margin-top: -4px;
+    background: var(--color-ph-bright);
+    box-shadow: 0 0 8px var(--color-violet);
+  }
+
+  /* [██████░░░░] progress made of block segments */
+  .blockbar {
+    position: relative;
+    height: 14px;
+    cursor: pointer;
+    background: repeating-linear-gradient(90deg, var(--color-ph-faint) 0 6px, transparent 6px 8px);
+    opacity: 0.9;
+  }
+  .blockbar > .fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: repeating-linear-gradient(90deg, var(--color-ph) 0 6px, transparent 6px 8px);
+    filter: drop-shadow(0 0 4px rgba(201, 168, 255, 0.8));
+  }
+
+  .tab { padding: 3px 10px; border: 1px solid transparent; color: var(--color-ph-dim); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .tab:hover { color: var(--color-ph); }
+  .tab.active { border-color: var(--color-crt-line-strong); color: var(--color-ph-bright); background: rgba(113, 66, 207, 0.25); }
+
+  .row-hover:hover { background: rgba(157, 107, 255, 0.1); }
+  .row-active { background: rgba(157, 107, 255, 0.18); box-shadow: inset 2px 0 0 var(--color-ph); color: var(--color-ph-bright); }
+
+  .scanlines {
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 3px);
+  }
+}
+
+/* Full-window CRT overlay: scanlines, a slow rolling band, vignette and flicker. */
+.crt-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
+.crt-overlay .lines { position: absolute; inset: 0; opacity: var(--crt-strength, 0.55); }
+.crt-overlay .roll {
+  position: absolute; left: 0; right: 0; height: 120px;
+  background: linear-gradient(180deg, transparent, rgba(201, 168, 255, 0.05), transparent);
+  animation: scan-roll 7s linear infinite;
+}
+.crt-overlay .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.55) 100%); }
+#root { animation: var(--animate-flicker); }
+
+@media (prefers-reduced-motion: reduce) {
+  #root, .crt-overlay .roll, .glitch { animation: none !important; }
+}

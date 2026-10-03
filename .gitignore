@@ -1,0 +1,8 @@
+node_modules
+out
+dist
+*.log
+*.tsbuildinfo
+# AI Studio prototype export, kept locally as a layout reference only
+design-ref/
+.DS_Store
