@@ -74,6 +74,11 @@ export class WallpaperManager {
     }
   }
 
+  /** Send something to every desktop wallpaper window (e.g. the music beat). */
+  broadcast(channel: string, value: unknown): void {
+    for (const win of this.windows.values()) if (!win.isDestroyed()) win.webContents.send(channel, value)
+  }
+
   onChange(fn: Listener): () => void {
     this.listeners.add(fn)
     return () => this.listeners.delete(fn)

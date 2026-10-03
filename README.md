@@ -30,6 +30,7 @@
 | Chọn ảnh / gif / video làm nền **trong app** | Tab **Hình nền** → **[+ CHỌN FILE]** → **[DÙNG TRONG APP]** |
 | Đưa lên **desktop Windows** | Tab **Hình nền** → **[ĐẶT LÊN DESKTOP…]** → xác nhận. Gỡ lúc nào cũng được (trong app hoặc chuột phải icon ở khay) |
 | Màn hình chờ toàn màn hình (đồng hồ + mưa) | Phím **F**, thoát bằng **Esc** |
+| Hiệu ứng mưa, tuyết, đom đóm, sao… | Tab **Hình nền** → bảng **Hiệu ứng pixel**: chọn preset hoặc kéo từng lớp; bật **Nhảy theo nhạc** |
 | Đổi ngôn ngữ | Nút **VI / EN** trên thanh tiêu đề |
 
 App **không bao giờ tự đổi hình nền desktop** nếu bạn chưa đồng ý, và mặc định không tự bật lại khi mở app.
@@ -51,7 +52,8 @@ Choosing an image/video in the **Wallpaper** tab only uses it **inside the app**
 
 ## Tính năng / Features
 
-- **Hình nền động** — ảnh, gif, video (mp4 / webm) phía sau icon desktop; nhiều màn hình; tự dừng khi chơi game toàn màn hình; mưa pixel, độ sáng, scanline CRT.
+- **Hình nền động** — ảnh, gif, video (mp4 / webm) phía sau icon desktop; nhiều màn hình; tự dừng khi chơi game toàn màn hình.
+- **8 lớp hiệu ứng pixel bật chồng được** — mưa (có chớp khi mưa to), tuyết, đom đóm, trời sao + sao băng, mưa ký tự terminal, hoa rơi, sương mù dither, nhiễu VHS; 6 preset (Đêm mưa, Mùa đông, Terminal, Đêm hè, Anh đào); **nhảy theo nhạc** (cả trên desktop); độ sáng, scanline CRT.
 - **Trình phát nhạc** — đọc tên bài, nghệ sĩ, ảnh bìa và lời bài hát từ file; EQ + độ ấm băng từ; 4 lớp âm nền tạo bằng Web Audio; hẹn giờ ngủ; phím media; nhớ hàng chờ.
 - **Giao diện CRT** — font VT323 + IBM Plex Mono (đủ dấu tiếng Việt), ảnh bìa dither thành pixel art, đĩa than pixel, phổ LED, chữ đánh máy + glitch.
 - **Song ngữ** Việt / English · **tự cập nhật** qua GitHub Releases.
@@ -102,7 +104,7 @@ src/
       styles/index.css  design tokens CRT (Tailwind v4 @theme) + class dùng chung
       audio/engine.ts   Web Audio: EQ, độ ấm, analyser, âm nền
       player/           usePlayer — hàng chờ, lặp, hẹn giờ, lưu phiên
-      lib/              dither (pixel art), rain (mưa pixel), store
+      lib/              dither (pixel art), vfx (8 lớp hiệu ứng pixel), beat (nhịp bass), store
       components/       khung app, visualizer, hộp thoại, overlay CRT
       screens/          Đang phát, Thư viện, Hình nền, Cài đặt, màn sắp có
   shared/types.ts

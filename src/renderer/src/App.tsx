@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import type { WallpaperState } from '../../shared/types'
 import { Header, NAV, NAV_BOTTOM, PlayerBar, Sidebar, type Screen } from './components/Chrome'
 import { AmbientModal, AppBackdrop, BootScreen, CrtOverlay, EQModal, QueueModal, SleepModal, WallpaperMode } from './components/Overlays'
 import { I18nProvider } from './i18n'
+import { setBeatForwarding, startBeatLoop } from './lib/beat'
 import { load, save } from './lib/store'
 import { usePlayer } from './player/usePlayer'
 import { Library } from './screens/Library'
@@ -34,6 +35,12 @@ function Shell() {
   }
   // Stable identity: dialogs use it inside effects.
   const close = useCallback(() => setModal(null), [])
+
+  // Bass-energy meter for music-reactive VFX; forwarded to the desktop only when it's needed.
+  const playingRef = useRef(false)
+  playingRef.current = p.playing
+  useEffect(() => startBeatLoop(() => playingRef.current), [])
+  useEffect(() => setBeatForwarding(!!wallpaper?.desktop && !!wallpaper.effects.reactive), [wallpaper?.desktop, wallpaper?.effects.reactive])
 
   useEffect(() => {
     window.lounge.wallpaper.getState().then(setWallpaper)
@@ -75,7 +82,7 @@ function Shell() {
                 key={screen}
                 className="h-full"
                 initial={{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }}
-                animate={{ opacity: 1, clipPath: 'inset(0 0 0% 0)' }}
+                animate={{ opacity: 1, clipPath: 'inset(0 0 0% 0)', transitionEnd: { clipPath: 'none' } }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.22, ease: 'linear' }}
               >

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { WallpaperState } from '../../../shared/types'
 import { BarScope, VinylScope } from '../components/scopes'
-import { BlockBar, Panel, PixelCover, RainCanvas, TRange, useTypewriter } from '../components/ui'
+import { EffectsQuick } from '../components/Effects'
+import { BlockBar, Panel, PixelCover, TRange, useTypewriter, VfxCanvas } from '../components/ui'
 import { useI18n } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { EQ_PRESETS, type Player } from '../player/usePlayer'
@@ -260,7 +261,7 @@ function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperS
         {url && src?.kind === 'video' && <video src={url} className="h-full w-full object-cover" autoPlay loop muted style={filter} />}
         {url && src?.kind === 'image' && <img src={url} className="h-full w-full object-cover" style={filter} />}
         {!src && <div className="flex h-full items-center justify-center font-pixel text-[24px] text-ph-faint">NO WALLPAPER</div>}
-        {src && <RainCanvas density={wp!.effects.rain} className="absolute inset-0 h-full w-full" />}
+        {wp && <VfxCanvas layers={wp.effects} reactive={wp.effects.reactive} className="absolute inset-0 h-full w-full" />}
         <div className="scanlines absolute inset-0" />
         <div className="absolute top-1.5 left-1.5 flex gap-1.5">
           {!src && <span className="badge bg-crt-bg/80">{t('wpcard.none')}</span>}
@@ -273,20 +274,9 @@ function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperS
         </div>
       </div>
 
-      {src && (
-        <div className="mt-3 grid grid-cols-2 gap-3 text-[11px]">
-          <label className="flex flex-col gap-1">
-            <span className="flex justify-between text-ph-dim">
-              {t('wpcard.rain')} <span className="text-cyan">{wp!.effects.rain}%</span>
-            </span>
-            <TRange label={t('wpcard.rain')} min={0} max={100} step={1} value={wp!.effects.rain} onChange={(v) => window.lounge.wallpaper.setEffects({ rain: v })} />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="flex justify-between text-ph-dim">
-              {t('wpcard.bright')} <span className="text-magenta">{wp!.effects.brightness}%</span>
-            </span>
-            <TRange label={t('wpcard.bright')} min={30} max={100} step={1} value={wp!.effects.brightness} onChange={(v) => window.lounge.wallpaper.setEffects({ brightness: v })} />
-          </label>
+      {wp && (
+        <div className="mt-3">
+          <EffectsQuick fx={wp.effects} />
         </div>
       )}
 

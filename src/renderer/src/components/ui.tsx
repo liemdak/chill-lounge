@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { AnimatePresence, motion } from 'motion/react'
 import { ditherCover } from '../lib/dither'
 import { useI18n } from '../i18n'
-import { startRain } from '../lib/rain'
+import { getBeat } from '../lib/beat'
+import { startVfx, type VfxLayers } from '../lib/vfx'
 
 export function Panel({ title, right, className = '', children }: { title?: string; right?: ReactNode; className?: string; children: ReactNode }) {
   return (
@@ -135,15 +136,17 @@ export function PixelCover({ src, seed, res = 32, className = '' }: { src: strin
   return <canvas ref={ref} className={`pixelated ${className}`} aria-hidden />
 }
 
-export function RainCanvas({ density, paused = false, className = '' }: { density: number; paused?: boolean; className?: string }) {
+/** All pixel VFX layers on one canvas. `reactive` makes them pulse with the music. */
+export function VfxCanvas({ layers, reactive = false, paused = false, className = '' }: { layers: VfxLayers; reactive?: boolean; paused?: boolean; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
-  const live = useRef({ density, paused })
-  live.current = { density, paused }
+  const live = useRef({ layers, reactive, paused })
+  live.current = { layers, reactive, paused }
   useEffect(
     () =>
-      startRain(ref.current!, {
-        density: () => live.current.density,
-        paused: () => live.current.paused
+      startVfx(ref.current!, {
+        layers: () => live.current.layers,
+        paused: () => live.current.paused,
+        beat: () => (live.current.reactive ? getBeat() : 0)
       }),
     []
   )

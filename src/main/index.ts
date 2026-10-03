@@ -175,6 +175,7 @@ function registerIpc(): void {
   ipcMain.handle('wallpaper:togglePause', () => wallpaper.togglePause())
   ipcMain.handle('wallpaper:setEffects', (_e, patch: Partial<WallpaperEffects>) => wallpaper.setEffects(patch))
   ipcMain.handle('wallpaper:forget', (_e, path: string) => wallpaper.forget(path))
+  ipcMain.on('vfx:beat', (_e, v: number) => wallpaper.broadcast('vfx:beat', v))
 
   ipcMain.handle('settings:getVolume', () => loadSettings().volume)
   ipcMain.on('settings:setVolume', (_e, v: number) => saveSettings({ volume: v }))

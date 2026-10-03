@@ -49,7 +49,10 @@ const api = {
       ipcRenderer.invoke('wallpaper:setEffects', patch),
     forget: (path: string): Promise<WallpaperState> => ipcRenderer.invoke('wallpaper:forget', path),
     togglePause: (): Promise<WallpaperState> => ipcRenderer.invoke('wallpaper:togglePause'),
-    onState: (fn: (s: WallpaperState) => void): Off => on('wallpaper:state', fn)
+    onState: (fn: (s: WallpaperState) => void): Off => on('wallpaper:state', fn),
+    /** Main window → desktop wallpaper windows: bass energy for music-reactive VFX. */
+    sendBeat: (v: number): void => ipcRenderer.send('vfx:beat', v),
+    onBeat: (fn: (v: number) => void): Off => on('vfx:beat', fn)
   },
   settings: {
     getVolume: (): Promise<number> => ipcRenderer.invoke('settings:getVolume'),

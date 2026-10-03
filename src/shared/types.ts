@@ -8,12 +8,21 @@ export interface WallpaperSource {
 
 /** Overlays drawn by the wallpaper window itself, on top of the image/video. */
 export interface WallpaperEffects {
-  /** Rain particle density, 0 = off. */
+  // Pixel VFX layers, 0..100 each (0 = off); they stack.
   rain: number
+  snow: number
+  fireflies: number
+  stars: number
+  glyphs: number
+  petals: number
+  fog: number
+  vhs: number
   /** 30..100 (%), applied as a CSS brightness filter. */
   brightness: number
   /** CRT scanline overlay. */
   scanlines: boolean
+  /** Particles and brightness pulse with the bass of the playing track. */
+  reactive: boolean
 }
 
 export type Lang = 'vi' | 'en'

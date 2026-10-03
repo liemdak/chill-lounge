@@ -5,7 +5,8 @@ import type { AmbientKey } from '../audio/engine'
 import { useI18n, type TKey } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { EQ_PRESETS, type Player } from '../player/usePlayer'
-import { Clock, Modal, PixelCover, RainCanvas, TRange } from './ui'
+import { hasVfx, NO_VFX } from '../lib/vfx'
+import { Clock, Modal, PixelCover, TRange, VfxCanvas } from './ui'
 
 const AMBIENT: { key: AmbientKey; label: TKey; glyph: string; color: string }[] = [
   { key: 'rain', label: 'amb.rain', glyph: '⁞', color: 'text-cyan' },
@@ -198,7 +199,7 @@ export function WallpaperMode({ open, onClose, p, wallpaper }: { open: boolean; 
           {url && src?.kind === 'video' && <video src={url} className="absolute inset-0 h-full w-full" style={style} autoPlay loop muted />}
           {url && src?.kind === 'image' && <img src={url} className="absolute inset-0 h-full w-full" style={style} />}
           {!url && <PixelCover src={p.current?.cover ?? null} seed={p.current?.title ?? 'chill'} res={48} className="absolute inset-0 h-full w-full object-cover opacity-50" />}
-          <RainCanvas density={Math.max(40, wallpaper?.effects.rain ?? 0)} className="absolute inset-0 h-full w-full" />
+          <VfxCanvas layers={wallpaper && hasVfx(wallpaper.effects) ? wallpaper.effects : { ...NO_VFX, rain: 40 }} reactive={wallpaper?.effects.reactive} className="absolute inset-0 h-full w-full" />
           {(wallpaper?.effects.scanlines ?? true) && <div className="scanlines absolute inset-0" />}
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
 
@@ -304,7 +305,7 @@ export function AppBackdrop({ wallpaper }: { wallpaper: WallpaperState | null })
   return (
     <div className="pointer-events-none fixed inset-0 z-0 opacity-30" aria-hidden>
       {src.kind === 'video' ? <video key={url} src={url} className="h-full w-full" style={style} autoPlay loop muted /> : <img src={url} className="h-full w-full" style={style} />}
-      <RainCanvas density={wallpaper!.effects.rain} className="absolute inset-0 h-full w-full" />
+      <VfxCanvas layers={wallpaper!.effects} reactive={wallpaper!.effects.reactive} className="absolute inset-0 h-full w-full" />
     </div>
   )
 }

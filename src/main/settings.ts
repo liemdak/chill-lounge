@@ -10,7 +10,19 @@ const DEFAULTS: Settings = {
     restoreOnLaunch: false,
     fit: 'cover',
     autoPause: true,
-    effects: { rain: 0, brightness: 100, scanlines: false },
+    effects: {
+      rain: 0,
+      snow: 0,
+      fireflies: 0,
+      stars: 0,
+      glyphs: 0,
+      petals: 0,
+      fog: 0,
+      vhs: 0,
+      brightness: 100,
+      scanlines: false,
+      reactive: false
+    },
     history: []
   },
   volume: 0.7,

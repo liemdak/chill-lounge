@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FitMode, WallpaperSource, WallpaperState } from '../../../shared/types'
-import { Check, Modal, Panel, RainCanvas, TRange } from '../components/ui'
+import { EffectsPanel } from '../components/Effects'
+import { Check, Modal, Panel, VfxCanvas } from '../components/ui'
 import { useI18n } from '../i18n'
 
 const FITS: FitMode[] = ['cover', 'contain', 'fill']
@@ -100,7 +101,7 @@ export function WallpaperScreen({ wallpaper: wp }: { wallpaper: WallpaperState |
                 <div className="text-[12px]">{t('wp.noSignalHint')}</div>
               </div>
             )}
-            {previewPath && <RainCanvas density={fx.rain} className="absolute inset-0 h-full w-full" />}
+            {previewPath && <VfxCanvas layers={fx} reactive={fx.reactive} className="absolute inset-0 h-full w-full" />}
             {previewPath && fx.scanlines && <div className="scanlines absolute inset-0" />}
             <div className="absolute top-2 left-2 flex gap-2">
               {inApp && <span className="badge ok bg-crt-bg/80">{t('wpcard.inApp')}</span>}
@@ -115,22 +116,8 @@ export function WallpaperScreen({ wallpaper: wp }: { wallpaper: WallpaperState |
           </div>
         </Panel>
 
-        <Panel title={t('wp.effects')} className="grid grid-cols-3 gap-5 p-4 pt-5">
-          <label className="flex flex-col gap-1.5 text-[11px]">
-            <span className="flex justify-between text-ph-dim">
-              {t('wp.rain')} <span className="text-cyan">{fx.rain}%</span>
-            </span>
-            <TRange label={t('wp.rain')} min={0} max={100} step={1} value={fx.rain} onChange={(v) => window.lounge.wallpaper.setEffects({ rain: v })} />
-          </label>
-          <label className="flex flex-col gap-1.5 text-[11px]">
-            <span className="flex justify-between text-ph-dim">
-              {t('wp.brightness')} <span className="text-magenta">{fx.brightness}%</span>
-            </span>
-            <TRange label={t('wp.brightness')} min={30} max={100} step={1} value={fx.brightness} onChange={(v) => window.lounge.wallpaper.setEffects({ brightness: v })} />
-          </label>
-          <div className="text-[12px]">
-            <Check checked={fx.scanlines} onChange={(v) => window.lounge.wallpaper.setEffects({ scanlines: v })} label={t('wp.scanlines')} />
-          </div>
+        <Panel title={t('fx.title')} className="p-4 pt-5">
+          <EffectsPanel fx={fx} />
         </Panel>
       </div>
 
