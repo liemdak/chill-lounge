@@ -1,11 +1,15 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, Tray } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, shell, Tray } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { AUDIO_EXT, IMAGE_EXT, VIDEO_EXT, type FitMode, type Lang, type WallpaperEffects } from '../shared/types'
+import { AUDIO_EXT, IMAGE_EXT, VIDEO_EXT, type DownloadMode, type FitMode, type Lang, type WallpaperEffects } from '../shared/types'
+import { downloadDir, Downloads } from './downloads'
 import { handleMediaProtocol, registerMediaScheme } from './media-protocol'
 import { loadSettings, saveSettings } from './settings'
 import { readTrackInfo } from './tags'
+import { installTools, toolsStatus, updateYtDlp } from './tools'
 import { WallpaperManager } from './wallpaper/manager'
+import { lookup, prefetch } from './youtube'
 
 // Chromium throttles windows it thinks are covered; wallpaper windows always are.
 app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
@@ -17,6 +21,7 @@ registerMediaScheme()
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let wallpaper: WallpaperManager
+const downloads = new Downloads()
 let quitting = false
 
 const ICON = join(__dirname, '../../resources/icon.png')
@@ -32,7 +37,8 @@ const STRINGS = {
     pickWallpaper: 'Chọn ảnh hoặc video',
     media: 'Ảnh / Video',
     pickAudio: 'Chọn bài hát',
-    audio: 'Nhạc / Video'
+    audio: 'Nhạc / Video',
+    pickDir: 'Chọn thư mục lưu nhạc tải về'
   },
   en: {
     open: 'Open Chill Lounge',
@@ -43,7 +49,8 @@ const STRINGS = {
     pickWallpaper: 'Choose an image or video',
     media: 'Images / Videos',
     pickAudio: 'Choose songs',
-    audio: 'Music / Video'
+    audio: 'Music / Video',
+    pickDir: 'Choose where downloads are saved'
   }
 } satisfies Record<Lang, Record<string, string>>
 
@@ -177,6 +184,32 @@ function registerIpc(): void {
   ipcMain.handle('wallpaper:forget', (_e, path: string) => wallpaper.forget(path))
   ipcMain.on('vfx:beat', (_e, v: number) => wallpaper.broadcast('vfx:beat', v))
 
+  // ── YouTube / downloads ──
+  const send = (channel: string, value: unknown): void => mainWindow?.webContents.send(channel, value)
+  ipcMain.handle('tools:status', () => toolsStatus())
+  ipcMain.handle('tools:install', () => installTools((p) => send('tools:progress', p)))
+  ipcMain.handle('tools:updateYtdlp', () => updateYtDlp())
+  ipcMain.handle('yt:lookup', (_e, input: string) => lookup(input))
+  ipcMain.on('yt:prefetch', (_e, id: string) => prefetch(id))
+  downloads.onChange((jobs) => send('dl:update', jobs))
+  ipcMain.handle('dl:list', () => downloads.list())
+  ipcMain.handle('dl:add', (_e, items: { videoId: string; title: string }[], mode: DownloadMode) => downloads.add(items, mode))
+  ipcMain.on('dl:cancel', (_e, id: string) => downloads.cancel(id))
+  ipcMain.on('dl:retry', (_e, id: string) => downloads.retry(id))
+  ipcMain.on('dl:clearFinished', () => downloads.clearFinished())
+  ipcMain.handle('dl:getDir', () => downloadDir())
+  ipcMain.handle('dl:chooseDir', async () => {
+    const res = await dialog.showOpenDialog(mainWindow!, { title: tr().pickDir, defaultPath: downloadDir(), properties: ['openDirectory', 'createDirectory'] })
+    if (!res.canceled && res.filePaths[0]) saveSettings({ downloadDir: res.filePaths[0] })
+    return downloadDir()
+  })
+  ipcMain.on('dl:openDir', () => {
+    const dir = downloadDir()
+    mkdirSync(dir, { recursive: true })
+    shell.openPath(dir)
+  })
+  ipcMain.on('dl:reveal', (_e, file: string) => shell.showItemInFolder(file))
+
   ipcMain.handle('settings:getVolume', () => loadSettings().volume)
   ipcMain.on('settings:setVolume', (_e, v: number) => saveSettings({ volume: v }))
   ipcMain.handle('settings:getLanguage', () => loadSettings().language)
@@ -206,6 +239,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('before-quit', () => {
     quitting = true
     wallpaper?.dispose()
+    downloads.dispose()
   })
 
   // Stay alive in the tray when the main window is hidden.

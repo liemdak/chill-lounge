@@ -26,7 +26,8 @@ const DEFAULTS: Settings = {
     history: []
   },
   volume: 0.7,
-  language: 'vi'
+  language: 'vi',
+  downloadDir: null
 }
 
 const file = (): string => join(app.getPath('userData'), 'settings.json')

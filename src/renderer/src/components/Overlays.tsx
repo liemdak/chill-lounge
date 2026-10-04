@@ -242,10 +242,11 @@ export function WallpaperMode({ open, onClose, p, wallpaper }: { open: boolean; 
 }
 
 const BOOT_LINES = [
-  'CHILL_LOUNGE BIOS v0.3 (c) 2026',
+  `CHILL_LOUNGE BIOS v${__APP_VERSION__} (c) 2026`,
   'Phosphor display ............ OK',
   'Audio engine (Web Audio) ..... OK',
   'Desktop compositor hook ...... OK',
+  'YouTube bridge (yt-dlp) ...... OK',
   'Loading lo-fi modules ........ OK',
   '> welcome back. stay chill.'
 ]

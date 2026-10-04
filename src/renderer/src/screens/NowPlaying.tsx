@@ -45,6 +45,12 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
               </span>
               {tr && <span className="badge">{tr.format}</span>}
               {tr?.lossless && <span className="badge ok">LOSSLESS</span>}
+              {p.buffering && tr?.source === 'youtube' && (
+                <span className="badge">
+                  <span className="led animate-blink" /> {t('now.buffering')}
+                </span>
+              )}
+              {p.error && p.error === tr?.path && <span className="badge text-magenta">{t('now.cannotPlay')}</span>}
             </div>
             <button className="tbtn sm" onClick={onOpenWallpaperMode} title={t('player.wpMode')}>
               {t('now.wpModeBtn')}
@@ -65,7 +71,7 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-[11px] text-ph-dim">
                 <span className="text-cyan">&gt;</span> now_playing
-                <span className="badge">{tr?.isVideo ? 'VIDEO' : 'OFFLINE'}</span>
+                <span className={`badge ${tr?.source === 'youtube' ? 'live' : ''}`}>{tr?.source === 'youtube' ? 'YOUTUBE' : tr?.isVideo ? 'VIDEO' : 'OFFLINE'}</span>
               </div>
               <h1 className={`truncate font-pixel text-[44px] leading-[1.05] text-ph-bright rgb-split ${glitch ? 'glitch' : ''}`}>
                 {title}
@@ -229,7 +235,7 @@ function SideDeck({ p }: { p: Player }) {
                   ['FORMAT', tr.format],
                   ['LOSSLESS', tr.lossless ? 'YES' : 'NO'],
                   ['LENGTH', fmtTime(tr.duration)],
-                  ['PATH', tr.path]
+                  [tr.source === 'youtube' ? 'URL' : 'PATH', tr.url ?? tr.path]
                 ].map(([k, v]) => (
                   <tr key={k} className="align-top">
                     <td className="w-20 py-1 text-ph-dim">{k}</td>
@@ -250,6 +256,7 @@ function SideDeck({ p }: { p: Player }) {
   )
 }
 
+/** Compact: a small thumbnail with status beside it, presets on one row — the queue gets the room. */
 function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperState | null; onGoWallpaper: () => void }) {
   const { t } = useI18n()
   const src = wp?.source ?? wp?.desktop ?? null
@@ -257,32 +264,34 @@ function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperS
   const filter = { filter: `brightness(${(wp?.effects.brightness ?? 100) / 100})` }
   return (
     <Panel title={t('wpcard.title')} className="p-3 pt-4">
-      <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-crt-bg">
-        {url && src?.kind === 'video' && <video src={url} className="h-full w-full object-cover" autoPlay loop muted style={filter} />}
-        {url && src?.kind === 'image' && <img src={url} className="h-full w-full object-cover" style={filter} />}
-        {!src && <div className="flex h-full items-center justify-center font-pixel text-[24px] text-ph-faint">NO WALLPAPER</div>}
-        {wp && <VfxCanvas layers={wp.effects} reactive={wp.effects.reactive} className="absolute inset-0 h-full w-full" />}
-        <div className="scanlines absolute inset-0" />
-        <div className="absolute top-1.5 left-1.5 flex gap-1.5">
-          {!src && <span className="badge bg-crt-bg/80">{t('wpcard.none')}</span>}
-          {wp?.source && <span className="badge ok bg-crt-bg/80">{t('wpcard.inApp')}</span>}
-          {wp?.desktop && (
-            <span className={`badge bg-crt-bg/80 ${wp.paused ? '' : 'live'}`}>
-              <span className="led" /> {t('wpcard.onDesktop')}
-            </span>
-          )}
+      <div className="flex gap-3">
+        <button className="relative aspect-video w-[132px] shrink-0 overflow-hidden border border-crt-line bg-crt-bg" onClick={onGoWallpaper} title={t('wpcard.configure')}>
+          {url && src?.kind === 'video' && <video src={url} className="h-full w-full object-cover" autoPlay loop muted style={filter} />}
+          {url && src?.kind === 'image' && <img src={url} className="h-full w-full object-cover" style={filter} />}
+          {!src && <div className="flex h-full items-center justify-center font-pixel text-[16px] text-ph-faint">NO WP</div>}
+          {wp && <VfxCanvas layers={wp.effects} reactive={wp.effects.reactive} className="absolute inset-0 h-full w-full" />}
+          <div className="scanlines absolute inset-0" />
+        </button>
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-1.5">
+          <div className="flex flex-wrap gap-1">
+            {!src && <span className="badge">{t('wpcard.none')}</span>}
+            {wp?.source && <span className="badge ok">{t('wpcard.inApp')}</span>}
+            {wp?.desktop && (
+              <span className={`badge ${wp.paused ? '' : 'live'}`}>
+                <span className="led" /> {t('wpcard.onDesktop')}
+              </span>
+            )}
+          </div>
+          <button className="tbtn sm justify-center" onClick={onGoWallpaper}>
+            {t('wpcard.configure')}
+          </button>
         </div>
       </div>
-
       {wp && (
-        <div className="mt-3">
+        <div className="mt-2.5">
           <EffectsQuick fx={wp.effects} />
         </div>
       )}
-
-      <button className="tbtn sm mt-3 w-full justify-center" onClick={onGoWallpaper}>
-        {t('wpcard.configure')}
-      </button>
     </Panel>
   )
 }

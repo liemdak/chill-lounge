@@ -1,8 +1,9 @@
-import { protocol } from 'electron'
+import { net, protocol } from 'electron'
 import { createReadStream, statSync } from 'node:fs'
 import { extname } from 'node:path'
 import { Readable } from 'node:stream'
 import { AUDIO_EXT, IMAGE_EXT, MEDIA_SCHEME, VIDEO_EXT } from '../shared/types'
+import { resolveStream } from './youtube'
 
 // Serves local media files to the renderers as lounge-media://local/<encoded path>.
 // Range requests are handled by hand so <video>/<audio> can seek and loop.
@@ -25,9 +26,39 @@ export function registerMediaScheme(): void {
   ])
 }
 
+/**
+ * lounge-media://yt/<videoId>?m=audio|video — proxy a YouTube stream resolved by yt-dlp.
+ * Range requests are forwarded so seeking works; an expired URL is re-resolved once.
+ */
+async function proxyYouTube(req: Request, url: URL): Promise<Response> {
+  const id = url.pathname.slice(1)
+  const mode = url.searchParams.get('m') === 'video' ? 'video' : 'audio'
+  const range = req.headers.get('range') ?? 'bytes=0-'
+  for (const fresh of [false, true]) {
+    let stream: string
+    try {
+      stream = await resolveStream(id, mode, fresh)
+    } catch (err) {
+      console.warn('[yt] resolve failed', id, (err as Error).message)
+      return new Response('resolve failed', { status: 502 })
+    }
+    const res = await net.fetch(stream, { headers: { Range: range } })
+    if (res.status === 403 && !fresh) continue
+    const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes' }
+    for (const h of ['content-type', 'content-length', 'content-range']) {
+      const v = res.headers.get(h)
+      if (v) headers[h] = v
+    }
+    return new Response(res.body, { status: res.status, headers })
+  }
+  return new Response('stream unavailable', { status: 502 })
+}
+
 export function handleMediaProtocol(): void {
   protocol.handle(MEDIA_SCHEME, (req) => {
-    const path = decodeURIComponent(new URL(req.url).pathname.slice(1))
+    const parsed = new URL(req.url)
+    if (parsed.host === 'yt') return proxyYouTube(req, parsed)
+    const path = decodeURIComponent(parsed.pathname.slice(1))
     const ext = extname(path).slice(1).toLowerCase()
     if (!ALLOWED.has(ext)) return new Response('Unsupported file', { status: 403 })
 

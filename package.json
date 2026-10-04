@@ -1,7 +1,7 @@
 {
   "name": "chill-lounge",
   "productName": "Chill Lounge",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Video/image wallpaper + chill music player for Windows",
   "author": "liemdak",

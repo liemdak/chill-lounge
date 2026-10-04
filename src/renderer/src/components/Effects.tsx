@@ -24,9 +24,9 @@ function Presets({ fx, small = false }: { fx: WallpaperEffects; small?: boolean 
   const { t } = useI18n()
   const current = activePreset(fx)
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className={small ? 'flex gap-1 overflow-x-auto pb-1' : 'flex flex-wrap gap-1.5'}>
       {VFX_PRESETS.map((p) => (
-        <button key={p.id} className={`tbtn ${small ? 'sm' : 'sm'} ${current === p.id ? 'on' : ''}`} onClick={() => set(p.layers)}>
+        <button key={p.id} className={`tbtn sm shrink-0 ${small ? '!h-[22px] !px-1.5 !text-[10px]' : ''} ${current === p.id ? 'on' : ''}`} onClick={() => set(p.layers)}>
           {t(`fxp.${p.id}` as TKey)}
         </button>
       ))}
@@ -75,9 +75,9 @@ export function EffectsPanel({ fx }: { fx: WallpaperEffects }) {
 export function EffectsQuick({ fx }: { fx: WallpaperEffects }) {
   const { t } = useI18n()
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <Presets fx={fx} small />
-      <div className="text-[12px]">
+      <div className="text-[11.5px]">
         <Check checked={fx.reactive} onChange={(v) => set({ reactive: v })} label={t('fx.reactive')} />
       </div>
     </div>

@@ -39,14 +39,6 @@ function Roadmap({ cmd, title, intro, items }: { cmd: string; title: TKey; intro
   )
 }
 
-export const YouTubeScreen = () => (
-  <Roadmap cmd="yt --connect" title="yt.title" intro="yt.intro" items={[[false, 'yt.1'], [false, 'yt.2'], [false, 'yt.3'], [false, 'yt.4']]} />
-)
-
-export const DownloadsScreen = () => (
-  <Roadmap cmd="dl --queue" title="dl.title" intro="dl.intro" items={[[false, 'dl.1'], [false, 'dl.2'], [false, 'dl.3'], [false, 'dl.4']]} />
-)
-
 export const ProfileScreen = () => (
   <Roadmap cmd="whoami" title="pf.title" intro="pf.intro" items={[[true, 'pf.1'], [false, 'pf.2'], [false, 'pf.3'], [false, 'pf.4']]} />
 )

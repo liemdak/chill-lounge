@@ -31,6 +31,8 @@
 | Đưa lên **desktop Windows** | Tab **Hình nền** → **[ĐẶT LÊN DESKTOP…]** → xác nhận. Gỡ lúc nào cũng được (trong app hoặc chuột phải icon ở khay) |
 | Màn hình chờ toàn màn hình (đồng hồ + mưa) | Phím **F**, thoát bằng **Esc** |
 | Hiệu ứng mưa, tuyết, đom đóm, sao… | Tab **Hình nền** → bảng **Hiệu ứng pixel**: chọn preset hoặc kéo từng lớp; bật **Nhảy theo nhạc** |
+| Nghe YouTube | Tab **YouTube** → dán link video / playlist hoặc gõ từ khóa → **▶** để phát, **+** để thêm hàng chờ, **[XEM VIDEO]** để xem hình |
+| Tải nhạc / video | Nút **↓mp3** / **↓mp4** ở tab YouTube, hoặc dán link ở tab **Tải về**; bài tải xong tự vào Thư viện |
 | Đổi ngôn ngữ | Nút **VI / EN** trên thanh tiêu đề |
 
 App **không bao giờ tự đổi hình nền desktop** nếu bạn chưa đồng ý, và mặc định không tự bật lại khi mở app.
@@ -56,13 +58,16 @@ Choosing an image/video in the **Wallpaper** tab only uses it **inside the app**
 - **8 lớp hiệu ứng pixel bật chồng được** — mưa (có chớp khi mưa to), tuyết, đom đóm, trời sao + sao băng, mưa ký tự terminal, hoa rơi, sương mù dither, nhiễu VHS; 6 preset (Đêm mưa, Mùa đông, Terminal, Đêm hè, Anh đào); **nhảy theo nhạc** (cả trên desktop); độ sáng, scanline CRT.
 - **Trình phát nhạc** — đọc tên bài, nghệ sĩ, ảnh bìa và lời bài hát từ file; EQ + độ ấm băng từ; 4 lớp âm nền tạo bằng Web Audio; hẹn giờ ngủ; phím media; nhớ hàng chờ.
 - **Giao diện CRT** — font VT323 + IBM Plex Mono (đủ dấu tiếng Việt), ảnh bìa dither thành pixel art, đĩa than pixel, phổ LED, chữ đánh máy + glitch.
+- **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; xem video 720p đồng bộ với nhạc.
+- **Tải về** — chọn **chỉ âm thanh (mp3)** hoặc **cả video (mp4, tới 1080p)**, có ảnh bìa và tên bài, không tải trùng, tải xong tự vào Thư viện.
 - **Song ngữ** Việt / English · **tự cập nhật** qua GitHub Releases.
 
-### Sắp có / Coming next (v0.4)
+> **Lưu ý YouTube:** lần đầu mở tab YouTube / Tải về, app hỏi để tải [yt-dlp](https://github.com/yt-dlp/yt-dlp) và ffmpeg (~77 MB) từ GitHub. Tải hoặc phát YouTube ngoài trình phát chính thức là trái điều khoản của YouTube — chỉ dùng cho mục đích cá nhân, và tôn trọng bản quyền của nghệ sĩ.
 
-- Phát trực tiếp từ link YouTube (video / playlist) / *Play YouTube links*
-- Tải nhạc từ link — chọn **chỉ âm thanh (mp3)** hoặc **cả video (mp4)** / *Downloads: audio-only or full video*
+### Sắp có / Coming next
+
 - Theme màu phosphor (tím, xanh lá, hổ phách) / *Phosphor color themes*
+- Hồ sơ và playlist riêng / *Profiles and playlists*
 
 ---
 
@@ -90,9 +95,12 @@ File mẫu: `samples/neon-test.webm` (wallpaper), `samples/lofi-test.wav` (nhạ
 src/
   main/                 Electron main process
     index.ts            cửa sổ, tray, IPC, tự cập nhật, chữ song ngữ của main
-    media-protocol.ts   lounge-media:// — phục vụ file local (hỗ trợ tua video)
+    media-protocol.ts   lounge-media:// — file local, và lounge-media://yt/<id> chuyển tiếp luồng YouTube (hỗ trợ tua)
     settings.ts         %APPDATA%/Chill Lounge/settings.json
     tags.ts             đọc tag / ảnh bìa / lời (music-metadata)
+    tools.ts            tải yt-dlp + ffmpeg về %APPDATA%/Chill Lounge/bin (khi người dùng đồng ý), tự cập nhật yt-dlp
+    youtube.ts          tra link / playlist / tìm kiếm, lấy link luồng (cache theo hạn)
+    downloads.ts        hàng chờ tải: mp3 hoặc mp4, tiến độ, hủy / thử lại
     wallpaper/
       win32.ts          Win32 qua koffi: gắn cửa sổ sau icon desktop, phát hiện game fullscreen
       manager.ts        nền trong app (source) ≠ nền desktop (desktop, cần đồng ý)

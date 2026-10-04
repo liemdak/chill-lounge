@@ -57,6 +57,8 @@ export interface Settings {
   }
   volume: number
   language: Lang
+  /** Where downloads go; defaults to Music\Chill Lounge. */
+  downloadDir: string | null
 }
 
 /** Metadata read from an audio/video file's tags. */
@@ -74,6 +76,10 @@ export interface TrackInfo {
   /** Synced lyrics (seconds) or plain lines with time = -1. */
   lyrics: { time: number; text: string }[]
   isVideo: boolean
+  /** Set for YouTube tracks; `path` is then `yt:<id>`. */
+  source?: 'youtube'
+  /** Watch URL for YouTube tracks. */
+  url?: string
 }
 
 export const MEDIA_SCHEME = 'lounge-media'
@@ -81,3 +87,32 @@ export const MEDIA_SCHEME = 'lounge-media'
 export const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']
 export const VIDEO_EXT = ['mp4', 'webm', 'mkv', 'mov']
 export const AUDIO_EXT = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'aac', 'opus']
+
+export type DownloadMode = 'audio' | 'video'
+
+export interface DownloadJob {
+  id: string
+  videoId: string
+  title: string
+  mode: DownloadMode
+  status: 'queued' | 'downloading' | 'processing' | 'done' | 'error' | 'canceled'
+  progress: number
+  speed: string
+  eta: string
+  file: string | null
+  error: string | null
+  /** Filled when the job finishes, so the renderer can add it to the library. */
+  track: TrackInfo | null
+}
+
+export interface ToolsStatus {
+  ytdlp: boolean
+  ffmpeg: boolean
+  ytdlpVersion: string | null
+}
+
+export interface ToolsProgress {
+  name: 'yt-dlp' | 'ffmpeg' | 'ffprobe'
+  received: number
+  total: number
+}

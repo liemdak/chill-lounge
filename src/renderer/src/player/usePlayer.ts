@@ -33,7 +33,17 @@ export function usePlayer() {
   const [eq, setEqState] = useState(() => load('eq', { preset: 'flat' as EQPreset, ...EQ_PRESETS.flat }))
   const [soundscape, setSoundscapeState] = useState<Soundscape>(() => load('soundscape', { rain: 0, vinyl: 0, fire: 0, cafe: 0 }))
   const [sleep, setSleep] = useState<SleepTimer>(null)
+  /** YouTube tracks: play the muxed 360p stream so the video can be watched. */
+  const [videoMode, setVideoMode] = useState(false)
+  const videoModeRef = useRef(false)
+  /** True while a stream is being resolved / buffered (YouTube takes a couple of seconds). */
+  const [buffering, setBuffering] = useState(false)
+  /** Path of the track that failed to play, if any. */
+  const [error, setError] = useState<string | null>(null)
+  const pendingPlay = useRef<string | null>(null)
   const restored = useRef(false)
+  // Audio always comes from the audio stream; the video viewer plays a synced video-only stream.
+  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path)
 
   // ── restore last session ────────────────────────────────────────────────
   useEffect(() => {
@@ -42,9 +52,12 @@ export function usePlayer() {
       engine.setVolume(v)
     })
     engine.setEQ(eq)
-    const paths = loadArray<string>('queue')
-    if (paths.length) {
-      window.lounge.media.readTags(paths).then((tracks) => {
+    // Local tracks are saved as paths (tags re-read on start); YouTube tracks as full objects.
+    const saved = loadArray<string | TrackInfo>('queue')
+    if (saved.length) {
+      window.lounge.media.readTags(saved.filter((e): e is string => typeof e === 'string')).then((tags) => {
+        const byPath = new Map(tags.map((t) => [t.path, t]))
+        const tracks = saved.map((e) => (typeof e === 'string' ? byPath.get(e) : e)).filter((t): t is TrackInfo => !!t)
         setQueue(tracks)
         const last = load('playback', { index: 0 }).index
         setIndex(Math.min(Math.max(last, 0), tracks.length - 1))
@@ -56,7 +69,7 @@ export function usePlayer() {
 
   useEffect(() => {
     if (!restored.current) return
-    save('queue', queue.map((t) => t.path))
+    save('queue', queue.map((t) => (t.source === 'youtube' ? t : t.path)))
   }, [queue])
   useEffect(() => {
     if (restored.current) save('playback', { index, shuffle, repeat })
@@ -69,9 +82,10 @@ export function usePlayer() {
     const track = queue[index]
     if (!track || loadedPath.current === track.path) return
     loadedPath.current = track.path
-    media.src = window.lounge.mediaUrl(track.path)
+    media.src = srcFor(track)
     setTime(0)
     setDuration(track.duration)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [media, queue, index])
 
   // ── transport ───────────────────────────────────────────────────────────
@@ -80,7 +94,8 @@ export function usePlayer() {
       const track = queue[i]
       if (!track) return
       loadedPath.current = track.path
-      media.src = window.lounge.mediaUrl(track.path)
+      media.src = srcFor(track)
+      setError(null)
       setIndex(i)
       setTime(0)
       setDuration(track.duration)
@@ -88,6 +103,7 @@ export function usePlayer() {
       engine.restoreAmbience()
       media.play().catch(() => {})
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [media, queue]
   )
 
@@ -128,7 +144,12 @@ export function usePlayer() {
   }, [media])
 
   useEffect(() => {
-    const onPlay = (): void => setPlaying(true)
+    const onPlay = (): void => {
+      setPlaying(true)
+      setError(null)
+    }
+    const onWaiting = (): void => setBuffering(true)
+    const onReady = (): void => setBuffering(false)
     const onPause = (): void => setPlaying(false)
     const onTime = (): void => setTime(media.currentTime)
     const onMeta = (): void => {
@@ -138,6 +159,8 @@ export function usePlayer() {
     const onError = (): void => {
       console.warn('[player] cannot play', media.src)
       setPlaying(false)
+      setBuffering(false)
+      setError(loadedPath.current)
     }
     media.addEventListener('play', onPlay)
     media.addEventListener('pause', onPause)
@@ -145,7 +168,11 @@ export function usePlayer() {
     media.addEventListener('loadedmetadata', onMeta)
     media.addEventListener('ended', onEnded)
     media.addEventListener('error', onError)
+    for (const ev of ['loadstart', 'waiting']) media.addEventListener(ev, onWaiting)
+    for (const ev of ['playing', 'canplay', 'pause', 'emptied']) media.addEventListener(ev, onReady)
     return () => {
+      for (const ev of ['loadstart', 'waiting']) media.removeEventListener(ev, onWaiting)
+      for (const ev of ['playing', 'canplay', 'pause', 'emptied']) media.removeEventListener(ev, onReady)
       media.removeEventListener('play', onPlay)
       media.removeEventListener('pause', onPause)
       media.removeEventListener('timeupdate', onTime)
@@ -170,16 +197,48 @@ export function usePlayer() {
   }, [queue, index, next, prev])
 
   // ── queue ───────────────────────────────────────────────────────────────
+  /** Append tracks (skipping ones already queued); optionally start the first one. */
+  const addTracks = useCallback(
+    (tracks: TrackInfo[], playNow = false) => {
+      if (!tracks.length) return
+      if (playNow) pendingPlay.current = tracks[0].path
+      setQueue((q) => {
+        const known = new Set(q.map((t) => t.path))
+        return [...q, ...tracks.filter((t) => !known.has(t.path))]
+      })
+      if (index === -1 && !playNow) setIndex(0)
+    },
+    [index]
+  )
+
+  // Start a track queued with playNow once it's in the queue.
+  useEffect(() => {
+    const path = pendingPlay.current
+    if (!path) return
+    const i = queue.findIndex((t) => t.path === path)
+    if (i === -1) return
+    pendingPlay.current = null
+    playAt(i)
+  }, [queue, playAt])
+
   const addFiles = useCallback(async () => {
     const paths = await window.lounge.dialog.pickAudio()
     if (!paths.length) return
-    const tracks = await window.lounge.media.readTags(paths)
-    setQueue((q) => {
-      const known = new Set(q.map((t) => t.path))
-      return [...q, ...tracks.filter((t) => !known.has(t.path))]
-    })
-    if (index === -1) setIndex(0)
-  }, [index])
+    addTracks(await window.lounge.media.readTags(paths))
+  }, [addTracks])
+
+  /** Show / hide the YouTube video. Audio keeps playing; the viewer syncs a video-only stream. */
+  const toggleVideo = useCallback(() => {
+    videoModeRef.current = !videoModeRef.current
+    setVideoMode(videoModeRef.current)
+  }, [])
+
+  // While a track plays, resolve the next YouTube track's stream in the background.
+  useEffect(() => {
+    if (!playing || queue.length < 2) return
+    const nextTrack = queue[(index + 1) % queue.length]
+    if (nextTrack?.source === 'youtube') window.lounge.youtube.prefetch(nextTrack.path.slice(3))
+  }, [playing, index, queue])
 
   const remove = useCallback(
     (i: number) => {
@@ -282,7 +341,13 @@ export function usePlayer() {
     sleep,
     sleepLeft,
     isLiked: current ? liked.has(current.path) : false,
+    videoMode,
+    buffering,
+    error,
+    media,
     addFiles,
+    addTracks,
+    toggleVideo,
     remove,
     playAt,
     toggle,

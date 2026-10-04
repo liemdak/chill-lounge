@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import type { WallpaperState } from '../../shared/types'
 import { Header, NAV, NAV_BOTTOM, PlayerBar, Sidebar, type Screen } from './components/Chrome'
+import { MediaHost } from './components/Media'
 import { AmbientModal, AppBackdrop, BootScreen, CrtOverlay, EQModal, QueueModal, SleepModal, WallpaperMode } from './components/Overlays'
 import { I18nProvider } from './i18n'
 import { setBeatForwarding, startBeatLoop } from './lib/beat'
@@ -9,7 +10,9 @@ import { load, save } from './lib/store'
 import { usePlayer } from './player/usePlayer'
 import { Library } from './screens/Library'
 import { NowPlaying } from './screens/NowPlaying'
-import { DownloadsScreen, ProfileScreen, YouTubeScreen } from './screens/Preview'
+import { DownloadsScreen, useDownloads } from './screens/Downloads'
+import { ProfileScreen } from './screens/Preview'
+import { YouTubeScreen } from './screens/YouTube'
 import { SettingsScreen, type UiPrefs } from './screens/Settings'
 import { WallpaperScreen } from './screens/Wallpaper'
 
@@ -33,6 +36,17 @@ function Shell() {
     setPrefsState(v)
     save('prefs', v)
   }
+  // Finished downloads go straight into the library (once each).
+  const jobs = useDownloads()
+  const added = useRef(new Set<string>())
+  useEffect(() => {
+    const fresh = jobs.filter((j) => j.status === 'done' && j.track && !added.current.has(j.id))
+    if (!fresh.length) return
+    fresh.forEach((j) => added.current.add(j.id))
+    p.addTracks(fresh.map((j) => j.track!))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs])
+
   // Stable identity: dialogs use it inside effects.
   const close = useCallback(() => setModal(null), [])
 
@@ -71,6 +85,7 @@ function Shell() {
 
   return (
     <MotionConfig reducedMotion="user">
+      <MediaHost />
       <AppBackdrop wallpaper={wallpaper} />
       <div className="relative z-10 flex h-full flex-col">
         <Header wallpaper={wallpaper} />
@@ -98,8 +113,8 @@ function Shell() {
                   />
                 )}
                 {screen === 'library' && <Library p={p} />}
-                {screen === 'youtube' && <YouTubeScreen />}
-                {screen === 'downloads' && <DownloadsScreen />}
+                {screen === 'youtube' && <YouTubeScreen p={p} />}
+                {screen === 'downloads' && <DownloadsScreen p={p} jobs={jobs} />}
                 {screen === 'wallpaper' && <WallpaperScreen wallpaper={wallpaper} />}
                 {screen === 'settings' && <SettingsScreen prefs={prefs} onPrefs={setPrefs} wallpaper={wallpaper} />}
                 {screen === 'profile' && <ProfileScreen />}

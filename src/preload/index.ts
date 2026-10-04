@@ -1,8 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import {
   MEDIA_SCHEME,
+  type DownloadJob,
+  type DownloadMode,
   type FitMode,
   type Lang,
+  type ToolsProgress,
+  type ToolsStatus,
   type TrackInfo,
   type WallpaperEffects,
   type WallpaperState
@@ -54,13 +58,42 @@ const api = {
     sendBeat: (v: number): void => ipcRenderer.send('vfx:beat', v),
     onBeat: (fn: (v: number) => void): Off => on('vfx:beat', fn)
   },
+  tools: {
+    status: (): Promise<ToolsStatus> => ipcRenderer.invoke('tools:status'),
+    /** Downloads yt-dlp + ffmpeg from GitHub. Only call after the user agreed. */
+    install: (): Promise<ToolsStatus> => ipcRenderer.invoke('tools:install'),
+    updateYtdlp: (): Promise<ToolsStatus> => ipcRenderer.invoke('tools:updateYtdlp'),
+    onProgress: (fn: (p: ToolsProgress) => void): Off => on('tools:progress', fn)
+  },
+  youtube: {
+    /** A video / playlist URL, or search words. */
+    lookup: (input: string): Promise<TrackInfo[]> => ipcRenderer.invoke('yt:lookup', input),
+    /** Resolve a track's stream ahead of time so it starts instantly. */
+    prefetch: (videoId: string): void => ipcRenderer.send('yt:prefetch', videoId)
+  },
+  downloads: {
+    list: (): Promise<DownloadJob[]> => ipcRenderer.invoke('dl:list'),
+    add: (items: { videoId: string; title: string }[], mode: DownloadMode): Promise<DownloadJob[]> => ipcRenderer.invoke('dl:add', items, mode),
+    cancel: (id: string): void => ipcRenderer.send('dl:cancel', id),
+    retry: (id: string): void => ipcRenderer.send('dl:retry', id),
+    clearFinished: (): void => ipcRenderer.send('dl:clearFinished'),
+    getDir: (): Promise<string> => ipcRenderer.invoke('dl:getDir'),
+    chooseDir: (): Promise<string> => ipcRenderer.invoke('dl:chooseDir'),
+    openDir: (): void => ipcRenderer.send('dl:openDir'),
+    reveal: (file: string): void => ipcRenderer.send('dl:reveal', file),
+    onUpdate: (fn: (jobs: DownloadJob[]) => void): Off => on('dl:update', fn)
+  },
   settings: {
     getVolume: (): Promise<number> => ipcRenderer.invoke('settings:getVolume'),
     setVolume: (v: number): void => ipcRenderer.send('settings:setVolume', v),
     getLanguage: (): Promise<Lang> => ipcRenderer.invoke('settings:getLanguage'),
     setLanguage: (lang: Lang): void => ipcRenderer.send('settings:setLanguage', lang)
   },
-  mediaUrl: (path: string): string => `${MEDIA_SCHEME}://local/${encodeURIComponent(path)}`
+  /** Playable URL for a local file path or a YouTube track (`yt:<id>`). */
+  mediaUrl: (path: string, video = false): string =>
+    path.startsWith('yt:')
+      ? `${MEDIA_SCHEME}://yt/${path.slice(3)}?m=${video ? 'video' : 'audio'}`
+      : `${MEDIA_SCHEME}://local/${encodeURIComponent(path)}`
 }
 
 export type LoungeApi = typeof api
