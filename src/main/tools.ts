@@ -7,21 +7,31 @@ import { pipeline } from 'node:stream/promises'
 import { createGunzip } from 'node:zlib'
 import type { ToolsProgress, ToolsStatus } from '../shared/types'
 
-// yt-dlp and ffmpeg are not bundled with the installer (they'd add ~50 MB and yt-dlp must stay
-// current anyway). They're fetched from their official GitHub releases the first time the user
-// opens YouTube / Downloads and agrees, into %APPDATA%\Chill Lounge\bin.
+// yt-dlp, ffmpeg and Deno are not bundled with the installer (they'd add ~120 MB and yt-dlp must
+// stay current anyway). They're fetched from their official GitHub releases the first time the
+// user opens YouTube / Downloads and agrees, into %APPDATA%\Chill Lounge\bin.
+//
+// Deno is the JavaScript runtime yt-dlp uses to solve YouTube's stream challenges. Without it
+// extraction is deprecated, slower, and some stream URLs come back unusable.
 
-const SOURCES = {
-  'yt-dlp': { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe', file: 'yt-dlp.exe', gz: false },
-  ffmpeg: { url: 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-win32-x64.gz', file: 'ffmpeg.exe', gz: true },
-  ffprobe: { url: 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffprobe-win32-x64.gz', file: 'ffprobe.exe', gz: true }
-} as const
+type Source = { url: string; file: string; unpack: 'none' | 'gz' | 'zip' }
+
+const SOURCES: Record<'yt-dlp' | 'ffmpeg' | 'ffprobe' | 'deno', Source> = {
+  'yt-dlp': { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe', file: 'yt-dlp.exe', unpack: 'none' },
+  ffmpeg: { url: 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-win32-x64.gz', file: 'ffmpeg.exe', unpack: 'gz' },
+  ffprobe: { url: 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffprobe-win32-x64.gz', file: 'ffprobe.exe', unpack: 'gz' },
+  deno: { url: 'https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip', file: 'deno.exe', unpack: 'zip' }
+}
 
 type ToolName = keyof typeof SOURCES
 
 export const binDir = (): string => join(app.getPath('userData'), 'bin')
 export const ytdlpPath = (): string => join(binDir(), SOURCES['yt-dlp'].file)
 export const ffmpegPath = (): string => join(binDir(), SOURCES.ffmpeg.file)
+export const denoPath = (): string => join(binDir(), SOURCES.deno.file)
+
+/** Extra yt-dlp arguments pointing it at Deno, when installed. */
+export const jsRuntimeArgs = (): string[] => (existsSync(denoPath()) ? ['--js-runtimes', `deno:${denoPath()}`] : [])
 
 let cachedVersion: string | null = null
 
@@ -60,13 +70,13 @@ export async function toolsStatus(): Promise<ToolsStatus> {
       .catch(() => {})
       .finally(() => (versionJob = null))
   }
-  return { ytdlp, ffmpeg, ytdlpVersion: ytdlp ? cachedVersion : null }
+  return { ytdlp, ffmpeg, deno: existsSync(denoPath()), ytdlpVersion: ytdlp ? cachedVersion : null }
 }
 
 async function download(name: ToolName, onProgress: (p: ToolsProgress) => void): Promise<void> {
   const src = SOURCES[name]
   const target = join(binDir(), src.file)
-  const tmp = `${target}.part`
+  const tmp = `${target}.${src.unpack === 'zip' ? 'zip' : 'part'}`
   const res = await net.fetch(src.url)
   if (!res.ok || !res.body) throw new Error(`${name}: HTTP ${res.status}`)
   const total = Number(res.headers.get('content-length') ?? 0)
@@ -81,10 +91,14 @@ async function download(name: ToolName, onProgress: (p: ToolsProgress) => void):
       onProgress({ name, received, total })
     }
   })
-  if (src.gz) await pipeline(body, createGunzip(), createWriteStream(tmp))
+  if (src.unpack === 'gz') await pipeline(body, createGunzip(), createWriteStream(tmp))
   else await pipeline(body, createWriteStream(tmp))
   rmSync(target, { force: true })
-  renameSync(tmp, target)
+  if (src.unpack === 'zip') {
+    // Windows 10+ ships bsdtar, which reads zip archives.
+    await run(join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', tmp, '-C', binDir()])
+    rmSync(tmp, { force: true })
+  } else renameSync(tmp, target)
   onProgress({ name, received: total || received, total: total || received })
 }
 

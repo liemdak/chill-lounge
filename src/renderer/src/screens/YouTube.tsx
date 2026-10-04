@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { DownloadMode, TrackInfo } from '../../../shared/types'
-import { ToolsGate, VideoViewer } from '../components/Media'
+import { DenoBanner, ToolsGate, VideoViewer } from '../components/Media'
 import { Panel, PixelCover } from '../components/ui'
 import { useI18n } from '../i18n'
 import { fmtTime, load, save } from '../lib/store'
@@ -14,17 +14,37 @@ const download = (tracks: TrackInfo[], mode: DownloadMode): void =>
     mode
   )
 
-export function YouTubeScreen({ p }: { p: Player }) {
-  return <ToolsGate>{() => <YouTubeInner p={p} />}</ToolsGate>
+interface Props {
+  p: Player
+  /** Open the fullscreen video mode. */
+  onCinema: () => void
+  /** The fullscreen mode is showing the video, so this small viewer stays empty. */
+  cinemaOpen: boolean
 }
 
-function YouTubeInner({ p }: { p: Player }) {
+export function YouTubeScreen(props: Props) {
+  return <ToolsGate>{(status, refresh) => <YouTubeInner {...props} deno={status.deno} onDeno={refresh} />}</ToolsGate>
+}
+
+function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno: boolean; onDeno: Parameters<typeof DenoBanner>[0]['onInstalled'] }) {
   const { t } = useI18n()
   const [query, setQuery] = useState(() => load('yt', { query: '' }).query)
   const [results, setResults] = useState<TrackInfo[] | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [added, setAdded] = useState<Set<string>>(new Set())
+  const [blockedUntil, setBlockedUntil] = useState(0)
+  const [, tick] = useState(0)
+  useEffect(() => {
+    window.lounge.youtube.blockStatus().then(setBlockedUntil)
+    const off = window.lounge.youtube.onBlocked(setBlockedUntil)
+    const id = setInterval(() => tick((n) => n + 1), 30_000)
+    return () => {
+      off()
+      clearInterval(id)
+    }
+  }, [])
+  const blockedMin = blockedUntil > Date.now() ? Math.ceil((blockedUntil - Date.now()) / 60_000) : 0
 
   const search = async (): Promise<void> => {
     const q = query.trim()
@@ -92,6 +112,14 @@ function YouTubeInner({ p }: { p: Player }) {
           }
           className="p-2 pt-4"
         >
+          {blockedMin > 0 && (
+            <div className="m-2 border border-magenta/50 p-3 text-[12px] leading-relaxed text-magenta">
+              {t('yt.blocked', { m: blockedMin })}
+              <button className="tbtn sm ml-2" onClick={() => window.lounge.youtube.unblock()}>
+                {t('yt.retryNow')}
+              </button>
+            </div>
+          )}
           {error && <div className="p-3 text-[12px] text-magenta">{t('yt.error', { e: error })}</div>}
           {!error && !results && <div className="py-10 text-center text-[12px] text-ph-dim">{busy ? t('yt.searching') : t('yt.empty')}</div>}
           {results?.length === 0 && <div className="py-10 text-center text-[12px] text-ph-dim">{t('yt.noResults')}</div>}
@@ -129,8 +157,8 @@ function YouTubeInner({ p }: { p: Player }) {
 
       <div className="col-span-5 flex min-w-0 flex-col gap-5">
         <Panel title={t('yt.viewer')} className="p-3 pt-4">
-          <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-black">
-            <VideoViewer track={cur} show={showVideo} className="absolute inset-0" />
+          <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-black" onDoubleClick={() => cur && onCinema()}>
+            <VideoViewer track={cur} show={showVideo && !cinemaOpen} quality={p.videoQuality} className="absolute inset-0" />
             {!showVideo && (
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-[12px] leading-relaxed text-ph-dim">
                 {t('yt.viewerHint')}
@@ -153,10 +181,26 @@ function YouTubeInner({ p }: { p: Player }) {
                   {p.videoMode ? t('yt.audioOnly') : t('yt.watch')}
                 </button>
               )}
+              {(cur.source === 'youtube' || cur.isVideo) && (
+                <button className="tbtn sm" onClick={onCinema}>
+                  {t('yt.fullscreen')}
+                </button>
+              )}
+            </div>
+          )}
+          {cur?.source === 'youtube' && p.videoMode && (
+            <div className="mt-2 flex items-center gap-1">
+              <span className="mr-1 text-[11px] text-ph-dim">{t('yt.quality')}</span>
+              {([360, 480, 720] as const).map((q) => (
+                <button key={q} className={`tab ${p.videoQuality === q ? 'active' : ''}`} onClick={() => p.setVideoQuality(q)}>
+                  {q}p
+                </button>
+              ))}
             </div>
           )}
           <p className="mt-3 text-[11px] text-ph-faint">{t('yt.note')}</p>
         </Panel>
+        {!deno && <DenoBanner onInstalled={onDeno} />}
       </div>
     </div>
   )

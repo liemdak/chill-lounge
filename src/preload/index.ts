@@ -69,7 +69,11 @@ const api = {
     /** A video / playlist URL, or search words. */
     lookup: (input: string): Promise<TrackInfo[]> => ipcRenderer.invoke('yt:lookup', input),
     /** Resolve a track's stream ahead of time so it starts instantly. */
-    prefetch: (videoId: string): void => ipcRenderer.send('yt:prefetch', videoId)
+    prefetch: (videoId: string, mode: 'audio' | 'video' = 'audio', quality = 480): void => ipcRenderer.send('yt:prefetch', videoId, mode, quality),
+    /** 0, or the time (ms) until which YouTube is not called because it flagged this IP as a bot. */
+    blockStatus: (): Promise<number> => ipcRenderer.invoke('yt:blockStatus'),
+    onBlocked: (fn: (until: number) => void): Off => on('yt:blocked', fn),
+    unblock: (): void => ipcRenderer.send('yt:unblock')
   },
   downloads: {
     list: (): Promise<DownloadJob[]> => ipcRenderer.invoke('dl:list'),
@@ -90,9 +94,9 @@ const api = {
     setLanguage: (lang: Lang): void => ipcRenderer.send('settings:setLanguage', lang)
   },
   /** Playable URL for a local file path or a YouTube track (`yt:<id>`). */
-  mediaUrl: (path: string, video = false): string =>
+  mediaUrl: (path: string, video = false, quality = 480, fresh = false): string =>
     path.startsWith('yt:')
-      ? `${MEDIA_SCHEME}://yt/${path.slice(3)}?m=${video ? 'video' : 'audio'}`
+      ? `${MEDIA_SCHEME}://yt/${path.slice(3)}?m=${video ? 'video' : 'audio'}&q=${quality}${fresh ? `&fresh=${Date.now()}` : ''}`
       : `${MEDIA_SCHEME}://local/${encodeURIComponent(path)}`
 }
 

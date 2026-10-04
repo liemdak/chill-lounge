@@ -1,13 +1,13 @@
 import { net } from 'electron'
 import type { TrackInfo } from '../shared/types'
-import { autoUpdateYtDlp, run, ytdlpPath } from './tools'
+import { autoUpdateYtDlp, jsRuntimeArgs, run, ytdlpPath } from './tools'
 
 // YouTube support goes through yt-dlp: looking up links / playlists / searches, and resolving
 // the actual stream URL that media-protocol.ts then proxies (so the audio stays CORS-clean and
 // flows through the app's EQ and visualizer like a local file).
 
 const MAX_ENTRIES = 300
-const BASE = ['--no-warnings', '--encoding', 'utf-8']
+const base = (): string[] => ['--no-warnings', '--encoding', 'utf-8', ...jsRuntimeArgs()]
 
 export const watchUrl = (id: string): string => `https://www.youtube.com/watch?v=${id}`
 export const isYtPath = (p: string): boolean => p.startsWith('yt:')
@@ -58,7 +58,7 @@ interface YtEntry {
 
 export async function lookup(input: string): Promise<TrackInfo[]> {
   autoUpdateYtDlp()
-  const json = await run(ytdlpPath(), [...BASE, '-J', '--flat-playlist', '--playlist-end', String(MAX_ENTRIES), toTarget(input)])
+  const json = await run(ytdlpPath(), [...base(), '-J', '--flat-playlist', '--playlist-end', String(MAX_ENTRIES), toTarget(input)])
   const info = JSON.parse(json) as YtEntry
   const entries = (info.entries ?? [info]).filter((e): e is YtEntry & { id: string } => !!e.id && ID_RE.test(e.id))
   return mapLimit(entries, 6, async (e) => ({
@@ -77,42 +77,83 @@ export async function lookup(input: string): Promise<TrackInfo[]> {
   }))
 }
 
+
 // Stream URLs expire after a few hours; cache them until shortly before that.
 const streams = new Map<string, { url: string; expires: number }>()
-const pending = new Map<string, Promise<string>>()
+const pending = new Map<string, Promise<void>>()
 
-const FORMATS = {
-  // m4a first: AAC plays everywhere in Chromium and is light
-  audio: 'bestaudio[ext=m4a]/bestaudio',
-  // Video only, for the viewer; the audio keeps playing from the audio stream and the viewer
-  // syncs to it. (YouTube dropped the muxed 360p format 18 for many videos.)
-  video: 'bv*[height<=720][ext=mp4][vcodec^=avc1]/bv*[height<=720][ext=mp4]/bv*[height<=720]/bv*'
-} as const
+export type StreamMode = 'audio' | 'video'
+export type Quality = 360 | 480 | 720
 
-export type StreamMode = keyof typeof FORMATS
+// Audio: m4a first (AAC plays everywhere in Chromium and is light).
+// Video: video-only, for the viewer — the audio keeps playing from the audio stream and the viewer
+// syncs to it (YouTube dropped the muxed 360p format 18 for many videos). H.264 first: cheapest to
+// decode on laptops.
+const AUDIO_FORMAT = 'bestaudio[ext=m4a]/bestaudio'
+const videoFormat = (q: Quality): string => `bv*[height<=${q}][ext=mp4][vcodec^=avc1]/bv*[height<=${q}][ext=mp4]/bv*[height<=${q}]/bv*`
+const cacheKey = (id: string, mode: StreamMode, q: Quality): string => (mode === 'audio' ? `${id}:audio` : `${id}:video:${q}`)
 
-/** Warm the cache for a track that is about to play (yt-dlp takes several seconds per lookup). */
-export function prefetch(id: string): void {
-  resolveStream(id, 'audio').catch(() => {})
+// When YouTube answers "Sign in to confirm you're not a bot" it has flagged this IP. Hammering it
+// only extends the flag, so stop calling yt-dlp for a while and tell the UI.
+const BOT_RE = /confirm you.re not a bot|sign in to confirm/i
+const BLOCK_MS = 10 * 60_000
+let blockedUntil = 0
+let onBlocked: ((until: number) => void) | null = null
+
+export const blockStatus = (): number => (Date.now() < blockedUntil ? blockedUntil : 0)
+export function onBlockChange(fn: (until: number) => void): void {
+  onBlocked = fn
+}
+export function clearBlock(): void {
+  blockedUntil = 0
+  onBlocked?.(0)
 }
 
-export function resolveStream(id: string, mode: StreamMode, fresh = false): Promise<string> {
-  const key = `${id}:${mode}`
-  const hit = streams.get(key)
-  if (!fresh && hit && hit.expires > Date.now()) return Promise.resolve(hit.url)
-  const inflight = pending.get(key)
+/**
+ * One yt-dlp call resolves both the audio and the video stream (same extraction, half the
+ * requests), so turning the video view on afterwards is instant.
+ */
+function resolvePair(id: string, q: Quality): Promise<void> {
+  const pk = `${id}:${q}`
+  const inflight = pending.get(pk)
   if (inflight) return inflight
-
-  const job = run(ytdlpPath(), [...BASE, '-g', '-f', FORMATS[mode], '--no-playlist', watchUrl(id)])
+  const job = run(ytdlpPath(), [...base(), '-g', '-f', `${AUDIO_FORMAT},${videoFormat(q)}`, '--no-playlist', watchUrl(id)])
     .then((out) => {
-      const url = out.trim().split(/\r?\n/)[0]
-      if (!url.startsWith('http')) throw new Error('no stream url')
-      const expireParam = Number(new URL(url).searchParams.get('expire'))
-      const expires = expireParam ? expireParam * 1000 - 10 * 60_000 : Date.now() + 3 * 3600_000
-      streams.set(key, { url, expires })
-      return url
+      const urls = out.trim().split(/\r?\n/).filter((u) => u.startsWith('http'))
+      if (!urls.length) throw new Error('no stream url')
+      for (const url of urls) {
+        const params = new URL(url).searchParams
+        const mode: StreamMode = (params.get('mime') ?? '').startsWith('audio') ? 'audio' : 'video'
+        const expire = Number(params.get('expire'))
+        streams.set(cacheKey(id, mode, q), { url, expires: expire ? expire * 1000 - 10 * 60_000 : Date.now() + 3 * 3600_000 })
+      }
     })
-    .finally(() => pending.delete(key))
-  pending.set(key, job)
+    .catch((err: Error) => {
+      if (BOT_RE.test(err.message)) {
+        blockedUntil = Date.now() + BLOCK_MS
+        onBlocked?.(blockedUntil)
+      }
+      throw err
+    })
+    .finally(() => pending.delete(pk))
+  pending.set(pk, job)
   return job
+}
+
+/** Warm the cache for a track that is about to play (yt-dlp takes several seconds per lookup). */
+export function prefetch(id: string, _mode: StreamMode = 'audio', q: Quality = 480): void {
+  if (blockStatus()) return
+  resolvePair(id, q).catch(() => {})
+}
+
+export async function resolveStream(id: string, mode: StreamMode, q: Quality = 480, fresh = false): Promise<string> {
+  const key = cacheKey(id, mode, q)
+  const hit = streams.get(key)
+  if (!fresh && hit && hit.expires > Date.now()) return hit.url
+  if (blockStatus()) throw new Error('youtube-blocked')
+  if (fresh) streams.delete(key)
+  await resolvePair(id, q)
+  const got = streams.get(key)
+  if (!got) throw new Error('no stream url')
+  return got.url
 }

@@ -108,11 +108,13 @@ export interface DownloadJob {
 export interface ToolsStatus {
   ytdlp: boolean
   ffmpeg: boolean
+  /** Optional but recommended: lets yt-dlp solve YouTube's stream challenges. */
+  deno: boolean
   ytdlpVersion: string | null
 }
 
 export interface ToolsProgress {
-  name: 'yt-dlp' | 'ffmpeg' | 'ffprobe'
+  name: 'yt-dlp' | 'ffmpeg' | 'ffprobe' | 'deno'
   received: number
   total: number
 }

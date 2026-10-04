@@ -3,7 +3,7 @@ import { createReadStream, statSync } from 'node:fs'
 import { extname } from 'node:path'
 import { Readable } from 'node:stream'
 import { AUDIO_EXT, IMAGE_EXT, MEDIA_SCHEME, VIDEO_EXT } from '../shared/types'
-import { resolveStream } from './youtube'
+import { resolveStream, type Quality } from './youtube'
 
 // Serves local media files to the renderers as lounge-media://local/<encoded path>.
 // Range requests are handled by hand so <video>/<audio> can seek and loop.
@@ -26,30 +26,40 @@ export function registerMediaScheme(): void {
   ])
 }
 
+// googlevideo throttles or cuts long open-ended responses, so the player is fed in 4 MB chunks
+// (it simply asks for the next range when it needs more, like yt-dlp's own chunked downloads).
+const CHUNK = 4 * 1024 * 1024
+
 /**
- * lounge-media://yt/<videoId>?m=audio|video — proxy a YouTube stream resolved by yt-dlp.
- * Range requests are forwarded so seeking works; an expired URL is re-resolved once.
+ * lounge-media://yt/<videoId>?m=audio|video&q=360|480|720[&fresh=1] — proxy a YouTube stream
+ * resolved by yt-dlp. Ranges are clamped to CHUNK so seeking is quick; on any upstream failure the
+ * stream URL is re-resolved once and the request retried.
  */
 async function proxyYouTube(req: Request, url: URL): Promise<Response> {
   const id = url.pathname.slice(1)
   const mode = url.searchParams.get('m') === 'video' ? 'video' : 'audio'
-  const range = req.headers.get('range') ?? 'bytes=0-'
-  for (const fresh of [false, true]) {
-    let stream: string
+  const q = ([360, 480, 720].includes(Number(url.searchParams.get('q'))) ? Number(url.searchParams.get('q')) : 480) as Quality
+  const m = /bytes=(\d+)-(\d*)/.exec(req.headers.get('range') ?? '')
+  const start = m ? Number(m[1]) : 0
+  const end = m && m[2] ? Math.min(Number(m[2]), start + CHUNK - 1) : start + CHUNK - 1
+
+  for (const fresh of url.searchParams.has('fresh') ? [true] : [false, true]) {
     try {
-      stream = await resolveStream(id, mode, fresh)
+      const stream = await resolveStream(id, mode, q, fresh)
+      const res = await net.fetch(stream, { headers: { Range: `bytes=${start}-${end}` } })
+      if (!res.ok) {
+        console.warn(`[yt] upstream ${res.status} for ${id} (${mode})${fresh ? '' : ', re-resolving'}`)
+        continue
+      }
+      const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes' }
+      for (const h of ['content-type', 'content-length', 'content-range']) {
+        const v = res.headers.get(h)
+        if (v) headers[h] = v
+      }
+      return new Response(res.body, { status: res.status, headers })
     } catch (err) {
-      console.warn('[yt] resolve failed', id, (err as Error).message)
-      return new Response('resolve failed', { status: 502 })
+      console.warn('[yt] stream failed', id, mode, (err as Error).message)
     }
-    const res = await net.fetch(stream, { headers: { Range: range } })
-    if (res.status === 403 && !fresh) continue
-    const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes' }
-    for (const h of ['content-type', 'content-length', 'content-range']) {
-      const v = res.headers.get(h)
-      if (v) headers[h] = v
-    }
-    return new Response(res.body, { status: res.status, headers })
   }
   return new Response('stream unavailable', { status: 502 })
 }

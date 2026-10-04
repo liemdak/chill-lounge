@@ -3,6 +3,7 @@ import type { TrackInfo } from '../../../shared/types'
 import { engine, type AmbientKey, type EQSettings } from '../audio/engine'
 import type { TKey } from '../i18n'
 import { load, loadArray, save } from '../lib/store'
+import type { VideoQuality } from '../components/Media'
 
 export type RepeatMode = 'off' | 'all' | 'one'
 export type EQPreset = 'lofi' | 'bass' | 'vocal' | 'flat' | 'custom'
@@ -36,6 +37,10 @@ export function usePlayer() {
   /** YouTube tracks: play the muxed 360p stream so the video can be watched. */
   const [videoMode, setVideoMode] = useState(false)
   const videoModeRef = useRef(false)
+  const [videoQuality, setVideoQualityState] = useState<VideoQuality>(() => load('video', { quality: 480 as VideoQuality }).quality)
+  useEffect(() => {
+    qualityRef.current = videoQuality
+  }, [videoQuality])
   /** True while a stream is being resolved / buffered (YouTube takes a couple of seconds). */
   const [buffering, setBuffering] = useState(false)
   /** Path of the track that failed to play, if any. */
@@ -43,7 +48,9 @@ export function usePlayer() {
   const pendingPlay = useRef<string | null>(null)
   const restored = useRef(false)
   // Audio always comes from the audio stream; the video viewer plays a synced video-only stream.
-  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path)
+  // (The video quality rides along so the one yt-dlp call also resolves the right video stream.)
+  const qualityRef = useRef(480)
+  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path, false, qualityRef.current)
 
   // ── restore last session ────────────────────────────────────────────────
   useEffect(() => {
@@ -233,12 +240,29 @@ export function usePlayer() {
     setVideoMode(videoModeRef.current)
   }, [])
 
-  // While a track plays, resolve the next YouTube track's stream in the background.
+  const setVideoQuality = useCallback((q: VideoQuality) => {
+    setVideoQualityState(q)
+    save('video', { quality: q })
+  }, [])
+
+  // While a track plays, resolve the next YouTube track's streams in the background
+  // (and the current one's video stream when the viewer is on).
   useEffect(() => {
-    if (!playing || queue.length < 2) return
+    if (!playing || !queue.length) return
+    const cur = queue[index]
+    if (videoMode && cur?.source === 'youtube') window.lounge.youtube.prefetch(cur.path.slice(3), 'video', videoQuality)
+    if (queue.length < 2) return
     const nextTrack = queue[(index + 1) % queue.length]
-    if (nextTrack?.source === 'youtube') window.lounge.youtube.prefetch(nextTrack.path.slice(3))
-  }, [playing, index, queue])
+    if (nextTrack?.source !== 'youtube') return
+    window.lounge.youtube.prefetch(nextTrack.path.slice(3))
+    if (videoMode) window.lounge.youtube.prefetch(nextTrack.path.slice(3), 'video', videoQuality)
+  }, [playing, index, queue, videoMode, videoQuality])
+
+  /** Turn the video view on (used by the fullscreen mode). */
+  const showVideo = useCallback(() => {
+    videoModeRef.current = true
+    setVideoMode(true)
+  }, [])
 
   const remove = useCallback(
     (i: number) => {
@@ -342,6 +366,9 @@ export function usePlayer() {
     sleepLeft,
     isLiked: current ? liked.has(current.path) : false,
     videoMode,
+    videoQuality,
+    setVideoQuality,
+    showVideo,
     buffering,
     error,
     media,

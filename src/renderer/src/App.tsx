@@ -3,7 +3,7 @@ import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import type { WallpaperState } from '../../shared/types'
 import { Header, NAV, NAV_BOTTOM, PlayerBar, Sidebar, type Screen } from './components/Chrome'
 import { MediaHost } from './components/Media'
-import { AmbientModal, AppBackdrop, BootScreen, CrtOverlay, EQModal, QueueModal, SleepModal, WallpaperMode } from './components/Overlays'
+import { AmbientModal, AppBackdrop, BootScreen, CinemaMode, CrtOverlay, EQModal, QueueModal, SleepModal, WallpaperMode } from './components/Overlays'
 import { I18nProvider } from './i18n'
 import { setBeatForwarding, startBeatLoop } from './lib/beat'
 import { load, save } from './lib/store'
@@ -16,7 +16,7 @@ import { YouTubeScreen } from './screens/YouTube'
 import { SettingsScreen, type UiPrefs } from './screens/Settings'
 import { WallpaperScreen } from './screens/Wallpaper'
 
-type ModalId = 'ambient' | 'eq' | 'sleep' | 'queue' | 'wpmode' | null
+type ModalId = 'ambient' | 'eq' | 'sleep' | 'queue' | 'wpmode' | 'cinema' | null
 
 export function App() {
   return (
@@ -70,7 +70,7 @@ function Shell() {
         e.preventDefault()
         return setScreen(nav.id)
       }
-      if (modal && modal !== 'wpmode') return
+      if (modal && modal !== 'wpmode' && modal !== 'cinema') return
       if (e.code === 'Space') {
         e.preventDefault()
         p.toggle()
@@ -113,7 +113,7 @@ function Shell() {
                   />
                 )}
                 {screen === 'library' && <Library p={p} />}
-                {screen === 'youtube' && <YouTubeScreen p={p} />}
+                {screen === 'youtube' && <YouTubeScreen p={p} onCinema={() => setModal('cinema')} cinemaOpen={modal === 'cinema'} />}
                 {screen === 'downloads' && <DownloadsScreen p={p} jobs={jobs} />}
                 {screen === 'wallpaper' && <WallpaperScreen wallpaper={wallpaper} />}
                 {screen === 'settings' && <SettingsScreen prefs={prefs} onPrefs={setPrefs} wallpaper={wallpaper} />}
@@ -130,6 +130,7 @@ function Shell() {
       <SleepModal open={modal === 'sleep'} onClose={close} p={p} />
       <QueueModal open={modal === 'queue'} onClose={close} p={p} />
       <WallpaperMode open={modal === 'wpmode'} onClose={close} p={p} wallpaper={wallpaper} />
+      <CinemaMode open={modal === 'cinema'} onClose={close} p={p} />
       <BootScreen enabled={prefs.boot} />
       <CrtOverlay strength={prefs.crt} />
     </MotionConfig>

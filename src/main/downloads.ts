@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { DownloadJob, DownloadMode } from '../shared/types'
 import { loadSettings } from './settings'
 import { readTrackInfo } from './tags'
-import { autoUpdateYtDlp, binDir, ytdlpPath } from './tools'
+import { autoUpdateYtDlp, binDir, jsRuntimeArgs, ytdlpPath } from './tools'
 import { watchUrl } from './youtube'
 
 // Download queue on top of yt-dlp + ffmpeg. One job at a time keeps YouTube from rate-limiting
@@ -99,6 +99,7 @@ export class Downloads {
       '--no-warnings',
       '--encoding', 'utf-8',
       '--no-playlist',
+      ...jsRuntimeArgs(),
       '--ffmpeg-location', binDir(),
       '--embed-metadata',
       '--embed-thumbnail',
