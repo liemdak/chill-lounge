@@ -1,13 +1,14 @@
 import { net } from 'electron'
 import type { TrackInfo } from '../shared/types'
 import { autoUpdateYtDlp, jsRuntimeArgs, run, ytdlpPath } from './tools'
+import { cookieArgs } from './youtube-auth'
 
 // YouTube support goes through yt-dlp: looking up links / playlists / searches, and resolving
 // the actual stream URL that media-protocol.ts then proxies (so the audio stays CORS-clean and
 // flows through the app's EQ and visualizer like a local file).
 
 const MAX_ENTRIES = 300
-const base = (): string[] => ['--no-warnings', '--encoding', 'utf-8', ...jsRuntimeArgs()]
+const base = (): string[] => ['--no-warnings', '--encoding', 'utf-8', ...jsRuntimeArgs(), ...cookieArgs()]
 
 export const watchUrl = (id: string): string => `https://www.youtube.com/watch?v=${id}`
 export const isYtPath = (p: string): boolean => p.startsWith('yt:')
@@ -81,17 +82,18 @@ export async function lookup(input: string): Promise<TrackInfo[]> {
 // Stream URLs expire after a few hours; cache them until shortly before that.
 const streams = new Map<string, { url: string; expires: number }>()
 const pending = new Map<string, Promise<void>>()
+/** Videos that have no muxed (picture + sound) format: they play as audio + thumbnail only. */
+const noVideo = new Set<string>()
 
+/** audio = sound only (default); video = YouTube's single muxed 360p stream, picture and sound. */
 export type StreamMode = 'audio' | 'video'
-export type Quality = 360 | 480 | 720
 
 // Audio: m4a first (AAC plays everywhere in Chromium and is light).
-// Video: video-only, for the viewer — the audio keeps playing from the audio stream and the viewer
-// syncs to it (YouTube dropped the muxed 360p format 18 for many videos). H.264 first: cheapest to
-// decode on laptops.
+// Video: format 18 is the one stream YouTube still serves with picture and sound together (360p).
+// One stream means nothing to keep in sync — every higher quality is split in two.
 const AUDIO_FORMAT = 'bestaudio[ext=m4a]/bestaudio'
-const videoFormat = (q: Quality): string => `bv*[height<=${q}][ext=mp4][vcodec^=avc1]/bv*[height<=${q}][ext=mp4]/bv*[height<=${q}]/bv*`
-const cacheKey = (id: string, mode: StreamMode, q: Quality): string => (mode === 'audio' ? `${id}:audio` : `${id}:video:${q}`)
+const VIDEO_FORMAT = '18/b[vcodec!=none][acodec!=none][height<=480]'
+const UNAVAILABLE_RE = /requested format is not available/i
 
 // When YouTube answers "Sign in to confirm you're not a bot" it has flagged this IP. Hammering it
 // only extends the flag, so stop calling yt-dlp for a while and tell the UI.
@@ -109,24 +111,32 @@ export function clearBlock(): void {
   onBlocked?.(0)
 }
 
+function store(id: string, out: string): void {
+  for (const url of out.trim().split(/\r?\n/).filter((u) => u.startsWith('http'))) {
+    const params = new URL(url).searchParams
+    const mode: StreamMode = (params.get('mime') ?? '').startsWith('audio') ? 'audio' : 'video'
+    const expire = Number(params.get('expire'))
+    streams.set(`${id}:${mode}`, { url, expires: expire ? expire * 1000 - 10 * 60_000 : Date.now() + 3 * 3600_000 })
+  }
+}
+
 /**
- * One yt-dlp call resolves both the audio and the video stream (same extraction, half the
- * requests), so turning the video view on afterwards is instant.
+ * One yt-dlp call resolves both the audio and the muxed video stream (same extraction, half the
+ * requests), so turning the video on afterwards is instant.
  */
-function resolvePair(id: string, q: Quality): Promise<void> {
-  const pk = `${id}:${q}`
-  const inflight = pending.get(pk)
+function resolveBoth(id: string): Promise<void> {
+  const inflight = pending.get(id)
   if (inflight) return inflight
-  const job = run(ytdlpPath(), [...base(), '-g', '-f', `${AUDIO_FORMAT},${videoFormat(q)}`, '--no-playlist', watchUrl(id)])
+  const call = (format: string): Promise<string> => run(ytdlpPath(), [...base(), '-g', '-f', format, '--no-playlist', watchUrl(id)])
+  const job = call(noVideo.has(id) ? AUDIO_FORMAT : `${AUDIO_FORMAT},${VIDEO_FORMAT}`)
+    .catch((err: Error) => {
+      if (!UNAVAILABLE_RE.test(err.message) || noVideo.has(id)) throw err
+      noVideo.add(id)
+      return call(AUDIO_FORMAT)
+    })
     .then((out) => {
-      const urls = out.trim().split(/\r?\n/).filter((u) => u.startsWith('http'))
-      if (!urls.length) throw new Error('no stream url')
-      for (const url of urls) {
-        const params = new URL(url).searchParams
-        const mode: StreamMode = (params.get('mime') ?? '').startsWith('audio') ? 'audio' : 'video'
-        const expire = Number(params.get('expire'))
-        streams.set(cacheKey(id, mode, q), { url, expires: expire ? expire * 1000 - 10 * 60_000 : Date.now() + 3 * 3600_000 })
-      }
+      store(id, out)
+      if (!streams.has(`${id}:audio`)) throw new Error('no stream url')
     })
     .catch((err: Error) => {
       if (BOT_RE.test(err.message)) {
@@ -135,25 +145,25 @@ function resolvePair(id: string, q: Quality): Promise<void> {
       }
       throw err
     })
-    .finally(() => pending.delete(pk))
-  pending.set(pk, job)
+    .finally(() => pending.delete(id))
+  pending.set(id, job)
   return job
 }
 
 /** Warm the cache for a track that is about to play (yt-dlp takes several seconds per lookup). */
-export function prefetch(id: string, _mode: StreamMode = 'audio', q: Quality = 480): void {
+export function prefetch(id: string): void {
   if (blockStatus()) return
-  resolvePair(id, q).catch(() => {})
+  resolveBoth(id).catch(() => {})
 }
 
-export async function resolveStream(id: string, mode: StreamMode, q: Quality = 480, fresh = false): Promise<string> {
-  const key = cacheKey(id, mode, q)
+export async function resolveStream(id: string, mode: StreamMode, fresh = false): Promise<string> {
+  const key = `${id}:${mode}`
   const hit = streams.get(key)
   if (!fresh && hit && hit.expires > Date.now()) return hit.url
   if (blockStatus()) throw new Error('youtube-blocked')
   if (fresh) streams.delete(key)
-  await resolvePair(id, q)
+  await resolveBoth(id)
   const got = streams.get(key)
-  if (!got) throw new Error('no stream url')
+  if (!got) throw new Error(mode === 'video' && noVideo.has(id) ? 'no-video' : 'no stream url')
   return got.url
 }

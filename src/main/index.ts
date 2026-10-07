@@ -9,7 +9,8 @@ import { loadSettings, saveSettings } from './settings'
 import { readTrackInfo } from './tags'
 import { installTools, toolsStatus, updateYtDlp } from './tools'
 import { WallpaperManager } from './wallpaper/manager'
-import { blockStatus, clearBlock, lookup, onBlockChange, prefetch, type Quality, type StreamMode } from './youtube'
+import { importCookies, isSignedIn, onAuthChange, signIn, signOut } from './youtube-auth'
+import { blockStatus, clearBlock, lookup, onBlockChange, prefetch } from './youtube'
 
 // Chromium throttles windows it thinks are covered; wallpaper windows always are.
 app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
@@ -38,7 +39,8 @@ const STRINGS = {
     media: 'Ảnh / Video',
     pickAudio: 'Chọn bài hát',
     audio: 'Nhạc / Video',
-    pickDir: 'Chọn thư mục lưu nhạc tải về'
+    pickDir: 'Chọn thư mục lưu nhạc tải về',
+    pickCookies: 'Chọn file cookies.txt của YouTube'
   },
   en: {
     open: 'Open Chill Lounge',
@@ -50,7 +52,8 @@ const STRINGS = {
     media: 'Images / Videos',
     pickAudio: 'Choose songs',
     audio: 'Music / Video',
-    pickDir: 'Choose where downloads are saved'
+    pickDir: 'Choose where downloads are saved',
+    pickCookies: 'Choose a YouTube cookies.txt file'
   }
 } satisfies Record<Lang, Record<string, string>>
 
@@ -193,7 +196,16 @@ function registerIpc(): void {
   onBlockChange((until) => send('yt:blocked', until))
   ipcMain.handle('yt:blockStatus', () => blockStatus())
   ipcMain.on('yt:unblock', () => clearBlock())
-  ipcMain.on('yt:prefetch', (_e, id: string, mode?: StreamMode, q?: Quality) => prefetch(id, mode, q))
+  // Signing in lifts the bot block right away, so stop backing off.
+  onAuthChange((signedIn) => {
+    if (signedIn) clearBlock()
+    send('yt:auth', signedIn)
+  })
+  ipcMain.handle('yt:authStatus', () => isSignedIn())
+  ipcMain.handle('yt:signIn', () => signIn(mainWindow))
+  ipcMain.handle('yt:importCookies', () => importCookies(mainWindow, tr().pickCookies))
+  ipcMain.on('yt:signOut', () => signOut())
+  ipcMain.on('yt:prefetch', (_e, id: string) => prefetch(id))
   downloads.onChange((jobs) => send('dl:update', jobs))
   ipcMain.handle('dl:list', () => downloads.list())
   ipcMain.handle('dl:add', (_e, items: { videoId: string; title: string }[], mode: DownloadMode) => downloads.add(items, mode))

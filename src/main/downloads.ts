@@ -7,6 +7,7 @@ import { loadSettings } from './settings'
 import { readTrackInfo } from './tags'
 import { autoUpdateYtDlp, binDir, jsRuntimeArgs, ytdlpPath } from './tools'
 import { watchUrl } from './youtube'
+import { cookieArgs } from './youtube-auth'
 
 // Download queue on top of yt-dlp + ffmpeg. One job at a time keeps YouTube from rate-limiting
 // and the laptop fan quiet. Audio-only → mp3 with tags + cover; video → mp4 up to 1080p.
@@ -100,6 +101,7 @@ export class Downloads {
       '--encoding', 'utf-8',
       '--no-playlist',
       ...jsRuntimeArgs(),
+      ...cookieArgs(),
       '--ffmpeg-location', binDir(),
       '--embed-metadata',
       '--embed-thumbnail',

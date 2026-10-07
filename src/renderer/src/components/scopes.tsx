@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { readBands } from '../audio/engine'
-import { ditherCover, PALETTE } from '../lib/dither'
+import { ditherCover, usePaletteKey } from '../lib/dither'
+import { accent, palette } from '../lib/theme'
 
-const rgb = (i: number, a = 1): string => `rgba(${PALETTE[i].join(',')},${a})`
+const rgb = (i: number, a = 1): string => `rgba(${palette()[i].join(',')},${a})`
 const reduceMotion = (): boolean => matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
@@ -13,11 +14,13 @@ export function VinylScope({ cover, seed, playing, className = '' }: { cover: st
   const ref = useRef<HTMLCanvasElement>(null)
   const live = useRef({ playing })
   live.current.playing = playing
+  const theme = usePaletteKey()
 
   useEffect(() => {
     const RES = 168
     const c = RES / 2
     const discR = Math.round(RES * 0.33)
+    const pal = palette()
     const labelR = Math.round(discR * 0.46)
     const canvas = ref.current!
     canvas.width = canvas.height = RES
@@ -39,9 +42,9 @@ export function VinylScope({ cover, seed, playing, className = '' }: { cover: st
         const groove = Math.floor(dist) % 3 === 0
         // two thin, dithered light reflections across the grooves
         const sheen = Math.abs(Math.sin(Math.atan2(dy, dx) + 0.6)) > 0.985 && dist > labelR + 2 && (x + y) % 2 === 0
-        const [r, g, b] = sheen ? PALETTE[2] : groove ? PALETTE[1] : PALETTE[0]
+        const [r, g, b] = sheen ? pal[2] : groove ? pal[1] : pal[0]
         img.data.set([r, g, b, 255], i)
-        if (dist > discR - 1) img.data.set([...PALETTE[2], 255], i)
+        if (dist > discR - 1) img.data.set([...pal[2], 255], i)
       }
     }
     dctx.putImageData(img, 0, 0)
@@ -93,7 +96,7 @@ export function VinylScope({ cover, seed, playing, className = '' }: { cover: st
           ctx.fillRect(Math.round(c + cos * (discR + 4 + s)), Math.round(c + sin * (discR + 4 + s)), 1, 1)
         }
         const p = Math.round(peaks[i] * maxLen)
-        ctx.fillStyle = 'rgba(61,245,255,0.9)'
+        ctx.fillStyle = accent('cyan', 0.9)
         ctx.fillRect(Math.round(c + cos * (discR + 5 + p)), Math.round(c + sin * (discR + 5 + p)), 1, 1)
       }
 
@@ -109,13 +112,13 @@ export function VinylScope({ cover, seed, playing, className = '' }: { cover: st
       alive = false
       cancelAnimationFrame(raf)
     }
-  }, [cover, seed])
+  }, [cover, seed, theme])
 
   return (
     <canvas
       ref={ref}
       className={`pixelated ${className}`}
-      style={{ filter: 'drop-shadow(0 0 10px rgba(157,107,255,0.55))' }}
+      style={{ filter: 'drop-shadow(0 0 10px color-mix(in srgb, var(--color-violet) 55%, transparent))' }}
       aria-hidden
     />
   )
@@ -126,6 +129,7 @@ export function BarScope({ playing, bands = 32, rows = 12, className = '' }: { p
   const ref = useRef<HTMLCanvasElement>(null)
   const live = useRef({ playing })
   live.current.playing = playing
+  const theme = usePaletteKey()
 
   useEffect(() => {
     const canvas = ref.current!
@@ -153,14 +157,14 @@ export function BarScope({ playing, bands = 32, rows = 12, className = '' }: { p
           ctx.fillRect(b * 3, y, 2, 1)
         }
         if (peaks[b] > 0.5) {
-          ctx.fillStyle = 'rgba(255,79,216,0.95)'
+          ctx.fillStyle = accent('magenta', 0.95)
           ctx.fillRect(b * 3, H - 1 - Math.round(peaks[b]) * 2, 2, 1)
         }
       }
     }
     raf = requestAnimationFrame(frame)
     return () => cancelAnimationFrame(raf)
-  }, [bands, rows])
+  }, [bands, rows, theme])
 
   return <canvas ref={ref} className={`pixelated ${className}`} aria-hidden />
 }

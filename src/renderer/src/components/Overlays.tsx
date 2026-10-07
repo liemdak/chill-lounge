@@ -332,7 +332,6 @@ export function CinemaMode({ open, onClose, p }: { open: boolean; onClose: () =>
 
   useEffect(() => {
     if (!open) return
-    p.showVideo()
     window.lounge.window.setFullScreen(true)
     poke()
     let entered = false
@@ -360,7 +359,7 @@ export function CinemaMode({ open, onClose, p }: { open: boolean; onClose: () =>
           onMouseMove={poke}
           onDoubleClick={onClose}
         >
-          <VideoViewer track={cur} show quality={p.videoQuality} className="absolute inset-0" />
+          <VideoViewer track={cur} video={p.videoMode} playing={p.playing} className="absolute inset-0" />
           {!cur && <div className="absolute inset-0 flex items-center justify-center font-pixel text-[40px] text-ph-faint">NO SIGNAL</div>}
 
           <motion.div className="absolute inset-x-0 top-0 flex justify-between p-5" animate={{ opacity: barVisible ? 1 : 0 }}>
@@ -382,15 +381,10 @@ export function CinemaMode({ open, onClose, p }: { open: boolean; onClose: () =>
                 <div className="truncate font-pixel text-[34px] leading-none text-ph-bright rgb-split">{cur?.title ?? '—'}</div>
                 <div className="truncate text-[12px] text-ph-dim">{cur?.artist}</div>
               </div>
-              {cur?.source === 'youtube' && (
-                <div className="flex shrink-0 items-center gap-1">
-                  <span className="mr-1 text-[11px] text-ph-dim">{t('yt.quality')}</span>
-                  {([360, 480, 720] as const).map((q) => (
-                    <button key={q} className={`tab ${p.videoQuality === q ? 'active' : ''}`} onClick={() => p.setVideoQuality(q)}>
-                      {q}p
-                    </button>
-                  ))}
-                </div>
+              {cur?.source === 'youtube' && !p.noVideo && (
+                <button className={`tbtn shrink-0 ${p.videoMode ? 'on' : ''}`} onClick={p.toggleVideo}>
+                  {p.videoMode ? t('yt.audioOnly') : t('yt.watch')}
+                </button>
               )}
             </div>
             <div className="flex items-center gap-4">

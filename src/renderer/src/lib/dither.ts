@@ -1,16 +1,12 @@
-// Ordered (Bayer 4×4) dithering into a small purple phosphor palette — turns any cover
-// art into retro pixel art. Results are cached per (src, size).
+import { palette, useTheme } from './theme'
+
+// Ordered (Bayer 4×4) dithering into the theme's small phosphor palette — turns any cover
+// art into retro pixel art. Results are cached per (src, size, theme).
 
 const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16 - 0.5)
 
-/** Dark → bright phosphor ramp. */
-export const PALETTE: [number, number, number][] = [
-  [7, 6, 15],
-  [42, 26, 92],
-  [113, 66, 207],
-  [201, 168, 255],
-  [244, 236, 255]
-]
+/** Canvas art redraws when this changes. */
+export const usePaletteKey = useTheme
 
 const cache = new Map<string, Promise<HTMLCanvasElement>>()
 
@@ -30,15 +26,17 @@ function placeholder(ctx: CanvasRenderingContext2D, size: number, seed: string):
   for (const c of seed) h = (h * 31 + c.charCodeAt(0)) | 0
   const rnd = (): number => ((h = (h * 1103515245 + 12345) | 0) >>> 0) / 4294967296
   const g = ctx.createRadialGradient(size * rnd(), size * rnd(), 0, size / 2, size / 2, size * 0.8)
-  g.addColorStop(0, '#f4ecff')
-  g.addColorStop(0.35, '#9d6bff')
-  g.addColorStop(1, '#07060f')
+  const p = palette().map((c) => `rgb(${c.join(',')})`)
+  g.addColorStop(0, p[4])
+  g.addColorStop(0.35, p[2])
+  g.addColorStop(1, p[0])
   ctx.fillStyle = g
   ctx.fillRect(0, 0, size, size)
 }
 
 export function ditherCover(src: string | null, size: number, seed = 'chill'): Promise<HTMLCanvasElement> {
-  const key = `${src ?? seed}@${size}`
+  const PALETTE = palette()
+  const key = `${src ?? seed}@${size}:${PALETTE.join()}`
   const hit = cache.get(key)
   if (hit) return hit
 

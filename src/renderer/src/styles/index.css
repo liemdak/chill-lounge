@@ -5,8 +5,10 @@
   --color-crt-bg: #07060f;
   --color-crt-panel: #0d0a1c;
   --color-crt-panel-2: #151030;
-  --color-crt-line: rgba(157, 107, 255, 0.32);
-  --color-crt-line-strong: rgba(157, 107, 255, 0.7);
+  --color-crt-deep: #2a1a5c;
+  /* Theme colours are swapped at runtime (lib/theme.ts); everything below derives from them. */
+  --color-crt-line: color-mix(in srgb, var(--color-violet) 32%, transparent);
+  --color-crt-line-strong: color-mix(in srgb, var(--color-violet) 70%, transparent);
 
   --color-ph: #c9a8ff; /* phosphor — main text */
   --color-ph-bright: #f4ecff;
@@ -61,7 +63,7 @@
     overflow: hidden;
     user-select: none;
     -webkit-font-smoothing: antialiased;
-    text-shadow: 0 0 5px rgba(201, 168, 255, 0.35);
+    text-shadow: 0 0 5px color-mix(in srgb, var(--color-ph) 35%, transparent);
   }
   button { cursor: pointer; font: inherit; color: inherit; }
   :focus-visible { outline: 1px dashed var(--color-cyan); outline-offset: 2px; }
@@ -74,8 +76,8 @@
 
 /* ── Components ─────────────────────────────────────────────────────────── */
 @layer components {
-  .glow { text-shadow: 0 0 6px rgba(201, 168, 255, 0.85), 0 0 18px rgba(157, 107, 255, 0.45); }
-  .rgb-split { text-shadow: 1.5px 0 rgba(255, 79, 216, 0.65), -1.5px 0 rgba(61, 245, 255, 0.55), 0 0 10px rgba(201, 168, 255, 0.6); }
+  .glow { text-shadow: 0 0 6px color-mix(in srgb, var(--color-ph) 85%, transparent), 0 0 18px color-mix(in srgb, var(--color-violet) 45%, transparent); }
+  .rgb-split { text-shadow: 1.5px 0 color-mix(in srgb, var(--color-magenta) 65%, transparent), -1.5px 0 color-mix(in srgb, var(--color-cyan) 55%, transparent), 0 0 10px color-mix(in srgb, var(--color-ph) 60%, transparent); }
   .glitch { animation: glitch 0.35s steps(2) 2; }
   .pixelated { image-rendering: pixelated; }
 
@@ -83,8 +85,8 @@
   .panel {
     position: relative;
     border: 1px solid var(--color-crt-line);
-    background: linear-gradient(180deg, rgba(21, 16, 48, 0.8), rgba(13, 10, 28, 0.88));
-    box-shadow: inset 0 0 24px rgba(113, 66, 207, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-crt-panel-2) 80%, transparent), color-mix(in srgb, var(--color-crt-panel) 88%, transparent));
+    box-shadow: inset 0 0 24px color-mix(in srgb, var(--color-purple) 12%, transparent), 0 0 0 1px rgba(0, 0, 0, 0.6);
   }
   .panel-title {
     position: absolute;
@@ -117,9 +119,9 @@
     white-space: nowrap;
     transition: background 80ms, color 80ms, box-shadow 80ms;
   }
-  .tbtn:hover { background: var(--color-ph); color: var(--color-crt-bg); text-shadow: none; box-shadow: 0 0 12px rgba(201, 168, 255, 0.5); }
+  .tbtn:hover { background: var(--color-ph); color: var(--color-crt-bg); text-shadow: none; box-shadow: 0 0 12px color-mix(in srgb, var(--color-ph) 50%, transparent); }
   .tbtn:active { transform: translateY(1px); }
-  .tbtn.primary { background: var(--color-ph); color: var(--color-crt-bg); text-shadow: none; box-shadow: 0 0 14px rgba(201, 168, 255, 0.45); }
+  .tbtn.primary { background: var(--color-ph); color: var(--color-crt-bg); text-shadow: none; box-shadow: 0 0 14px color-mix(in srgb, var(--color-ph) 45%, transparent); }
   .tbtn.primary:hover { background: var(--color-ph-bright); }
   .tbtn.on { background: var(--color-purple); border-color: var(--color-violet); color: var(--color-ph-bright); }
   .tbtn.ghost { border-color: transparent; }
@@ -140,21 +142,21 @@
     text-transform: uppercase;
     color: var(--color-ph-dim);
   }
-  .badge.live { color: var(--color-magenta); border-color: rgba(255, 79, 216, 0.5); }
-  .badge.ok { color: var(--color-cyan); border-color: rgba(61, 245, 255, 0.45); }
+  .badge.live { color: var(--color-magenta); border-color: color-mix(in srgb, var(--color-magenta) 50%, transparent); }
+  .badge.ok { color: var(--color-cyan); border-color: color-mix(in srgb, var(--color-cyan) 45%, transparent); }
   .led { width: 6px; height: 6px; background: currentColor; box-shadow: 0 0 8px currentColor; }
 
   .tinput {
     height: 30px;
     padding: 0 10px;
     border: 1px solid var(--color-crt-line);
-    background: rgba(7, 6, 15, 0.8);
+    background: color-mix(in srgb, var(--color-crt-bg) 80%, transparent);
     color: var(--color-ph-bright);
     font: inherit;
     outline: none;
   }
   .tinput::placeholder { color: var(--color-ph-faint); }
-  .tinput:focus { border-color: var(--color-violet); box-shadow: 0 0 10px rgba(157, 107, 255, 0.35); }
+  .tinput:focus { border-color: var(--color-violet); box-shadow: 0 0 10px color-mix(in srgb, var(--color-violet) 35%, transparent); }
 
   /* Thin track + square block thumb */
   input[type='range'].trange {
@@ -191,15 +193,15 @@
     position: absolute;
     inset: 0 auto 0 0;
     background: repeating-linear-gradient(90deg, var(--color-ph) 0 6px, transparent 6px 8px);
-    filter: drop-shadow(0 0 4px rgba(201, 168, 255, 0.8));
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-ph) 80%, transparent));
   }
 
   .tab { padding: 3px 10px; border: 1px solid transparent; color: var(--color-ph-dim); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; }
   .tab:hover { color: var(--color-ph); }
-  .tab.active { border-color: var(--color-crt-line-strong); color: var(--color-ph-bright); background: rgba(113, 66, 207, 0.25); }
+  .tab.active { border-color: var(--color-crt-line-strong); color: var(--color-ph-bright); background: color-mix(in srgb, var(--color-purple) 25%, transparent); }
 
-  .row-hover:hover { background: rgba(157, 107, 255, 0.1); }
-  .row-active { background: rgba(157, 107, 255, 0.18); box-shadow: inset 2px 0 0 var(--color-ph); color: var(--color-ph-bright); }
+  .row-hover:hover { background: color-mix(in srgb, var(--color-violet) 10%, transparent); }
+  .row-active { background: color-mix(in srgb, var(--color-violet) 18%, transparent); box-shadow: inset 2px 0 0 var(--color-ph); color: var(--color-ph-bright); }
 
   .scanlines {
     background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 3px);
@@ -211,7 +213,7 @@
 .crt-overlay .lines { position: absolute; inset: 0; opacity: var(--crt-strength, 0.55); }
 .crt-overlay .roll {
   position: absolute; left: 0; right: 0; height: 120px;
-  background: linear-gradient(180deg, transparent, rgba(201, 168, 255, 0.05), transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--color-ph) 5%, transparent), transparent);
   animation: scan-roll 7s linear infinite;
 }
 .crt-overlay .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.55) 100%); }

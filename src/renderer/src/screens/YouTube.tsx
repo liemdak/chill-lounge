@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { DownloadMode, TrackInfo } from '../../../shared/types'
-import { DenoBanner, ToolsGate, VideoViewer } from '../components/Media'
+import { DenoBanner, ToolsGate, useYtAuth, VideoViewer, YouTubeAccount } from '../components/Media'
 import { Panel, PixelCover } from '../components/ui'
 import { useI18n } from '../i18n'
 import { fmtTime, load, save } from '../lib/store'
@@ -34,6 +34,7 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
   const [error, setError] = useState<string | null>(null)
   const [added, setAdded] = useState<Set<string>>(new Set())
   const [blockedUntil, setBlockedUntil] = useState(0)
+  const signedIn = useYtAuth()
   const [, tick] = useState(0)
   useEffect(() => {
     window.lounge.youtube.blockStatus().then(setBlockedUntil)
@@ -68,7 +69,7 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
   }
 
   const cur = p.current
-  const showVideo = !!cur && (cur.source === 'youtube' ? p.videoMode : cur.isVideo)
+  const hasPicture = !!cur && (cur.source === 'youtube' || cur.isVideo)
 
   return (
     <div className="grid grid-cols-12 gap-5 p-5 pt-6">
@@ -114,7 +115,7 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
         >
           {blockedMin > 0 && (
             <div className="m-2 border border-magenta/50 p-3 text-[12px] leading-relaxed text-magenta">
-              {t('yt.blocked', { m: blockedMin })}
+              {signedIn ? t('yt.blockedSignedIn') : t('yt.blocked', { m: blockedMin })}
               <button className="tbtn sm ml-2" onClick={() => window.lounge.youtube.unblock()}>
                 {t('yt.retryNow')}
               </button>
@@ -157,9 +158,9 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
 
       <div className="col-span-5 flex min-w-0 flex-col gap-5">
         <Panel title={t('yt.viewer')} className="p-3 pt-4">
-          <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-black" onDoubleClick={() => cur && onCinema()}>
-            <VideoViewer track={cur} show={showVideo && !cinemaOpen} quality={p.videoQuality} className="absolute inset-0" />
-            {!showVideo && (
+          <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-black" onDoubleClick={() => hasPicture && onCinema()}>
+            {!cinemaOpen && <VideoViewer track={cur} video={p.videoMode} playing={p.playing} className="absolute inset-0" />}
+            {!hasPicture && (
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-[12px] leading-relaxed text-ph-dim">
                 {t('yt.viewerHint')}
               </div>
@@ -176,30 +177,22 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
                 <div className="truncate text-[12.5px] text-ph-bright">{cur.title}</div>
                 <div className="truncate text-[10.5px] text-ph-dim">{cur.artist || t('player.unknownArtist')}</div>
               </div>
-              {cur.source === 'youtube' && (
-                <button className={`tbtn sm ${p.videoMode ? 'on' : ''}`} onClick={p.toggleVideo}>
+              {cur.source === 'youtube' && !p.noVideo && (
+                <button className={`tbtn sm ${p.videoMode ? 'on' : ''}`} onClick={p.toggleVideo} title={t('yt.watchHint')}>
                   {p.videoMode ? t('yt.audioOnly') : t('yt.watch')}
                 </button>
               )}
-              {(cur.source === 'youtube' || cur.isVideo) && (
+              {hasPicture && (
                 <button className="tbtn sm" onClick={onCinema}>
                   {t('yt.fullscreen')}
                 </button>
               )}
             </div>
           )}
-          {cur?.source === 'youtube' && p.videoMode && (
-            <div className="mt-2 flex items-center gap-1">
-              <span className="mr-1 text-[11px] text-ph-dim">{t('yt.quality')}</span>
-              {([360, 480, 720] as const).map((q) => (
-                <button key={q} className={`tab ${p.videoQuality === q ? 'active' : ''}`} onClick={() => p.setVideoQuality(q)}>
-                  {q}p
-                </button>
-              ))}
-            </div>
-          )}
+          {p.noVideo && <p className="mt-2 text-[11px] text-ph-dim">{t('yt.noVideo')}</p>}
           <p className="mt-3 text-[11px] text-ph-faint">{t('yt.note')}</p>
         </Panel>
+        <YouTubeAccount compact={!blockedMin} />
         {!deno && <DenoBanner onInstalled={onDeno} />}
       </div>
     </div>

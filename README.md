@@ -31,7 +31,7 @@
 | Đưa lên **desktop Windows** | Tab **Hình nền** → **[ĐẶT LÊN DESKTOP…]** → xác nhận. Gỡ lúc nào cũng được (trong app hoặc chuột phải icon ở khay) |
 | Màn hình chờ toàn màn hình (đồng hồ + mưa) | Phím **F**, thoát bằng **Esc** |
 | Hiệu ứng mưa, tuyết, đom đóm, sao… | Tab **Hình nền** → bảng **Hiệu ứng pixel**: chọn preset hoặc kéo từng lớp; bật **Nhảy theo nhạc** |
-| Nghe YouTube | Tab **YouTube** → dán link video / playlist hoặc gõ từ khóa → **▶** để phát, **+** để thêm hàng chờ, **[XEM VIDEO]** để xem hình |
+| Nghe YouTube | Tab **YouTube** → dán link video / playlist hoặc gõ từ khóa → **▶** để phát, **+** để thêm hàng chờ, **[XEM VIDEO]** để xem video 360p, **[⛶]** để xem toàn màn hình |
 | Tải nhạc / video | Nút **↓mp3** / **↓mp4** ở tab YouTube, hoặc dán link ở tab **Tải về**; bài tải xong tự vào Thư viện |
 | Đổi ngôn ngữ | Nút **VI / EN** trên thanh tiêu đề |
 
@@ -58,15 +58,15 @@ Choosing an image/video in the **Wallpaper** tab only uses it **inside the app**
 - **8 lớp hiệu ứng pixel bật chồng được** — mưa (có chớp khi mưa to), tuyết, đom đóm, trời sao + sao băng, mưa ký tự terminal, hoa rơi, sương mù dither, nhiễu VHS; 6 preset (Đêm mưa, Mùa đông, Terminal, Đêm hè, Anh đào); **nhảy theo nhạc** (cả trên desktop); độ sáng, scanline CRT.
 - **Trình phát nhạc** — đọc tên bài, nghệ sĩ, ảnh bìa và lời bài hát từ file; EQ + độ ấm băng từ; 4 lớp âm nền tạo bằng Web Audio; hẹn giờ ngủ; phím media; nhớ hàng chờ.
 - **Giao diện CRT** — font VT323 + IBM Plex Mono (đủ dấu tiếng Việt), ảnh bìa dither thành pixel art, đĩa than pixel, phổ LED, chữ đánh máy + glitch.
-- **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; xem video 720p đồng bộ với nhạc.
+- **7 theme màu retro** — Tím CRT, Hổ phách, Lục phosphor, Game Boy, Vaporwave, Xanh IBM, Băng cassette (Cài đặt → Giao diện màu).
+- **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; hiện ảnh bìa lớn, bấm **[XEM VIDEO]** để xem video 360p; xem toàn màn hình.
 - **Tải về** — chọn **chỉ âm thanh (mp3)** hoặc **cả video (mp4, tới 1080p)**, có ảnh bìa và tên bài, không tải trùng, tải xong tự vào Thư viện.
 - **Song ngữ** Việt / English · **tự cập nhật** qua GitHub Releases.
 
-> **Lưu ý YouTube:** lần đầu mở tab YouTube / Tải về, app hỏi để tải [yt-dlp](https://github.com/yt-dlp/yt-dlp) và ffmpeg (~77 MB) từ GitHub. Tải hoặc phát YouTube ngoài trình phát chính thức là trái điều khoản của YouTube — chỉ dùng cho mục đích cá nhân, và tôn trọng bản quyền của nghệ sĩ.
+> **Lưu ý YouTube:** lần đầu mở tab YouTube / Tải về, app hỏi để tải [yt-dlp](https://github.com/yt-dlp/yt-dlp), ffmpeg và Deno (~120 MB) từ GitHub. Nếu YouTube báo mạng của bạn là bot ("Sign in to confirm you're not a bot"), đăng nhập YouTube trong app (nên dùng tài khoản phụ — app chỉ lưu cookie trên máy, không lưu mật khẩu). Tải hoặc phát YouTube ngoài trình phát chính thức là trái điều khoản của YouTube — chỉ dùng cho mục đích cá nhân, và tôn trọng bản quyền của nghệ sĩ.
 
 ### Sắp có / Coming next
 
-- Theme màu phosphor (tím, xanh lá, hổ phách) / *Phosphor color themes*
 - Hồ sơ và playlist riêng / *Profiles and playlists*
 
 ---

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { DownloadJob, DownloadMode, ToolsStatus } from '../../../shared/types'
-import { ToolsGate } from '../components/Media'
+import { ToolsGate, useYtAuth, YouTubeAccount } from '../components/Media'
 import { Panel } from '../components/ui'
 import { useI18n, type TKey } from '../i18n'
 import { load, save } from '../lib/store'
 import type { Player } from '../player/usePlayer'
 
 const cleanError = (e: unknown): string => (e as Error).message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '').slice(0, 200)
+
+const BOT_RE = /confirm you.re not a bot|sign in to confirm/i
 
 const YT_LINK = /^https?:\/\/(www\.|m\.|music\.)?(youtube\.com|youtu\.be)\//i
 
@@ -41,6 +43,8 @@ function DownloadsInner({ p, jobs, tools: initialTools }: { p: Player; jobs: Dow
   const [dir, setDir] = useState('')
   const [tools, setTools] = useState(initialTools)
   const [updating, setUpdating] = useState(false)
+  const signedIn = useYtAuth()
+  const botBlocked = jobs.some((j) => j.status === 'error' && BOT_RE.test(j.error ?? '')) || BOT_RE.test(error ?? '')
 
   useEffect(() => {
     window.lounge.downloads.getDir().then(setDir)
@@ -141,6 +145,9 @@ function DownloadsInner({ p, jobs, tools: initialTools }: { p: Player; jobs: Dow
         {error && <div className="text-[12px] text-magenta">{error === t('dl.needLink') ? error : t('yt.error', { e: error })}</div>}
         <div className="text-[11px] text-ph-faint">{t('dl.autoAdd')}</div>
       </Panel>
+
+      {botBlocked && !signedIn && <div className="border border-magenta/50 p-3 text-[12px] text-magenta">{t('dl.botHint')}</div>}
+      {(botBlocked || signedIn) && <YouTubeAccount compact />}
 
       <Panel
         title={t('dl.queue', { n: jobs.length })}

@@ -3,7 +3,6 @@ import type { TrackInfo } from '../../../shared/types'
 import { engine, type AmbientKey, type EQSettings } from '../audio/engine'
 import type { TKey } from '../i18n'
 import { load, loadArray, save } from '../lib/store'
-import type { VideoQuality } from '../components/Media'
 
 export type RepeatMode = 'off' | 'all' | 'one'
 export type EQPreset = 'lofi' | 'bass' | 'vocal' | 'flat' | 'custom'
@@ -34,23 +33,35 @@ export function usePlayer() {
   const [eq, setEqState] = useState(() => load('eq', { preset: 'flat' as EQPreset, ...EQ_PRESETS.flat }))
   const [soundscape, setSoundscapeState] = useState<Soundscape>(() => load('soundscape', { rain: 0, vinyl: 0, fire: 0, cafe: 0 }))
   const [sleep, setSleep] = useState<SleepTimer>(null)
-  /** YouTube tracks: play the muxed 360p stream so the video can be watched. */
+  /** YouTube tracks: play the single muxed 360p stream (picture + sound) instead of audio only. */
   const [videoMode, setVideoMode] = useState(false)
   const videoModeRef = useRef(false)
-  const [videoQuality, setVideoQualityState] = useState<VideoQuality>(() => load('video', { quality: 480 as VideoQuality }).quality)
-  useEffect(() => {
-    qualityRef.current = videoQuality
-  }, [videoQuality])
+  /** Path of a YouTube track that has no video stream (it stays audio + thumbnail). */
+  const [noVideo, setNoVideo] = useState<string | null>(null)
   /** True while a stream is being resolved / buffered (YouTube takes a couple of seconds). */
   const [buffering, setBuffering] = useState(false)
   /** Path of the track that failed to play, if any. */
   const [error, setError] = useState<string | null>(null)
   const pendingPlay = useRef<string | null>(null)
   const restored = useRef(false)
-  // Audio always comes from the audio stream; the video viewer plays a synced video-only stream.
-  // (The video quality rides along so the one yt-dlp call also resolves the right video stream.)
-  const qualityRef = useRef(480)
-  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path, false, qualityRef.current)
+  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path, t.source === 'youtube' && videoModeRef.current)
+  const lastTime = useRef(0)
+
+  /** Reload the current YouTube track in the other mode, carrying on from the same moment. */
+  const swapSrc = (track: TrackInfo): void => {
+    const at = lastTime.current
+    const wasPlaying = !media.paused
+    loadedPath.current = track.path
+    media.src = srcFor(track)
+    media.addEventListener(
+      'loadedmetadata',
+      () => {
+        media.currentTime = at
+        if (wasPlaying) media.play().catch(() => {})
+      },
+      { once: true }
+    )
+  }
 
   // ── restore last session ────────────────────────────────────────────────
   useEffect(() => {
@@ -158,13 +169,25 @@ export function usePlayer() {
     const onWaiting = (): void => setBuffering(true)
     const onReady = (): void => setBuffering(false)
     const onPause = (): void => setPlaying(false)
-    const onTime = (): void => setTime(media.currentTime)
+    const onTime = (): void => {
+      lastTime.current = media.currentTime
+      setTime(media.currentTime)
+    }
     const onMeta = (): void => {
       if (Number.isFinite(media.duration)) setDuration(media.duration)
     }
     const onEnded = (): void => next(true)
     const onError = (): void => {
       console.warn('[player] cannot play', media.src)
+      // No video stream for this one: fall back to audio + thumbnail instead of failing.
+      const track = queue[index]
+      if (track?.source === 'youtube' && media.src.includes('m=video')) {
+        videoModeRef.current = false
+        setVideoMode(false)
+        setNoVideo(track.path)
+        swapSrc(track)
+        return
+      }
       setPlaying(false)
       setBuffering(false)
       setError(loadedPath.current)
@@ -187,7 +210,8 @@ export function usePlayer() {
       media.removeEventListener('ended', onEnded)
       media.removeEventListener('error', onError)
     }
-  }, [media, next])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [media, next, queue, index])
 
   // Windows media overlay + hardware media keys.
   useEffect(() => {
@@ -234,35 +258,21 @@ export function usePlayer() {
     addTracks(await window.lounge.media.readTags(paths))
   }, [addTracks])
 
-  /** Show / hide the YouTube video. Audio keeps playing; the viewer syncs a video-only stream. */
+  /** YouTube: switch between audio + thumbnail and the 360p video (a 1–2 s reload, same spot). */
   const toggleVideo = useCallback(() => {
     videoModeRef.current = !videoModeRef.current
     setVideoMode(videoModeRef.current)
-  }, [])
+    const track = queue[index]
+    if (track?.source === 'youtube') swapSrc(track)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue, index])
 
-  const setVideoQuality = useCallback((q: VideoQuality) => {
-    setVideoQualityState(q)
-    save('video', { quality: q })
-  }, [])
-
-  // While a track plays, resolve the next YouTube track's streams in the background
-  // (and the current one's video stream when the viewer is on).
+  // While a track plays, resolve the next YouTube track's streams in the background.
   useEffect(() => {
-    if (!playing || !queue.length) return
-    const cur = queue[index]
-    if (videoMode && cur?.source === 'youtube') window.lounge.youtube.prefetch(cur.path.slice(3), 'video', videoQuality)
-    if (queue.length < 2) return
+    if (!playing || queue.length < 2) return
     const nextTrack = queue[(index + 1) % queue.length]
-    if (nextTrack?.source !== 'youtube') return
-    window.lounge.youtube.prefetch(nextTrack.path.slice(3))
-    if (videoMode) window.lounge.youtube.prefetch(nextTrack.path.slice(3), 'video', videoQuality)
-  }, [playing, index, queue, videoMode, videoQuality])
-
-  /** Turn the video view on (used by the fullscreen mode). */
-  const showVideo = useCallback(() => {
-    videoModeRef.current = true
-    setVideoMode(true)
-  }, [])
+    if (nextTrack?.source === 'youtube') window.lounge.youtube.prefetch(nextTrack.path.slice(3))
+  }, [playing, index, queue])
 
   const remove = useCallback(
     (i: number) => {
@@ -366,9 +376,7 @@ export function usePlayer() {
     sleepLeft,
     isLiked: current ? liked.has(current.path) : false,
     videoMode,
-    videoQuality,
-    setVideoQuality,
-    showVideo,
+    noVideo: !!current && noVideo === current.path,
     buffering,
     error,
     media,

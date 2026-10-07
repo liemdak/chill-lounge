@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { WallpaperState } from '../../../shared/types'
 import { Check, Panel, TRange } from '../components/ui'
 import { useI18n, type TKey } from '../i18n'
+import { applyTheme, THEME_IDS, THEMES, useTheme } from '../lib/theme'
 
 export interface UiPrefs {
   crt: number
@@ -34,6 +35,8 @@ export function SettingsScreen({ prefs, onPrefs, wallpaper }: { prefs: UiPrefs; 
       </div>
 
       <div className="grid max-w-[1100px] grid-cols-2 gap-5">
+        <ThemePicker />
+
         <Panel title={t('set.language')} className="flex gap-2 p-4 pt-5">
           {(
             [
@@ -88,5 +91,43 @@ export function SettingsScreen({ prefs, onPrefs, wallpaper }: { prefs: UiPrefs; 
         </Panel>
       </div>
     </div>
+  )
+}
+
+/** Retro colour themes: each tile is a tiny preview drawn in that theme's own colours. */
+function ThemePicker() {
+  const { t } = useI18n()
+  const theme = useTheme()
+  return (
+    <Panel title={t('set.theme')} className="col-span-2 p-4 pt-5">
+      <div className="grid grid-cols-4 gap-3 xl:grid-cols-7">
+        {THEME_IDS.map((id) => {
+          const th = THEMES[id]
+          const on = theme === id
+          return (
+            <button
+              key={id}
+              onClick={() => applyTheme(id)}
+              className="flex flex-col gap-2 border p-2.5 text-left transition-transform hover:-translate-y-0.5"
+              style={{ background: th.bg, borderColor: on ? th.ph : th.phFaint, boxShadow: on ? `0 0 14px ${th.violet}66` : 'none' }}
+              aria-pressed={on}
+            >
+              <span className="font-pixel text-[20px] leading-none" style={{ color: th.phBright, textShadow: `0 0 6px ${th.ph}` }}>
+                {on ? '▸ ' : ''}
+                {t(`theme.${id}` as TKey)}
+              </span>
+              <span className="text-[10.5px]" style={{ color: th.ph }}>
+                &gt; play_<span style={{ color: th.cyan }}>♪</span>
+              </span>
+              <span className="flex h-2.5 gap-0.5">
+                {[th.purple, th.violet, th.ph, th.magenta, th.cyan].map((c) => (
+                  <span key={c} className="flex-1" style={{ background: c }} />
+                ))}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </Panel>
   )
 }

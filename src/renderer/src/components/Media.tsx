@@ -2,9 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { ToolsProgress, ToolsStatus, TrackInfo } from '../../../shared/types'
 import { engine } from '../audio/engine'
 import { useI18n } from '../i18n'
+import { BarScope } from './scopes'
 import { Panel } from './ui'
-
-export type VideoQuality = 360 | 480 | 720
 
 // The one <video> element that plays everything lives in a hidden host so it's always in the
 // document — removing a media element from the DOM pauses it. Viewers borrow it and give it back
@@ -44,102 +43,45 @@ function BorrowedVideo({ className }: { className: string }) {
   return <div ref={ref} className={className} />
 }
 
+const thumb = (id: string, size: 'maxresdefault' | 'hqdefault'): string => `https://i.ytimg.com/vi/${id}/${size}.jpg`
+
 /**
- * YouTube: a muted video-only stream that follows the audio element, so toggling the picture
- * never interrupts the music.
- *
- * Sync rules (the old "re-seek whenever drift > 0.35 s" restarted the download every time a slow
- * stream fell behind, so it never caught up):
- * - while the video is still buffering, leave it alone;
- * - small drift: nudge playbackRate ±8 % until it lines up;
- * - big drift (> 1.2 s): jump, slightly ahead of the audio when behind, so it has buffer to play;
- * - stuck for 12 s: fetch a fresh stream URL (up to twice).
+ * YouTube in audio mode: the video's thumbnail, big, over a blurred copy of itself, with the
+ * spectrum underneath. Thumbnails come from YouTube's image servers, which keep working even when
+ * playback is blocked.
  */
-function SyncedVideo({ path, quality, className }: { path: string; quality: VideoQuality; className: string }) {
-  const { t } = useI18n()
-  const ref = useRef<HTMLVideoElement>(null)
-  const [state, setState] = useState<'loading' | 'ok' | 'retrying'>('loading')
-  const [src, setSrc] = useState(() => window.lounge.mediaUrl(path, true, quality))
-  const retries = useRef(0)
-
-  useEffect(() => {
-    retries.current = 0
-    setState('loading')
-    setSrc(window.lounge.mediaUrl(path, true, quality))
-  }, [path, quality])
-
-  useEffect(() => {
-    const v = ref.current!
-    const m = engine.media
-    let stalledSince = 0
-
-    const follow = (): void => {
-      if (m.paused !== v.paused) (m.paused ? v.pause() : v.play().catch(() => {}))
-      if (v.seeking || m.paused) return
-      if (v.readyState < 3) {
-        stalledSince ||= performance.now()
-        if (performance.now() - stalledSince > 12_000 && retries.current < 2) {
-          retries.current++
-          stalledSince = 0
-          setState('retrying')
-          setSrc(window.lounge.mediaUrl(path, true, quality, true))
-        }
-        return
-      }
-      stalledSince = 0
-      const drift = v.currentTime - m.currentTime
-      if (Math.abs(drift) > 1.2) {
-        v.playbackRate = 1
-        v.currentTime = m.currentTime + (drift < 0 ? 0.6 : 0)
-      } else if (Math.abs(drift) > 0.12) v.playbackRate = drift < 0 ? 1.08 : 0.92
-      else v.playbackRate = 1
-    }
-    const onMeta = (): void => {
-      v.currentTime = m.currentTime
-      follow()
-    }
-    const onSeeked = (): void => {
-      v.currentTime = m.currentTime
-    }
-    const onPlaying = (): void => setState('ok')
-    const onWaiting = (): void => setState((s) => (s === 'retrying' ? s : 'loading'))
-
-    v.addEventListener('loadedmetadata', onMeta)
-    v.addEventListener('playing', onPlaying)
-    v.addEventListener('waiting', onWaiting)
-    for (const ev of ['play', 'pause']) m.addEventListener(ev, follow)
-    m.addEventListener('seeked', onSeeked)
-    const id = setInterval(follow, 400)
-    return () => {
-      clearInterval(id)
-      v.removeEventListener('loadedmetadata', onMeta)
-      v.removeEventListener('playing', onPlaying)
-      v.removeEventListener('waiting', onWaiting)
-      for (const ev of ['play', 'pause']) m.removeEventListener(ev, follow)
-      m.removeEventListener('seeked', onSeeked)
-    }
-  }, [src, path, quality])
-
+function ThumbView({ track, playing, className }: { track: TrackInfo; playing: boolean; className: string }) {
+  const id = track.path.slice(3)
+  const [src, setSrc] = useState(() => thumb(id, 'maxresdefault'))
+  useEffect(() => setSrc(thumb(id, 'maxresdefault')), [id])
+  // maxresdefault is missing for many older videos (YouTube then serves a 120×90 placeholder).
+  const fallback = (img: HTMLImageElement): void => {
+    if (img.naturalWidth <= 120 && src.includes('maxres')) setSrc(thumb(id, 'hqdefault'))
+  }
   return (
-    <div className={className}>
-      <video ref={ref} src={src} muted playsInline className="h-full w-full bg-black object-contain" />
-      {state !== 'ok' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 font-pixel text-[22px] text-ph-dim">
-          {state === 'retrying' ? t('yt.retrying') : t('yt.loadingVideo')}
-        </div>
-      )}
+    <div className={`overflow-hidden bg-black ${className}`}>
+      <img src={src} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-xl" />
+      <img
+        src={src}
+        alt=""
+        className="absolute inset-0 h-full w-full object-contain"
+        onLoad={(e) => fallback(e.currentTarget)}
+        onError={() => src.includes('maxres') && setSrc(thumb(id, 'hqdefault'))}
+      />
+      <div className="scanlines pointer-events-none absolute inset-0 opacity-60" />
+      <BarScope playing={playing} bands={48} rows={10} className="absolute inset-x-0 bottom-0 h-[18%] w-full opacity-80" />
     </div>
   )
 }
 
-/** Shows the playing video: YouTube (synced video-only stream) or a local mp4. */
-export function VideoViewer({ track, show, quality = 480, className = '' }: { track: TrackInfo | null; show: boolean; quality?: VideoQuality; className?: string }) {
-  if (!show || !track) return null
-  return track.source === 'youtube' ? (
-    <SyncedVideo key={track.path} path={track.path} quality={quality} className={className} />
-  ) : (
-    <BorrowedVideo className={className} />
-  )
+/**
+ * The playing track's picture: YouTube shows its thumbnail (audio mode) or the 360p video; a local
+ * video file shows itself. Returns null for local audio.
+ */
+export function VideoViewer({ track, video, playing, className = '' }: { track: TrackInfo | null; video: boolean; playing: boolean; className?: string }) {
+  if (!track) return null
+  if (track.source === 'youtube') return video ? <BorrowedVideo className={className} /> : <ThumbView track={track} playing={playing} className={className} />
+  return track.isVideo ? <BorrowedVideo className={className} /> : null
 }
 
 function useToolsInstall() {
@@ -231,6 +173,70 @@ export function DenoBanner({ onInstalled }: { onInstalled: (s: ToolsStatus) => v
       >
         {t('deno.install')}
       </button>
+    </Panel>
+  )
+}
+
+/** Whether a YouTube session (cookies) is saved, kept in sync with the main process. */
+export function useYtAuth(): boolean | null {
+  const [signedIn, setSignedIn] = useState<boolean | null>(null)
+  useEffect(() => {
+    window.lounge.youtube.auth.status().then(setSignedIn)
+    return window.lounge.youtube.auth.onChange(setSignedIn)
+  }, [])
+  return signedIn
+}
+
+/**
+ * Optional YouTube sign-in. Needed only when YouTube flags the network as a bot — then every
+ * signed-out request fails, the official player included.
+ */
+export function YouTubeAccount({ compact = false }: { compact?: boolean }) {
+  const { t } = useI18n()
+  const signedIn = useYtAuth()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const act = async (fn: () => Promise<boolean>): Promise<void> => {
+    setBusy(true)
+    setError(null)
+    try {
+      await fn()
+    } catch (e) {
+      setError((e as Error).message.includes('not-signed-in-cookies') ? t('auth.badCookies') : t('auth.failed'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (signedIn === null) return null
+  return (
+    <Panel title={t('auth.title')} className="p-4 pt-5">
+      {signedIn ? (
+        <div className="flex items-center gap-3">
+          <span className="badge ok shrink-0">
+            <span className="led" /> {t('auth.on')}
+          </span>
+          <span className="min-w-0 flex-1 text-[11px] text-ph-dim">{t('auth.onHint')}</span>
+          <button className="tbtn sm" onClick={() => window.lounge.youtube.auth.signOut()}>
+            {t('auth.signOut')}
+          </button>
+        </div>
+      ) : (
+        <>
+          {!compact && <p className="mb-3 text-[12px] leading-relaxed text-ph">{t('auth.body')}</p>}
+          <p className="mb-3 text-[11px] leading-relaxed text-ph-dim">{t('auth.privacy')}</p>
+          {error && <div className="mb-3 text-[12px] text-magenta">{error}</div>}
+          <div className="flex flex-wrap gap-2">
+            <button className="tbtn primary sm" disabled={busy} onClick={() => act(window.lounge.youtube.auth.signIn)}>
+              {busy ? t('auth.waiting') : t('auth.signIn')}
+            </button>
+            <button className="tbtn sm" disabled={busy} onClick={() => act(window.lounge.youtube.auth.importCookies)}>
+              {t('auth.import')}
+            </button>
+          </div>
+        </>
+      )}
     </Panel>
   )
 }

@@ -3,7 +3,7 @@ import { createReadStream, statSync } from 'node:fs'
 import { extname } from 'node:path'
 import { Readable } from 'node:stream'
 import { AUDIO_EXT, IMAGE_EXT, MEDIA_SCHEME, VIDEO_EXT } from '../shared/types'
-import { resolveStream, type Quality } from './youtube'
+import { resolveStream } from './youtube'
 
 // Serves local media files to the renderers as lounge-media://local/<encoded path>.
 // Range requests are handled by hand so <video>/<audio> can seek and loop.
@@ -26,42 +26,109 @@ export function registerMediaScheme(): void {
   ])
 }
 
-// googlevideo throttles or cuts long open-ended responses, so the player is fed in 4 MB chunks
-// (it simply asks for the next range when it needs more, like yt-dlp's own chunked downloads).
+// googlevideo throttles or cuts long responses, so it is read in 4 MB chunks (like yt-dlp's own
+// chunked downloads). The player still gets one response running to the end of the file: seeking
+// in a progressive mp4 (the 360p video) breaks if the response stops short of what it asked for.
 const CHUNK = 4 * 1024 * 1024
+// A googlevideo request that hasn't answered by then is stuck; give up and re-resolve.
+const UPSTREAM_TIMEOUT = 15_000
+
+interface Chunk {
+  body: ReadableStream<Uint8Array>
+  ctl: AbortController
+  /** Total file size, from Content-Range. */
+  total: number
+  type: string | null
+}
+
+/** One googlevideo range request; throws on errors so the caller can re-resolve the URL. */
+async function fetchChunk(stream: string, from: number, to: number): Promise<Chunk> {
+  const ctl = new AbortController()
+  const timer = setTimeout(() => ctl.abort(), UPSTREAM_TIMEOUT)
+  const res = await net
+    .fetch(stream, { headers: { Range: `bytes=${from}-${to}` }, cache: 'no-store', signal: ctl.signal })
+    .finally(() => clearTimeout(timer))
+  if (res.status !== 206 || !res.body) {
+    ctl.abort()
+    throw new Error(`upstream ${res.status}`)
+  }
+  const total = Number(/\/(\d+)$/.exec(res.headers.get('content-range') ?? '')?.[1])
+  return { body: res.body, ctl, total, type: res.headers.get('content-type') }
+}
 
 /**
- * lounge-media://yt/<videoId>?m=audio|video&q=360|480|720[&fresh=1] — proxy a YouTube stream
- * resolved by yt-dlp. Ranges are clamped to CHUNK so seeking is quick; on any upstream failure the
- * stream URL is re-resolved once and the request retried.
+ * lounge-media://yt/<videoId>?m=audio|video[&fresh=1] — proxy a YouTube stream resolved by yt-dlp
+ * (audio only, or the single muxed 360p stream). On an upstream failure the stream URL is
+ * re-resolved once and the chunk retried. When the player drops the request, the chunk being read
+ * is cancelled and no more are fetched, so connections never pile up.
  */
 async function proxyYouTube(req: Request, url: URL): Promise<Response> {
   const id = url.pathname.slice(1)
   const mode = url.searchParams.get('m') === 'video' ? 'video' : 'audio'
-  const q = ([360, 480, 720].includes(Number(url.searchParams.get('q'))) ? Number(url.searchParams.get('q')) : 480) as Quality
   const m = /bytes=(\d+)-(\d*)/.exec(req.headers.get('range') ?? '')
   const start = m ? Number(m[1]) : 0
-  const end = m && m[2] ? Math.min(Number(m[2]), start + CHUNK - 1) : start + CHUNK - 1
+  const wanted = m && m[2] ? Number(m[2]) : Infinity
 
-  for (const fresh of url.searchParams.has('fresh') ? [true] : [false, true]) {
+  let freshUsed = url.searchParams.has('fresh')
+  /** Fetch a chunk, re-resolving the stream URL once if the cached one fails. */
+  const chunkAt = async (from: number, to: number): Promise<Chunk> => {
     try {
-      const stream = await resolveStream(id, mode, q, fresh)
-      const res = await net.fetch(stream, { headers: { Range: `bytes=${start}-${end}` } })
-      if (!res.ok) {
-        console.warn(`[yt] upstream ${res.status} for ${id} (${mode})${fresh ? '' : ', re-resolving'}`)
-        continue
-      }
-      const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes' }
-      for (const h of ['content-type', 'content-length', 'content-range']) {
-        const v = res.headers.get(h)
-        if (v) headers[h] = v
-      }
-      return new Response(res.body, { status: res.status, headers })
+      return await fetchChunk(await resolveStream(id, mode, freshUsed), from, to)
     } catch (err) {
-      console.warn('[yt] stream failed', id, mode, (err as Error).message)
+      const msg = (err as Error).message
+      if (freshUsed || msg === 'no-video' || msg === 'youtube-blocked') throw err
+      console.warn('[yt] chunk failed, re-resolving', id, mode, msg)
+      freshUsed = true
+      return fetchChunk(await resolveStream(id, mode, true), from, to)
     }
   }
-  return new Response('stream unavailable', { status: 502 })
+
+  let first: Chunk
+  try {
+    first = await chunkAt(start, Math.min(wanted, start + CHUNK - 1))
+  } catch (err) {
+    console.warn('[yt] stream failed', id, mode, (err as Error).message)
+    return new Response('stream unavailable', { status: 502 })
+  }
+  const last = Math.min(wanted, first.total - 1)
+
+  let current = first
+  let reader = current.body.getReader()
+  let pos = start
+  const body = new ReadableStream<Uint8Array>({
+    async pull(c) {
+      try {
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (!done) {
+            pos += value.byteLength
+            return c.enqueue(value)
+          }
+          if (pos > last) return c.close()
+          current = await chunkAt(pos, Math.min(last, pos + CHUNK - 1))
+          reader = current.body.getReader()
+        }
+      } catch (err) {
+        current.ctl.abort()
+        c.error(err)
+      }
+    },
+    cancel() {
+      current.ctl.abort()
+      reader.cancel().catch(() => {})
+    }
+  })
+
+  return new Response(body, {
+    status: 206,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Accept-Ranges': 'bytes',
+      'Content-Type': first.type ?? (mode === 'audio' ? 'audio/mp4' : 'video/mp4'),
+      'Content-Length': String(last - start + 1),
+      'Content-Range': `bytes ${start}-${last}/${first.total}`
+    }
+  })
 }
 
 export function handleMediaProtocol(): void {

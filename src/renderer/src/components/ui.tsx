@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ditherCover } from '../lib/dither'
+import { ditherCover, usePaletteKey } from '../lib/dither'
 import { useI18n } from '../i18n'
 import { getBeat } from '../lib/beat'
 import { startVfx, type VfxLayers } from '../lib/vfx'
@@ -121,6 +121,7 @@ export function Modal({ open, title, onClose, children, width = 440 }: { open: b
 /** Cover art rendered as dithered pixel art. */
 export function PixelCover({ src, seed, res = 32, className = '' }: { src: string | null; seed: string; res?: number; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
+  const theme = usePaletteKey()
   useEffect(() => {
     let alive = true
     ditherCover(src, res, seed).then((art) => {
@@ -132,7 +133,7 @@ export function PixelCover({ src, seed, res = 32, className = '' }: { src: strin
     return () => {
       alive = false
     }
-  }, [src, seed, res])
+  }, [src, seed, res, theme])
   return <canvas ref={ref} className={`pixelated ${className}`} aria-hidden />
 }
 

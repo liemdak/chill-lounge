@@ -91,7 +91,7 @@ export function Sidebar({ screen, onNavigate }: { screen: Screen; onNavigate: (s
         className={`relative flex h-[58px] w-full flex-col items-center justify-center gap-0.5 ${active ? 'text-crt-bg' : 'text-ph-dim hover:text-ph-bright'}`}
         title={`${t(n.label)} (${n.key})`}
       >
-        {active && <motion.span layoutId="nav-active" className="absolute inset-x-1.5 inset-y-1 bg-ph shadow-[0_0_16px_rgba(201,168,255,0.55)]" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
+        {active && <motion.span layoutId="nav-active" className="absolute inset-x-1.5 inset-y-1 bg-ph shadow-[0_0_16px_color-mix(in_srgb,_var(--color-ph)_55%,_transparent)]" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
         <span className="relative font-pixel text-[26px] leading-none" style={plain}>
           {n.glyph}
         </span>
@@ -113,7 +113,7 @@ export function PlayerBar({ p, onOpenQueue, onOpenWallpaperMode }: { p: Player; 
   const { t } = useI18n()
   const tr = p.current
   return (
-    <footer className="relative z-10 flex h-[74px] shrink-0 items-center gap-5 border-t border-crt-line-strong bg-crt-panel px-4 shadow-[0_-8px_30px_rgba(113,66,207,0.18)]">
+    <footer className="relative z-10 flex h-[74px] shrink-0 items-center gap-5 border-t border-crt-line-strong bg-crt-panel px-4 shadow-[0_-8px_30px_color-mix(in_srgb,_var(--color-purple)_18%,_transparent)]">
       <div className="flex w-[280px] min-w-0 items-center gap-3">
         <PixelCover src={tr?.cover ?? null} seed={tr?.title ?? 'chill'} res={24} className="h-12 w-12 shrink-0 border border-crt-line" />
         <div className="min-w-0">
