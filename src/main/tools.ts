@@ -13,11 +13,14 @@ import type { ToolsProgress, ToolsStatus } from '../shared/types'
 //
 // Deno is the JavaScript runtime yt-dlp uses to solve YouTube's stream challenges. Without it
 // extraction is deprecated, slower, and some stream URLs come back unusable.
+//
+// yt-dlp comes as the "onedir" zip build (an exe next to its _internal folder): it starts in about
+// 1 s, where the single-file exe unpacks itself to a temp folder on every run (~3 s, every track).
 
-type Source = { url: string; file: string; unpack: 'none' | 'gz' | 'zip' }
+type Source = { url: string; file: string; unpack: 'none' | 'gz' | 'zip'; dir?: string }
 
 const SOURCES: Record<'yt-dlp' | 'ffmpeg' | 'ffprobe' | 'deno', Source> = {
-  'yt-dlp': { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe', file: 'yt-dlp.exe', unpack: 'none' },
+  'yt-dlp': { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_win.zip', file: join('yt-dlp', 'yt-dlp.exe'), unpack: 'zip', dir: 'yt-dlp' },
   ffmpeg: { url: 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-win32-x64.gz', file: 'ffmpeg.exe', unpack: 'gz' },
   ffprobe: { url: 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffprobe-win32-x64.gz', file: 'ffprobe.exe', unpack: 'gz' },
   deno: { url: 'https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip', file: 'deno.exe', unpack: 'zip' }
@@ -26,7 +29,10 @@ const SOURCES: Record<'yt-dlp' | 'ffmpeg' | 'ffprobe' | 'deno', Source> = {
 type ToolName = keyof typeof SOURCES
 
 export const binDir = (): string => join(app.getPath('userData'), 'bin')
-export const ytdlpPath = (): string => join(binDir(), SOURCES['yt-dlp'].file)
+/** The single-file build older versions installed; still used until the onedir build is in. */
+const legacyYtdlp = (): string => join(binDir(), 'yt-dlp.exe')
+const onedirYtdlp = (): string => join(binDir(), SOURCES['yt-dlp'].file)
+export const ytdlpPath = (): string => (existsSync(onedirYtdlp()) || !existsSync(legacyYtdlp()) ? onedirYtdlp() : legacyYtdlp())
 export const ffmpegPath = (): string => join(binDir(), SOURCES.ffmpeg.file)
 export const denoPath = (): string => join(binDir(), SOURCES.deno.file)
 
@@ -76,7 +82,7 @@ export async function toolsStatus(): Promise<ToolsStatus> {
 async function download(name: ToolName, onProgress: (p: ToolsProgress) => void): Promise<void> {
   const src = SOURCES[name]
   const target = join(binDir(), src.file)
-  const tmp = `${target}.${src.unpack === 'zip' ? 'zip' : 'part'}`
+  const tmp = src.dir ? join(binDir(), `${src.dir}.zip`) : `${target}.${src.unpack === 'zip' ? 'zip' : 'part'}`
   const res = await net.fetch(src.url)
   if (!res.ok || !res.body) throw new Error(`${name}: HTTP ${res.status}`)
   const total = Number(res.headers.get('content-length') ?? 0)
@@ -93,12 +99,22 @@ async function download(name: ToolName, onProgress: (p: ToolsProgress) => void):
   })
   if (src.unpack === 'gz') await pipeline(body, createGunzip(), createWriteStream(tmp))
   else await pipeline(body, createWriteStream(tmp))
-  rmSync(target, { force: true })
   if (src.unpack === 'zip') {
-    // Windows 10+ ships bsdtar, which reads zip archives.
-    await run(join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', tmp, '-C', binDir()])
+    // Windows 10+ ships bsdtar, which reads zip archives. A folder build is unpacked next to the
+    // old one and swapped in, so a running copy is never half-replaced.
+    const dest = src.dir ? join(binDir(), `${src.dir}.new`) : binDir()
+    if (src.dir) rmSync(dest, { recursive: true, force: true })
+    mkdirSync(dest, { recursive: true })
+    await run(join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', tmp, '-C', dest])
     rmSync(tmp, { force: true })
-  } else renameSync(tmp, target)
+    if (src.dir) {
+      rmSync(join(binDir(), src.dir), { recursive: true, force: true })
+      renameSync(dest, join(binDir(), src.dir))
+    }
+  } else {
+    rmSync(target, { force: true })
+    renameSync(tmp, target)
+  }
   onProgress({ name, received: total || received, total: total || received })
 }
 
@@ -106,23 +122,55 @@ async function download(name: ToolName, onProgress: (p: ToolsProgress) => void):
 export async function installTools(onProgress: (p: ToolsProgress) => void): Promise<ToolsStatus> {
   mkdirSync(binDir(), { recursive: true })
   for (const name of Object.keys(SOURCES) as ToolName[]) {
-    if (!existsSync(join(binDir(), SOURCES[name].file))) await download(name, onProgress)
+    const have = name === 'yt-dlp' ? existsSync(ytdlpPath()) : existsSync(join(binDir(), SOURCES[name].file))
+    if (!have) await download(name, onProgress)
   }
   cachedVersion = null
   return toolsStatus()
 }
 
-/** yt-dlp breaks whenever YouTube changes things; it can update itself in place. */
+/** Latest yt-dlp release tag, read from where GitHub's "latest" link redirects to. */
+async function latestYtdlpTag(): Promise<string | null> {
+  const res = await net.fetch('https://github.com/yt-dlp/yt-dlp/releases/latest', { redirect: 'manual' })
+  return /\/tag\/([^/?#]+)/.exec(res.headers.get('location') ?? '')?.[1] ?? null
+}
+
+/**
+ * yt-dlp breaks whenever YouTube changes things. The folder build can't update itself, so fetch
+ * the latest release when it's newer (or when only the old single-file build is installed).
+ */
 export async function updateYtDlp(): Promise<ToolsStatus> {
-  await run(ytdlpPath(), ['-U'])
+  if (existsSync(onedirYtdlp())) {
+    const [latest, current] = await Promise.all([latestYtdlpTag(), run(onedirYtdlp(), ['--version']).then((v) => v.trim())])
+    if (!latest || latest === current) return toolsStatus()
+  }
+  await download('yt-dlp', () => {})
+  // (a running download may still hold the old exe; it goes on a later update then)
+  try {
+    if (existsSync(onedirYtdlp())) rmSync(legacyYtdlp(), { force: true })
+  } catch {
+    /* in use */
+  }
   cachedVersion = null
   return toolsStatus()
 }
 
 let lastAutoUpdate = 0
-/** Called before YouTube work; self-updates yt-dlp at most once a day, never blocking on failure. */
+/**
+ * Called before YouTube work, never blocking on failure: moves old installs to the fast build
+ * right away, otherwise checks for a newer yt-dlp at most once a day.
+ */
 export function autoUpdateYtDlp(): void {
-  if (Date.now() - lastAutoUpdate < 24 * 3600_000 || !existsSync(ytdlpPath())) return
+  if (!existsSync(ytdlpPath())) return
+  if (existsSync(onedirYtdlp()) && existsSync(legacyYtdlp())) {
+    try {
+      rmSync(legacyYtdlp(), { force: true })
+    } catch {
+      /* still running from an earlier call */
+    }
+  }
+  const wait = ytdlpPath() === legacyYtdlp() ? 10 * 60_000 : 24 * 3600_000
+  if (Date.now() - lastAutoUpdate < wait) return
   lastAutoUpdate = Date.now()
-  updateYtDlp().catch((e) => console.warn('[tools] yt-dlp -U failed', e.message))
+  updateYtDlp().catch((e) => console.warn('[tools] yt-dlp update failed', e.message))
 }

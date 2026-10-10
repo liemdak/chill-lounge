@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { WallpaperState } from '../../../shared/types'
 import { BarScope, VinylScope } from '../components/scopes'
 import { EffectsQuick } from '../components/Effects'
-import { BlockBar, Panel, PixelCover, TRange, useTypewriter, VfxCanvas } from '../components/ui'
+import { BlockBar, CoverImage, Panel, PixelCover, TRange, useTypewriter, VfxCanvas } from '../components/ui'
+import { useSkin } from '../lib/theme'
+import { Icon } from '../components/icons'
 import { useI18n } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { EQ_PRESETS, type Player } from '../player/usePlayer'
@@ -21,6 +23,7 @@ interface Props {
 
 export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep, onOpenWallpaperMode, onGoWallpaper }: Props) {
   const { t } = useI18n()
+  const retro = useSkin() === 'retro'
   const tr = p.current
   const title = useTypewriter(tr?.title ?? 'NO SIGNAL')
   const [glitch, setGlitch] = useState(false)
@@ -60,8 +63,16 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
           {/* The vinyl shrinks with the available height so the whole screen fits without scrolling. */}
           <div className="my-2 flex min-h-[150px] w-full flex-1 items-center justify-center">
             <div className="relative aspect-square h-full max-h-[340px]">
-              <VinylScope cover={tr?.cover ?? null} seed={tr?.title ?? 'chill'} playing={p.playing} className="absolute inset-0 h-full w-full" />
-              <button className="absolute inset-[30%] cursor-pointer rounded-full" onClick={p.toggle} aria-label={p.playing ? t('player.pause') : t('player.play')} />
+              {retro ? (
+                <>
+                  <VinylScope cover={tr?.cover ?? null} seed={tr?.title ?? 'chill'} playing={p.playing} className="absolute inset-0 h-full w-full" />
+                  <button className="absolute inset-[30%] cursor-pointer rounded-full" onClick={p.toggle} aria-label={p.playing ? t('player.pause') : t('player.play')} />
+                </>
+              ) : (
+                <button className={`cover-hero absolute inset-[6%] ${p.playing ? 'playing' : ''}`} onClick={p.toggle} aria-label={p.playing ? t('player.pause') : t('player.play')}>
+                  <CoverImage src={tr?.cover ?? null} className="h-full w-full" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -75,7 +86,7 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
               </div>
               <h1 className={`truncate font-pixel text-[44px] leading-[1.05] text-ph-bright rgb-split ${glitch ? 'glitch' : ''}`}>
                 {title}
-                <span className="ml-1 inline-block h-[0.8em] w-[0.45em] animate-blink bg-ph align-baseline" />
+                <span className="type-cursor ml-1 inline-block h-[0.8em] w-[0.45em] animate-blink bg-ph align-baseline" />
               </h1>
               <div className="truncate text-[12px] text-ph-dim">
                 {tr ? [tr.artist || t('player.unknownArtist'), tr.album].filter(Boolean).join(' · ') : t('now.emptyHint')}
@@ -102,31 +113,32 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
           <div className="mt-4 flex items-center justify-between gap-3">
             <div className="flex gap-2">
               <button className={`tbtn ${p.shuffle ? 'on' : ''}`} onClick={p.toggleShuffle} title={t('player.shuffle')}>
-                shuf
+                {retro ? 'shuf' : <Icon name="shuffle" size={16} />}
               </button>
               <button className={`tbtn ${p.repeat !== 'off' ? 'on' : ''}`} onClick={p.cycleRepeat} title={t('player.repeat')}>
-                loop:{p.repeat === 'one' ? '1' : p.repeat}
+                {retro ? `loop:${p.repeat === 'one' ? '1' : p.repeat}` : <><Icon name="repeat" size={16} />{p.repeat === 'one' ? ' 1' : ''}</>}
               </button>
               <button className={`tbtn ${p.sleep ? 'on' : ''}`} onClick={onOpenSleep} title={t('sleep.title')}>
-                zzz {p.sleep === 'track' ? t('now.sleepTrack') : p.sleepLeft ? `${p.sleepLeft}m` : ''}
+                {retro ? 'zzz' : '☾'} {p.sleep === 'track' ? t('now.sleepTrack') : p.sleepLeft ? `${p.sleepLeft}m` : ''}
               </button>
             </div>
             <div className="flex items-center gap-2">
               <button className="tbtn" onClick={p.prev} aria-label={t('player.prev')}>
-                |◀◀
+                {retro ? '|◀◀' : <Icon name="prev" size={16} />}
               </button>
               <button className="tbtn primary lg w-[150px] justify-center" onClick={p.toggle}>
                 {p.playing ? t('player.pauseLong') : t('player.play')}
               </button>
               <button className="tbtn" onClick={p.next} aria-label={t('player.next')}>
-                ▶▶|
+                {retro ? '▶▶|' : <Icon name="next" size={16} />}
               </button>
             </div>
             <div className="flex items-center gap-2">
               <button className="tbtn" onClick={onOpenEQ}>
-                eq:{eqLabel}
+                {retro ? 'eq:' : 'EQ · '}
+                {eqLabel}
               </button>
-              <span className="text-[11px] text-ph-dim">VOL</span>
+              <span className="text-[11px] text-ph-dim">{retro ? 'VOL' : <Icon name="volume" size={15} />}</span>
               <TRange label={t('player.volume')} className="w-20" value={p.muted ? 0 : p.volume} onChange={p.setVolume} />
               <span className="w-9 text-right text-[11px]">{Math.round((p.muted ? 0 : p.volume) * 100)}%</span>
             </div>

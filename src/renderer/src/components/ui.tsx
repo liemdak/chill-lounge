@@ -4,12 +4,14 @@ import { ditherCover, usePaletteKey } from '../lib/dither'
 import { useI18n } from '../i18n'
 import { getBeat } from '../lib/beat'
 import { startVfx, type VfxLayers } from '../lib/vfx'
+import { useSkin } from '../lib/theme'
+import { Icon } from './icons'
 
 export function Panel({ title, right, className = '', children }: { title?: string; right?: ReactNode; className?: string; children: ReactNode }) {
   return (
     <section className={`panel ${className}`}>
       {title && <span className="panel-title">{title}</span>}
-      {right && <div className="absolute -top-3 right-3 bg-crt-bg px-1">{right}</div>}
+      {right && <div className="panel-right absolute -top-3 right-3 bg-crt-bg px-1">{right}</div>}
       {children}
     </section>
   )
@@ -45,7 +47,7 @@ export function TRange({ value, min = 0, max = 1, step = 0.01, onChange, label, 
 export function Check({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: string; hint?: string }) {
   return (
     <button type="button" className="flex w-full items-start gap-3 py-1 text-left row-hover" onClick={() => onChange(!checked)}>
-      <span className={checked ? 'text-cyan' : 'text-ph-dim'}>{checked ? '[x]' : '[ ]'}</span>
+      <span className={`check ${checked ? 'on text-cyan' : 'text-ph-dim'}`}>{checked ? '[x]' : '[ ]'}</span>
       <span className="flex-1">
         <span className="block text-ph-bright">{label}</span>
         {hint && <span className="block text-[11px] text-ph-dim">{hint}</span>}
@@ -118,8 +120,25 @@ export function Modal({ open, title, onClose, children, width = 440 }: { open: b
   )
 }
 
-/** Cover art rendered as dithered pixel art. */
-export function PixelCover({ src, seed, res = 32, className = '' }: { src: string | null; seed: string; res?: number; className?: string }) {
+/** Cover art: dithered pixel art in the retro skin, the real image in the others. */
+export function PixelCover(props: { src: string | null; seed: string; res?: number; className?: string }) {
+  return useSkin() === 'retro' ? <DitheredCover {...props} /> : <CoverImage src={props.src} className={props.className} />
+}
+
+/** The cover as is, or a soft gradient with a note when there is none. */
+export function CoverImage({ src, className = '' }: { src: string | null; className?: string }) {
+  const [broken, setBroken] = useState(false)
+  useEffect(() => setBroken(false), [src])
+  if (!src || broken)
+    return (
+      <div className={`cover-art flex items-center justify-center bg-gradient-to-br from-violet to-magenta text-white/85 ${className}`}>
+        <Icon name="music" size={20} className="h-[42%] w-[42%]" />
+      </div>
+    )
+  return <img src={src} alt="" draggable={false} loading="lazy" onError={() => setBroken(true)} className={`cover-art object-cover ${className}`} />
+}
+
+function DitheredCover({ src, seed, res = 32, className = '' }: { src: string | null; seed: string; res?: number; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const theme = usePaletteKey()
   useEffect(() => {

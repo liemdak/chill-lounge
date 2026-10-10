@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DownloadMode, TrackInfo } from '../../../shared/types'
 import { DenoBanner, ToolsGate, useYtAuth, VideoViewer, YouTubeAccount } from '../components/Media'
 import { Panel, PixelCover } from '../components/ui'
@@ -61,6 +61,13 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
     } finally {
       setBusy(false)
     }
+  }
+
+  // Resting the pointer on a result starts looking up its stream, so a click plays sooner.
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const warmOnHover = (r: TrackInfo | null): void => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current)
+    if (r) hoverTimer.current = setTimeout(() => window.lounge.youtube.prefetch(r.path.slice(3)), 350)
   }
 
   const queue = (tracks: TrackInfo[], playNow = false): void => {
@@ -127,7 +134,12 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
           {results?.map((r) => {
             const playing = cur?.path === r.path
             return (
-              <div key={r.path} className={`group flex items-center gap-3 px-2 py-1.5 ${playing ? 'row-active' : 'row-hover'}`}>
+              <div
+                key={r.path}
+                className={`group flex items-center gap-3 px-2 py-1.5 ${playing ? 'row-active' : 'row-hover'}`}
+                onMouseEnter={() => warmOnHover(r)}
+                onMouseLeave={() => warmOnHover(null)}
+              >
                 <PixelCover src={r.cover} seed={r.title} res={20} className="h-10 w-10 shrink-0 cursor-pointer" />
                 <div className="min-w-0 flex-1 cursor-pointer" onClick={() => queue([r], true)} title={t('yt.play')}>
                   <div className="truncate text-[12.5px]">{r.title}</div>
@@ -159,7 +171,7 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
       <div className="col-span-5 flex min-w-0 flex-col gap-5">
         <Panel title={t('yt.viewer')} className="p-3 pt-4">
           <div className="relative aspect-video w-full overflow-hidden border border-crt-line bg-black" onDoubleClick={() => hasPicture && onCinema()}>
-            {!cinemaOpen && <VideoViewer track={cur} video={p.videoMode} playing={p.playing} className="absolute inset-0" />}
+            {!cinemaOpen && <VideoViewer track={cur} playing={p.playing} className="absolute inset-0" />}
             {!hasPicture && (
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-[12px] leading-relaxed text-ph-dim">
                 {t('yt.viewerHint')}
@@ -177,11 +189,6 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
                 <div className="truncate text-[12.5px] text-ph-bright">{cur.title}</div>
                 <div className="truncate text-[10.5px] text-ph-dim">{cur.artist || t('player.unknownArtist')}</div>
               </div>
-              {cur.source === 'youtube' && !p.noVideo && (
-                <button className={`tbtn sm ${p.videoMode ? 'on' : ''}`} onClick={p.toggleVideo} title={t('yt.watchHint')}>
-                  {p.videoMode ? t('yt.audioOnly') : t('yt.watch')}
-                </button>
-              )}
               {hasPicture && (
                 <button className="tbtn sm" onClick={onCinema}>
                   {t('yt.fullscreen')}
@@ -189,7 +196,6 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
               )}
             </div>
           )}
-          {p.noVideo && <p className="mt-2 text-[11px] text-ph-dim">{t('yt.noVideo')}</p>}
           <p className="mt-3 text-[11px] text-ph-faint">{t('yt.note')}</p>
         </Panel>
         <YouTubeAccount compact={!blockedMin} />

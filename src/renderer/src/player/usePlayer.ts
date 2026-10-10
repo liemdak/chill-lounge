@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TrackInfo } from '../../../shared/types'
 import { engine, type AmbientKey, type EQSettings } from '../audio/engine'
 import type { TKey } from '../i18n'
@@ -33,35 +33,13 @@ export function usePlayer() {
   const [eq, setEqState] = useState(() => load('eq', { preset: 'flat' as EQPreset, ...EQ_PRESETS.flat }))
   const [soundscape, setSoundscapeState] = useState<Soundscape>(() => load('soundscape', { rain: 0, vinyl: 0, fire: 0, cafe: 0 }))
   const [sleep, setSleep] = useState<SleepTimer>(null)
-  /** YouTube tracks: play the single muxed 360p stream (picture + sound) instead of audio only. */
-  const [videoMode, setVideoMode] = useState(false)
-  const videoModeRef = useRef(false)
-  /** Path of a YouTube track that has no video stream (it stays audio + thumbnail). */
-  const [noVideo, setNoVideo] = useState<string | null>(null)
   /** True while a stream is being resolved / buffered (YouTube takes a couple of seconds). */
   const [buffering, setBuffering] = useState(false)
   /** Path of the track that failed to play, if any. */
   const [error, setError] = useState<string | null>(null)
   const pendingPlay = useRef<string | null>(null)
   const restored = useRef(false)
-  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path, t.source === 'youtube' && videoModeRef.current)
-  const lastTime = useRef(0)
-
-  /** Reload the current YouTube track in the other mode, carrying on from the same moment. */
-  const swapSrc = (track: TrackInfo): void => {
-    const at = lastTime.current
-    const wasPlaying = !media.paused
-    loadedPath.current = track.path
-    media.src = srcFor(track)
-    media.addEventListener(
-      'loadedmetadata',
-      () => {
-        media.currentTime = at
-        if (wasPlaying) media.play().catch(() => {})
-      },
-      { once: true }
-    )
-  }
+  const srcFor = (t: TrackInfo): string => window.lounge.mediaUrl(t.path)
 
   // ── restore last session ────────────────────────────────────────────────
   useEffect(() => {
@@ -125,6 +103,15 @@ export function usePlayer() {
     [media, queue]
   )
 
+  /**
+   * The track after this one, picked ahead of time — also when shuffling — so it's the one that
+   * gets cached and starts instantly.
+   */
+  const upNext = useMemo(
+    () => (shuffle && queue.length > 1 ? (index + 1 + Math.floor(Math.random() * (queue.length - 1))) % queue.length : index + 1),
+    [index, queue.length, shuffle]
+  )
+
   const next = useCallback(
     (auto = false) => {
       if (queue.length === 0) return
@@ -133,14 +120,14 @@ export function usePlayer() {
         return engine.fadeOutAndPause(3)
       }
       if (auto && repeat === 'one') return playAt(index)
-      let i = shuffle && queue.length > 1 ? (index + 1 + Math.floor(Math.random() * (queue.length - 1))) % queue.length : index + 1
+      let i = upNext
       if (i >= queue.length) {
         if (auto && repeat === 'off') return setPlaying(false)
         i = 0
       }
       playAt(i)
     },
-    [queue.length, index, shuffle, repeat, sleep, playAt]
+    [queue.length, index, upNext, repeat, sleep, playAt]
   )
 
   const prev = useCallback(() => {
@@ -169,25 +156,13 @@ export function usePlayer() {
     const onWaiting = (): void => setBuffering(true)
     const onReady = (): void => setBuffering(false)
     const onPause = (): void => setPlaying(false)
-    const onTime = (): void => {
-      lastTime.current = media.currentTime
-      setTime(media.currentTime)
-    }
+    const onTime = (): void => setTime(media.currentTime)
     const onMeta = (): void => {
       if (Number.isFinite(media.duration)) setDuration(media.duration)
     }
     const onEnded = (): void => next(true)
     const onError = (): void => {
       console.warn('[player] cannot play', media.src)
-      // No video stream for this one: fall back to audio + thumbnail instead of failing.
-      const track = queue[index]
-      if (track?.source === 'youtube' && media.src.includes('m=video')) {
-        videoModeRef.current = false
-        setVideoMode(false)
-        setNoVideo(track.path)
-        swapSrc(track)
-        return
-      }
       setPlaying(false)
       setBuffering(false)
       setError(loadedPath.current)
@@ -210,8 +185,7 @@ export function usePlayer() {
       media.removeEventListener('ended', onEnded)
       media.removeEventListener('error', onError)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [media, next, queue, index])
+  }, [media, next])
 
   // Windows media overlay + hardware media keys.
   useEffect(() => {
@@ -258,21 +232,15 @@ export function usePlayer() {
     addTracks(await window.lounge.media.readTags(paths))
   }, [addTracks])
 
-  /** YouTube: switch between audio + thumbnail and the 360p video (a 1–2 s reload, same spot). */
-  const toggleVideo = useCallback(() => {
-    videoModeRef.current = !videoModeRef.current
-    setVideoMode(videoModeRef.current)
-    const track = queue[index]
-    if (track?.source === 'youtube') swapSrc(track)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queue, index])
-
-  // While a track plays, resolve the next YouTube track's streams in the background.
+  // Cache the audio of the YouTube tracks around the current one (it, and the next two) so
+  // moving on to them is instant. Cached files come back from disk; nothing is fetched twice.
   useEffect(() => {
-    if (!playing || queue.length < 2) return
-    const nextTrack = queue[(index + 1) % queue.length]
-    if (nextTrack?.source === 'youtube') window.lounge.youtube.prefetch(nextTrack.path.slice(3))
-  }, [playing, index, queue])
+    if (index < 0 || !queue.length) return
+    const ahead = [index, upNext % queue.length]
+    if (!shuffle) ahead.push((upNext + 1) % queue.length)
+    const ids = [...new Set(ahead)].map((i) => queue[i]).filter((t) => t?.source === 'youtube').map((t) => t.path.slice(3))
+    if (ids.length) window.lounge.youtube.warm(ids)
+  }, [index, upNext, queue, shuffle])
 
   const remove = useCallback(
     (i: number) => {
@@ -375,14 +343,11 @@ export function usePlayer() {
     sleep,
     sleepLeft,
     isLiked: current ? liked.has(current.path) : false,
-    videoMode,
-    noVideo: !!current && noVideo === current.path,
     buffering,
     error,
     media,
     addFiles,
     addTracks,
-    toggleVideo,
     remove,
     playAt,
     toggle,

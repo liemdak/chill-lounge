@@ -9,7 +9,8 @@ import { loadSettings, saveSettings } from './settings'
 import { readTrackInfo } from './tags'
 import { installTools, toolsStatus, updateYtDlp } from './tools'
 import { WallpaperManager } from './wallpaper/manager'
-import { importCookies, isSignedIn, onAuthChange, signIn, signOut } from './youtube-auth'
+import { cleanCache, warmCache } from './audio-cache'
+import { importCookies, isSignedIn, onAuthChange, preferCookies, signIn, signOut } from './youtube-auth'
 import { blockStatus, clearBlock, lookup, onBlockChange, prefetch } from './youtube'
 
 // Chromium throttles windows it thinks are covered; wallpaper windows always are.
@@ -198,7 +199,10 @@ function registerIpc(): void {
   ipcMain.on('yt:unblock', () => clearBlock())
   // Signing in lifts the bot block right away, so stop backing off.
   onAuthChange((signedIn) => {
-    if (signedIn) clearBlock()
+    if (signedIn) {
+      clearBlock()
+      preferCookies()
+    }
     send('yt:auth', signedIn)
   })
   ipcMain.handle('yt:authStatus', () => isSignedIn())
@@ -206,6 +210,7 @@ function registerIpc(): void {
   ipcMain.handle('yt:importCookies', () => importCookies(mainWindow, tr().pickCookies))
   ipcMain.on('yt:signOut', () => signOut())
   ipcMain.on('yt:prefetch', (_e, id: string) => prefetch(id))
+  ipcMain.on('yt:warm', (_e, ids: string[]) => warmCache(ids))
   downloads.onChange((jobs) => send('dl:update', jobs))
   ipcMain.handle('dl:list', () => downloads.list())
   ipcMain.handle('dl:add', (_e, items: { videoId: string; title: string }[], mode: DownloadMode) => downloads.add(items, mode))
@@ -242,6 +247,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     app.setAppUserModelId('com.liemdak.chill-lounge')
     handleMediaProtocol()
+    cleanCache()
     wallpaper = new WallpaperManager()
     wallpaper.onChange((state) => mainWindow?.webContents.send('wallpaper:state', state))
     registerIpc()

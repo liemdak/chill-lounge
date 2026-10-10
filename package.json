@@ -1,7 +1,7 @@
 {
   "name": "chill-lounge",
   "productName": "Chill Lounge",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "private": true,
   "description": "Video/image wallpaper + chill music player for Windows",
   "author": "liemdak",
@@ -18,7 +18,9 @@
     "koffi": "^3.3.2"
   },
   "devDependencies": {
+    "@fontsource/be-vietnam-pro": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
     "@fontsource/vt323": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.6.4",

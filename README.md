@@ -31,7 +31,7 @@
 | Đưa lên **desktop Windows** | Tab **Hình nền** → **[ĐẶT LÊN DESKTOP…]** → xác nhận. Gỡ lúc nào cũng được (trong app hoặc chuột phải icon ở khay) |
 | Màn hình chờ toàn màn hình (đồng hồ + mưa) | Phím **F**, thoát bằng **Esc** |
 | Hiệu ứng mưa, tuyết, đom đóm, sao… | Tab **Hình nền** → bảng **Hiệu ứng pixel**: chọn preset hoặc kéo từng lớp; bật **Nhảy theo nhạc** |
-| Nghe YouTube | Tab **YouTube** → dán link video / playlist hoặc gõ từ khóa → **▶** để phát, **+** để thêm hàng chờ, **[XEM VIDEO]** để xem video 360p, **[⛶]** để xem toàn màn hình |
+| Nghe YouTube | Tab **YouTube** → dán link video / playlist hoặc gõ từ khóa → **▶** để phát, **+** để thêm hàng chờ, **[⛶]** để xem toàn màn hình (muốn xem video thì tải mp4) |
 | Tải nhạc / video | Nút **↓mp3** / **↓mp4** ở tab YouTube, hoặc dán link ở tab **Tải về**; bài tải xong tự vào Thư viện |
 | Đổi ngôn ngữ | Nút **VI / EN** trên thanh tiêu đề |
 
@@ -58,8 +58,8 @@ Choosing an image/video in the **Wallpaper** tab only uses it **inside the app**
 - **8 lớp hiệu ứng pixel bật chồng được** — mưa (có chớp khi mưa to), tuyết, đom đóm, trời sao + sao băng, mưa ký tự terminal, hoa rơi, sương mù dither, nhiễu VHS; 6 preset (Đêm mưa, Mùa đông, Terminal, Đêm hè, Anh đào); **nhảy theo nhạc** (cả trên desktop); độ sáng, scanline CRT.
 - **Trình phát nhạc** — đọc tên bài, nghệ sĩ, ảnh bìa và lời bài hát từ file; EQ + độ ấm băng từ; 4 lớp âm nền tạo bằng Web Audio; hẹn giờ ngủ; phím media; nhớ hàng chờ.
 - **Giao diện CRT** — font VT323 + IBM Plex Mono (đủ dấu tiếng Việt), ảnh bìa dither thành pixel art, đĩa than pixel, phổ LED, chữ đánh máy + glitch.
-- **7 theme màu retro** — Tím CRT, Hổ phách, Lục phosphor, Game Boy, Vaporwave, Xanh IBM, Băng cassette (Cài đặt → Giao diện màu).
-- **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; hiện ảnh bìa lớn, bấm **[XEM VIDEO]** để xem video 360p; xem toàn màn hình.
+- **5 giao diện** — Retro CRT, Glass (kiểu Apple), Anime lo-fi, Windows 98, Windows 11: đổi cả hình dáng, font, nút cửa sổ, icon; giao diện Retro có thêm 7 bộ màu (Tím CRT, Hổ phách, Lục phosphor, Game Boy, Vaporwave, Xanh IBM, Băng cassette). Cài đặt → Giao diện.
+- **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; hiện ảnh bìa lớn, xem toàn màn hình. Các bài sắp phát được lưu sẵn vào bộ đệm (tối đa ~300 MB, tự dọn) nên chuyển bài và tua gần như tức thì.
 - **Tải về** — chọn **chỉ âm thanh (mp3)** hoặc **cả video (mp4, tới 1080p)**, có ảnh bìa và tên bài, không tải trùng, tải xong tự vào Thư viện.
 - **Song ngữ** Việt / English · **tự cập nhật** qua GitHub Releases.
 

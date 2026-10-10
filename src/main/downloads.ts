@@ -7,7 +7,9 @@ import { loadSettings } from './settings'
 import { readTrackInfo } from './tags'
 import { autoUpdateYtDlp, binDir, jsRuntimeArgs, ytdlpPath } from './tools'
 import { watchUrl } from './youtube'
-import { cookieArgs } from './youtube-auth'
+import { cookieCopy, cookiesPreferred, isSignedIn, preferCookies } from './youtube-auth'
+
+const BOT_RE = /confirm you.re not a bot|sign in to confirm/i
 
 // Download queue on top of yt-dlp + ffmpeg. One job at a time keeps YouTube from rate-limiting
 // and the laptop fan quiet. Audio-only → mp3 with tags + cover; video → mp4 up to 1080p.
@@ -96,12 +98,14 @@ export class Downloads {
     const dir = downloadDir()
     mkdirSync(dir, { recursive: true })
 
+    // Signed out first (faster, spares the account); the session only once YouTube asks for it.
+    const cookies = cookiesPreferred() ? cookieCopy() : { args: [] as string[], done: (): void => {} }
     const args = [
       '--no-warnings',
       '--encoding', 'utf-8',
       '--no-playlist',
       ...jsRuntimeArgs(),
-      ...cookieArgs(),
+      ...cookies.args,
       '--ffmpeg-location', binDir(),
       '--embed-metadata',
       '--embed-thumbnail',
@@ -142,8 +146,13 @@ export class Downloads {
     proc.stderr!.on('data', (d: string) => (errText += d))
     proc.on('close', async (code) => {
       this.proc = null
+      cookies.done(code === 0)
       if (job.status === 'canceled') {
         // leave it
+      } else if (code !== 0 && !cookies.args.length && isSignedIn() && BOT_RE.test(errText)) {
+        // YouTube wants a sign-in: go again straight away with the saved session.
+        preferCookies()
+        this.patch(job, { status: 'queued', progress: 0 })
       } else if (code === 0 && job.file && existsSync(job.file)) {
         const track = await readTrackInfo(job.file)
         this.patch(job, { status: 'done', progress: 100, track })

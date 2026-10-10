@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, session, type Cookie } from 'electron'
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 // Optional YouTube sign-in. When YouTube flags a network ("Sign in to confirm you're not a bot")
@@ -26,8 +26,37 @@ export function onAuthChange(fn: (signedIn: boolean) => void): void {
 
 export const isSignedIn = (): boolean => existsSync(cookiesFile())
 
-/** Extra yt-dlp arguments: use the signed-in cookies when there are any. */
-export const cookieArgs = (): string[] => (isSignedIn() ? ['--cookies', cookiesFile()] : [])
+// Signed-in calls are slower (YouTube serves account clients more checks) and wear on the
+// account, so cookies are only used once YouTube has asked for a sign-in, for a while after.
+const PREFER_MS = 30 * 60_000
+let preferUntil = 0
+/** Whether the next yt-dlp call should go straight to the signed-in session. */
+export const cookiesPreferred = (): boolean => isSignedIn() && Date.now() < preferUntil
+/** YouTube asked for a sign-in: use the session for the next half hour. */
+export const preferCookies = (): void => void (preferUntil = Date.now() + PREFER_MS)
+
+let seq = 0
+/**
+ * yt-dlp rewrites its cookie file when it exits (YouTube rotates some cookies), and several run at
+ * once (a stream, a prefetch, a download). Each gets its own copy; a successful run's copy then
+ * replaces the saved file, so the session stays fresh and never gets half-written.
+ */
+export function cookieCopy(): { args: string[]; done: (ok: boolean) => void } {
+  if (!isSignedIn()) return { args: [], done: () => {} }
+  const copy = join(app.getPath('temp'), `chill-lounge-cookies-${process.pid}-${++seq}.txt`)
+  copyFileSync(cookiesFile(), copy)
+  return {
+    args: ['--cookies', copy],
+    done: (ok) => {
+      try {
+        if (ok && isSignedIn()) renameSync(copy, cookiesFile())
+        else rmSync(copy, { force: true })
+      } catch {
+        rmSync(copy, { force: true })
+      }
+    }
+  }
+}
 
 function toNetscape(cookies: Cookie[]): string {
   const lines = ['# Netscape HTTP Cookie File', '# Written by Chill Lounge for yt-dlp. Do not share this file.', '']

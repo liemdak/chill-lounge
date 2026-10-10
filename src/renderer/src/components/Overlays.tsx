@@ -305,7 +305,7 @@ export function AppBackdrop({ wallpaper }: { wallpaper: WallpaperState | null })
   const url = window.lounge.mediaUrl(src.path)
   const style = { filter: `brightness(${(wallpaper!.effects.brightness ?? 100) / 100}) saturate(0.9)`, objectFit: wallpaper!.fit } as const
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 opacity-30" aria-hidden>
+    <div className="app-backdrop pointer-events-none fixed inset-0 z-0 opacity-30" aria-hidden>
       {src.kind === 'video' ? <video key={url} src={url} className="h-full w-full" style={style} autoPlay loop muted /> : <img src={url} className="h-full w-full" style={style} />}
       <VfxCanvas layers={wallpaper!.effects} reactive={wallpaper!.effects.reactive} className="absolute inset-0 h-full w-full" />
     </div>
@@ -359,7 +359,7 @@ export function CinemaMode({ open, onClose, p }: { open: boolean; onClose: () =>
           onMouseMove={poke}
           onDoubleClick={onClose}
         >
-          <VideoViewer track={cur} video={p.videoMode} playing={p.playing} className="absolute inset-0" />
+          <VideoViewer track={cur} playing={p.playing} className="absolute inset-0" />
           {!cur && <div className="absolute inset-0 flex items-center justify-center font-pixel text-[40px] text-ph-faint">NO SIGNAL</div>}
 
           <motion.div className="absolute inset-x-0 top-0 flex justify-between p-5" animate={{ opacity: barVisible ? 1 : 0 }}>
@@ -381,11 +381,6 @@ export function CinemaMode({ open, onClose, p }: { open: boolean; onClose: () =>
                 <div className="truncate font-pixel text-[34px] leading-none text-ph-bright rgb-split">{cur?.title ?? '—'}</div>
                 <div className="truncate text-[12px] text-ph-dim">{cur?.artist}</div>
               </div>
-              {cur?.source === 'youtube' && !p.noVideo && (
-                <button className={`tbtn shrink-0 ${p.videoMode ? 'on' : ''}`} onClick={p.toggleVideo}>
-                  {p.videoMode ? t('yt.audioOnly') : t('yt.watch')}
-                </button>
-              )}
             </div>
             <div className="flex items-center gap-4">
               <button className="tbtn" onClick={p.prev} aria-label={t('player.prev')}>

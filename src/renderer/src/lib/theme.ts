@@ -91,35 +91,101 @@ const VARS: Record<keyof Theme, string> = {
 
 const rgbOf = (hex: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number]
 
+// Skins change the whole look — shapes, fonts, window chrome, icons — not just the colours.
+// "retro" is the CRT terminal and takes any colour theme above; the others bring their own
+// palette (Glass follows Windows' light / dark mode). Skins are CSS-only ([data-skin] rules in
+// index.css) plus system or bundled fonts, so switching costs no memory.
+export type SkinId = 'retro' | 'glass' | 'anime' | 'win98' | 'win11'
+export const SKIN_IDS: SkinId[] = ['retro', 'glass', 'anime', 'win98', 'win11']
+
+export const SKIN_THEMES: Record<'glassLight' | 'glassDark' | 'anime' | 'win98' | 'win11', Theme> = {
+  glassLight: {
+    bg: '#f2f2f7', panel: '#ffffff', panel2: '#f7f7fa', deep: '#d8d8e0',
+    ph: '#1d1d1f', phBright: '#000000', phDim: '#6e6e73', phFaint: '#c7c7cc',
+    purple: '#007aff', violet: '#007aff', magenta: '#ff2d55', cyan: '#34c759'
+  },
+  glassDark: {
+    bg: '#0f0f13', panel: '#1c1c22', panel2: '#26262e', deep: '#2c2c3a',
+    ph: '#ececf1', phBright: '#ffffff', phDim: '#a1a1aa', phFaint: '#55555f',
+    purple: '#0a84ff', violet: '#0a84ff', magenta: '#ff375f', cyan: '#30d158'
+  },
+  // Pastel lo-fi: cream pink paper, lavender ink, sakura accents.
+  anime: {
+    bg: '#fff5fa', panel: '#ffffff', panel2: '#fff0f7', deep: '#ffd6e8',
+    ph: '#5b4b8a', phBright: '#3a2d66', phDim: '#9a8fc0', phFaint: '#e3d9f5',
+    purple: '#ff8fc7', violet: '#b18cff', magenta: '#ff5fa2', cyan: '#3fb6f0'
+  },
+  win98: {
+    bg: '#c0c0c0', panel: '#c0c0c0', panel2: '#dfdfdf', deep: '#808080',
+    ph: '#000000', phBright: '#000000', phDim: '#3c3c3c', phFaint: '#808080',
+    purple: '#000080', violet: '#000080', magenta: '#c00000', cyan: '#007000'
+  },
+  win11: {
+    bg: '#1f1f1f', panel: '#2b2b2b', panel2: '#323232', deep: '#3a3a3a',
+    ph: '#ffffff', phBright: '#ffffff', phDim: '#c5c5c5', phFaint: '#5d5d5d',
+    purple: '#4cc2ff', violet: '#4cc2ff', magenta: '#ff99a4', cyan: '#6ccb5f'
+  }
+}
+
 let current: ThemeId = 'crt'
+let skin: SkinId = 'retro'
+const darkQuery = matchMedia('(prefers-color-scheme: dark)')
 const listeners = new Set<() => void>()
+
+/** The colours in use: the retro colour theme, or the skin's own palette. */
+function tokens(): Theme {
+  if (skin === 'retro') return THEMES[current]
+  if (skin === 'glass') return darkQuery.matches ? SKIN_THEMES.glassDark : SKIN_THEMES.glassLight
+  return SKIN_THEMES[skin]
+}
 
 /** Dark → bright ramp for the canvas art (dithered covers, vinyl, spectrum). */
 export const palette = (): [number, number, number][] => {
-  const th = THEMES[current]
+  const th = tokens()
   return [th.bg, th.deep, th.purple, th.ph, th.phBright].map(rgbOf)
 }
-export const accent = (key: 'magenta' | 'cyan' | 'violet', alpha = 1): string => `rgba(${rgbOf(THEMES[current][key]).join(',')},${alpha})`
+export const accent = (key: 'magenta' | 'cyan' | 'violet', alpha = 1): string => `rgba(${rgbOf(tokens()[key]).join(',')},${alpha})`
 
-export function applyTheme(id: ThemeId): void {
-  current = THEMES[id] ? id : 'crt'
-  const root = document.documentElement.style
-  for (const [key, name] of Object.entries(VARS)) root.setProperty(name, THEMES[current][key as keyof Theme])
-  document.documentElement.dataset.theme = current
-  save('theme', { id: current })
+function apply(): void {
+  const root = document.documentElement
+  const th = tokens()
+  for (const [key, name] of Object.entries(VARS)) root.style.setProperty(name, th[key as keyof Theme])
+  root.dataset.theme = current
+  root.dataset.skin = skin
+  root.dataset.scheme = skin === 'glass' ? (darkQuery.matches ? 'dark' : 'light') : ''
+  save('theme', { id: current, skin })
   for (const fn of listeners) fn()
 }
 
-/** Apply the saved theme before the first render (no flash of the default colours). */
-export const initTheme = (): void => applyTheme(load('theme', { id: 'crt' as ThemeId }).id)
-
-/** Current theme; re-renders when it changes (canvas art redraws on it). */
-export function useTheme(): ThemeId {
-  return useSyncExternalStore(
-    (fn) => {
-      listeners.add(fn)
-      return () => listeners.delete(fn)
-    },
-    () => current
-  )
+/** Colour theme of the retro skin. */
+export function applyTheme(id: ThemeId): void {
+  current = THEMES[id] ? id : 'crt'
+  apply()
 }
+
+export function applySkin(id: SkinId): void {
+  skin = SKIN_IDS.includes(id) ? id : 'retro'
+  apply()
+}
+
+/** Apply the saved look before the first render (no flash of the default colours). */
+export function initTheme(): void {
+  const saved = load('theme', { id: 'crt' as ThemeId, skin: 'retro' as SkinId })
+  current = THEMES[saved.id] ? saved.id : 'crt'
+  skin = SKIN_IDS.includes(saved.skin) ? saved.skin : 'retro'
+  apply()
+  darkQuery.addEventListener('change', () => skin === 'glass' && apply())
+}
+
+const subscribe = (fn: () => void): (() => void) => {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
+}
+
+/** Changes with any colour change (theme, skin, light / dark): canvas art redraws on it. */
+export function useTheme(): string {
+  return useSyncExternalStore(subscribe, () => `${skin}/${current}/${darkQuery.matches}`)
+}
+
+export const useColorTheme = (): ThemeId => useSyncExternalStore(subscribe, () => current)
+export const useSkin = (): SkinId => useSyncExternalStore(subscribe, () => skin)

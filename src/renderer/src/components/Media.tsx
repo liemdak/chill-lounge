@@ -75,12 +75,12 @@ function ThumbView({ track, playing, className }: { track: TrackInfo; playing: b
 }
 
 /**
- * The playing track's picture: YouTube shows its thumbnail (audio mode) or the 360p video; a local
- * video file shows itself. Returns null for local audio.
+ * The playing track's picture: YouTube shows its thumbnail (only the audio is streamed — it starts
+ * faster and can be cached); a local video file shows itself. Returns null for local audio.
  */
-export function VideoViewer({ track, video, playing, className = '' }: { track: TrackInfo | null; video: boolean; playing: boolean; className?: string }) {
+export function VideoViewer({ track, playing, className = '' }: { track: TrackInfo | null; playing: boolean; className?: string }) {
   if (!track) return null
-  if (track.source === 'youtube') return video ? <BorrowedVideo className={className} /> : <ThumbView track={track} playing={playing} className={className} />
+  if (track.source === 'youtube') return <ThumbView track={track} playing={playing} className={className} />
   return track.isVideo ? <BorrowedVideo className={className} /> : null
 }
 

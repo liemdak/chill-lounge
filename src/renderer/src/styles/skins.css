@@ -1,0 +1,307 @@
+/*
+ * Skins (lib/theme.ts sets <html data-skin>). The retro CRT look is the default styling in
+ * index.css; each skin below reshapes the same shared classes (.panel, .tbtn, .tab, .badge,
+ * .tinput, .blockbar, .trange, .row-*) and the app chrome (.app-header, .app-sidebar,
+ * .app-player). Colours still come from the --color-* tokens each skin sets.
+ * Unlayered on purpose: these rules win over Tailwind utilities.
+ */
+
+/* ── Shared by every non-retro skin ─────────────────────────────────────── */
+:root:not([data-skin='retro']) {
+  --radius: 10px;
+  --soft: color-mix(in srgb, var(--color-ph) 8%, transparent);
+  --soft-2: color-mix(in srgb, var(--color-ph) 14%, transparent);
+  --accent: var(--color-violet);
+}
+:root:not([data-skin='retro']) body { text-shadow: none; font-size: 13px; }
+:root:not([data-skin='retro']) #root { animation: none; }
+:root:not([data-skin='retro']) .crt-overlay,
+:root:not([data-skin='retro']) .type-cursor,
+:root:not([data-skin='retro']) .scanlines { display: none; }
+:root:not([data-skin='retro']) .rgb-split,
+:root:not([data-skin='retro']) .glow { text-shadow: none; }
+:root:not([data-skin='retro']) .glitch { animation: none; }
+:root:not([data-skin='retro']) .font-pixel { font-weight: 700; font-size-adjust: 0.38; letter-spacing: -0.01em; }
+:root:not([data-skin='retro']) .app-backdrop { opacity: 0.45; }
+
+:root:not([data-skin='retro']) .panel-title::before,
+:root:not([data-skin='retro']) .panel-title::after { content: none; }
+:root:not([data-skin='retro']) .panel-title,
+:root:not([data-skin='retro']) .tbtn,
+:root:not([data-skin='retro']) .tab,
+:root:not([data-skin='retro']) .badge,
+:root:not([data-skin='retro']) .nav-label { text-transform: none; letter-spacing: 0; }
+:root:not([data-skin='retro']) .panel-title { font-weight: 600; font-size: 11.5px; padding: 1px 10px; }
+/* the labels are written lowercase for the terminal look: sentence / title case elsewhere */
+:root:not([data-skin='retro']) .panel-title::first-letter,
+:root:not([data-skin='retro']) .nav-label::first-letter { text-transform: uppercase; }
+:root:not([data-skin='retro']) .nav-label { display: block; }
+:root:not([data-skin='retro']) .tbtn,
+:root:not([data-skin='retro']) .tab { text-transform: capitalize; }
+:root:not([data-skin='retro']) .panel-right { background: transparent; }
+
+:root:not([data-skin='retro']) .tbtn { justify-content: center; }
+:root:not([data-skin='retro']) .tbtn:hover { text-shadow: none; }
+:root:not([data-skin='retro']) .led { border-radius: 50%; box-shadow: none; }
+:root:not([data-skin='retro']) .cover-art { border-radius: 6px; }
+
+/* smooth progress + range instead of blocks */
+:root:not([data-skin='retro']) .blockbar { height: 6px; border-radius: 99px; background: var(--soft-2); opacity: 1; margin: 4px 0; }
+:root:not([data-skin='retro']) .blockbar > .fill { border-radius: 99px; background: var(--accent); filter: none; }
+:root:not([data-skin='retro']) input[type='range'].trange::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--soft-2) var(--pct, 0%));
+}
+:root:not([data-skin='retro']) input[type='range'].trange::-webkit-slider-thumb {
+  width: 14px; height: 14px; margin-top: -5px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 1px 4px rgb(0 0 0 / 0.3);
+}
+
+/* [x] / [ ] → a real checkbox */
+:root:not([data-skin='retro']) .check {
+  font-size: 0; width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; border-radius: 4px;
+  border: 1.5px solid var(--color-ph-faint); display: inline-flex; align-items: center; justify-content: center;
+}
+:root:not([data-skin='retro']) .check.on { background: var(--accent); border-color: var(--accent); }
+:root:not([data-skin='retro']) .check.on::after { content: '✓'; font-size: 11px; font-weight: 700; color: #fff; }
+
+:root:not([data-skin='retro']) .row-hover:hover { background: var(--soft); border-radius: 8px; }
+:root:not([data-skin='retro']) .row-active { background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: none; border-radius: 8px; color: var(--color-ph-bright); }
+
+:root:not([data-skin='retro']) .cover-hero { border-radius: 20px; overflow: hidden; transition: transform 0.4s ease, box-shadow 0.4s ease; box-shadow: 0 18px 40px rgb(0 0 0 / 0.28); cursor: pointer; }
+:root:not([data-skin='retro']) .cover-hero .cover-art { border-radius: 0; }
+:root:not([data-skin='retro']) .cover-hero:not(.playing) { transform: scale(0.94); box-shadow: 0 8px 20px rgb(0 0 0 / 0.2); }
+
+:root:not([data-skin='retro']) .app-brand { font-weight: 700; font-size: 13px; color: var(--color-ph-bright); }
+:root:not([data-skin='retro']) .app-sidebar { width: 84px; }
+:root:not([data-skin='retro']) .nav-item { gap: 4px; }
+:root:not([data-skin='retro']) .nav-label { font-size: 10.5px; }
+:root:not([data-skin='retro']) .app-player .play-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; }
+
+.winbtn { display: inline-flex; align-items: center; justify-content: center; color: var(--color-ph); }
+
+/* ── Glass (Apple) ──────────────────────────────────────────────────────── */
+:root[data-skin='glass'] {
+  --font-mono: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --font-pixel: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --glass: color-mix(in srgb, var(--color-crt-panel) 62%, transparent);
+  --hairline: color-mix(in srgb, var(--color-ph) 10%, transparent);
+  --color-crt-line: var(--hairline);
+  --color-crt-line-strong: color-mix(in srgb, var(--color-ph) 18%, transparent);
+}
+:root[data-skin='glass'][data-scheme='light'] body { background: linear-gradient(135deg, #dfe6f6, #f3e6f1 55%, #e6f0ef); }
+:root[data-skin='glass'][data-scheme='dark'] body { background: linear-gradient(135deg, #10121f, #1d1027 55%, #0d1a1d); }
+:root[data-skin='glass'] .app-backdrop { opacity: 0.6; }
+:root[data-skin='glass'] .panel {
+  background: var(--glass); border: 1px solid var(--hairline); border-radius: 18px;
+  backdrop-filter: blur(22px) saturate(170%);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.1);
+}
+:root[data-skin='glass'] .panel-title { color: var(--color-ph-dim); background: var(--color-crt-panel); border-radius: 99px; border: 1px solid var(--hairline); top: -0.85em; left: 16px; }
+:root[data-skin='glass'] .app-header,
+:root[data-skin='glass'] .app-sidebar,
+:root[data-skin='glass'] .app-player { background: var(--glass); backdrop-filter: blur(26px) saturate(180%); border-color: var(--hairline); box-shadow: none; }
+:root[data-skin='glass'] .tbtn { border: none; border-radius: 99px; background: var(--soft); color: var(--color-ph); font-weight: 500; }
+:root[data-skin='glass'] .tbtn:hover { background: var(--soft-2); color: var(--color-ph-bright); box-shadow: none; }
+:root[data-skin='glass'] .tbtn.ghost { background: transparent; }
+:root[data-skin='glass'] .tbtn.ghost:hover { background: var(--soft); }
+:root[data-skin='glass'] .tbtn.primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent); }
+:root[data-skin='glass'] .tbtn.on { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+:root[data-skin='glass'] .tab { border-radius: 99px; border: none; }
+:root[data-skin='glass'] .tab.active { background: var(--soft-2); color: var(--color-ph-bright); }
+:root[data-skin='glass'] .badge { border-radius: 99px; border-color: var(--hairline); }
+:root[data-skin='glass'] .tinput { border-radius: 10px; border: 1px solid var(--hairline); background: var(--soft); }
+:root[data-skin='glass'] .tinput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+:root[data-skin='glass'] .nav-active { background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 14px; box-shadow: none; }
+:root[data-skin='glass'] .nav-item.active { color: var(--accent); }
+:root[data-skin='glass'] .cover-art { border-radius: 8px; }
+/* traffic lights, close first */
+:root[data-skin='glass'] .winbtns { gap: 8px; margin-right: 6px; }
+:root[data-skin='glass'] .winbtn { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.2); }
+:root[data-skin='glass'] .winbtn.close { background: #ff5f57; order: 0; }
+:root[data-skin='glass'] .winbtn.min { background: #febc2e; order: 1; }
+:root[data-skin='glass'] .winbtn.max { background: #28c840; order: 2; }
+:root[data-skin='glass'] .winbtn:hover { filter: brightness(0.85); }
+:root[data-skin='glass'] ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-ph) 22%, transparent); border-radius: 99px; }
+
+/* ── Anime lo-fi ────────────────────────────────────────────────────────── */
+:root[data-skin='anime'] {
+  --font-mono: 'Nunito', 'Segoe UI', sans-serif;
+  --font-pixel: 'Nunito', 'Segoe UI', sans-serif;
+  --pink: var(--color-magenta);
+  --lav: var(--color-violet);
+  --color-crt-line: color-mix(in srgb, var(--color-violet) 35%, transparent);
+  --color-crt-line-strong: color-mix(in srgb, var(--color-violet) 55%, transparent);
+  --accent: var(--color-magenta);
+}
+:root[data-skin='anime'] body {
+  font-weight: 600;
+  background:
+    radial-gradient(color-mix(in srgb, var(--color-magenta) 14%, transparent) 1.2px, transparent 1.6px) 0 0 / 14px 14px,
+    linear-gradient(160deg, #ffe9f4, #f1e9ff 55%, #e6f6ff);
+}
+:root[data-skin='anime'] .font-pixel { font-weight: 900; }
+:root[data-skin='anime'] .panel {
+  background: color-mix(in srgb, #fff 90%, transparent); border: 2px solid var(--color-crt-line); border-radius: 22px;
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--pink) 22%, transparent);
+}
+:root[data-skin='anime'] .panel-title { background: var(--pink); color: #fff; border-radius: 99px; top: -0.95em; font-weight: 800; box-shadow: 0 2px 0 color-mix(in srgb, var(--pink) 50%, #000 10%); }
+:root[data-skin='anime'] .panel-title::before { content: '✿ '; color: #fff; }
+:root[data-skin='anime'] .app-header {
+  background: linear-gradient(90deg, #ffc8e3, #dcc8ff 60%, #c8e8ff); border-bottom: 2px solid #fff;
+}
+:root[data-skin='anime'] .app-brand { font-weight: 900; font-size: 14px; color: #5b3d8f; }
+:root[data-skin='anime'] .app-brand::after { content: ' ✦'; color: #ff5fa2; }
+:root[data-skin='anime'] .app-logo { color: #ff5fa2; }
+:root[data-skin='anime'] .app-sidebar,
+:root[data-skin='anime'] .app-player { background: color-mix(in srgb, #fff 94%, transparent); border-color: #fff; box-shadow: 0 0 0 1px var(--color-crt-line); }
+:root[data-skin='anime'] .tbtn {
+  border: 2px solid color-mix(in srgb, var(--lav) 50%, transparent); border-radius: 99px; background: #fff; color: var(--color-ph); font-weight: 800;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--lav) 45%, transparent); transition: transform 0.12s, box-shadow 0.12s;
+}
+:root[data-skin='anime'] .tbtn:hover { background: #fff; color: var(--pink); transform: translateY(-1px); box-shadow: 0 4px 0 color-mix(in srgb, var(--pink) 45%, transparent); border-color: var(--pink); }
+:root[data-skin='anime'] .tbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--lav) 45%, transparent); }
+:root[data-skin='anime'] .tbtn.ghost { border-color: transparent; box-shadow: none; background: transparent; }
+:root[data-skin='anime'] .tbtn.primary { background: var(--pink); border-color: var(--pink); color: #fff; box-shadow: 0 3px 0 #d63c80; }
+:root[data-skin='anime'] .tbtn.on { background: #ffe1f0; border-color: var(--pink); color: #d63c80; }
+:root[data-skin='anime'] .tab { border-radius: 99px; font-weight: 800; }
+:root[data-skin='anime'] .tab.active { background: #ffe1f0; border-color: var(--pink); color: #d63c80; }
+:root[data-skin='anime'] .badge { border-radius: 99px; background: #fff; font-weight: 800; }
+:root[data-skin='anime'] .tinput { border-radius: 99px; border: 2px solid var(--color-crt-line); background: #fff; padding: 0 14px; }
+:root[data-skin='anime'] .tinput:focus { border-color: var(--pink); box-shadow: 0 0 0 4px #ffe1f0; }
+:root[data-skin='anime'] .nav-active { background: linear-gradient(135deg, #ff8fc7, #b18cff); border-radius: 18px; box-shadow: 0 3px 0 #d63c80; }
+:root[data-skin='anime'] .nav-item.active { color: #fff; }
+:root[data-skin='anime'] .blockbar { height: 8px; background: #ffe1f0; }
+:root[data-skin='anime'] .blockbar > .fill { background: linear-gradient(90deg, #ff8fc7, #b18cff); }
+:root[data-skin='anime'] input[type='range'].trange::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--pink) var(--pct, 0%), #ffe1f0 var(--pct, 0%)); }
+:root[data-skin='anime'] input[type='range'].trange::-webkit-slider-thumb { background: #fff; box-shadow: 0 0 0 3px var(--pink); }
+:root[data-skin='anime'] .row-active { background: #ffe1f0; color: #d63c80; }
+:root[data-skin='anime'] .cover-art { border-radius: 12px; }
+/* polaroid */
+:root[data-skin='anime'] .cover-hero { background: #fff; padding: 10px 10px 30px; border-radius: 6px; transform: rotate(-2deg); box-shadow: 6px 8px 0 color-mix(in srgb, var(--pink) 25%, transparent); overflow: visible; }
+:root[data-skin='anime'] .cover-hero:not(.playing) { transform: rotate(-4deg) scale(0.95); }
+:root[data-skin='anime'] .cover-hero::after { content: '♡ now playing'; position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-size: 12px; font-weight: 800; color: var(--pink); }
+:root[data-skin='anime'] .winbtns { gap: 6px; }
+:root[data-skin='anime'] .winbtn { width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #9a6fd0; box-shadow: 0 2px 0 #c9b2ef; }
+:root[data-skin='anime'] .winbtn.close { color: #ff5fa2; }
+:root[data-skin='anime'] .winbtn:hover { transform: translateY(-1px); }
+:root[data-skin='anime'] ::-webkit-scrollbar-thumb { background: #ffc1df; border-radius: 99px; }
+
+/* ── Windows 98 ─────────────────────────────────────────────────────────── */
+:root[data-skin='win98'] {
+  --font-mono: Tahoma, 'Segoe UI', sans-serif;
+  --font-pixel: Tahoma, 'Segoe UI', sans-serif;
+  --raised: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  --sunken: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+  --radius: 0;
+  --accent: #000080;
+  --color-crt-line: #808080;
+  --color-crt-line-strong: #808080;
+}
+:root[data-skin='win98'] body { font-size: 12px; background: #008080; }
+:root[data-skin='win98'] .app-backdrop { opacity: 0.35; }
+:root[data-skin='win98'] .font-pixel { font-size-adjust: 0.32; }
+:root[data-skin='win98'] .panel { background: #c0c0c0; border: none; box-shadow: var(--raised); }
+/* group-box caption sitting on the frame */
+:root[data-skin='win98'] .panel-title { background: #c0c0c0; color: #000; font-weight: 400; font-size: 12px; top: -0.6em; padding: 0 4px; }
+:root[data-skin='win98'] .panel-right { background: #c0c0c0; }
+:root[data-skin='win98'] .app-header { background: linear-gradient(90deg, #000080, #1084d0); border: none; color: #fff; }
+:root[data-skin='win98'] .app-header .text-ph-dim,
+:root[data-skin='win98'] .app-header .text-ph,
+:root[data-skin='win98'] .app-brand { color: #fff; }
+:root[data-skin='win98'] .app-header .badge { color: #fff; border-color: rgb(255 255 255 / 0.5); }
+:root[data-skin='win98'] .app-header .tab { color: #dfe7ff; }
+:root[data-skin='win98'] .app-header .tab.active { color: #000; }
+:root[data-skin='win98'] .app-logo { color: #fff; }
+:root[data-skin='win98'] .app-sidebar,
+:root[data-skin='win98'] .app-player { background: #c0c0c0; border: none; box-shadow: var(--raised); }
+:root[data-skin='win98'] .tbtn,
+:root[data-skin='win98'] .winbtn {
+  background: #c0c0c0; color: #000; border: none; border-radius: 0; box-shadow: var(--raised); font-size: 12px; transition: none;
+}
+:root[data-skin='win98'] .tbtn:hover { background: #c0c0c0; color: #000; box-shadow: var(--raised); }
+:root[data-skin='win98'] .tbtn:active,
+:root[data-skin='win98'] .winbtn:active { box-shadow: var(--sunken); transform: none; }
+:root[data-skin='win98'] .tbtn.ghost { box-shadow: none; }
+:root[data-skin='win98'] .tbtn.ghost:hover { box-shadow: var(--raised); }
+:root[data-skin='win98'] .tbtn.primary { font-weight: 700; outline: 1px solid #000; outline-offset: -1px; }
+:root[data-skin='win98'] .tbtn.on { box-shadow: var(--sunken); background: repeating-conic-gradient(#c0c0c0 0 25%, #fff 0 50%) 0 0 / 2px 2px; }
+:root[data-skin='win98'] .tbtn.danger:hover { background: #c0c0c0; color: #000; }
+:root[data-skin='win98'] .app-player .play-btn { border-radius: 0; width: 64px; height: 30px; }
+:root[data-skin='win98'] .winbtns { gap: 2px; }
+:root[data-skin='win98'] .winbtn { width: 18px; height: 16px; }
+:root[data-skin='win98'] .winbtn.close { margin-left: 2px; }
+:root[data-skin='win98'] .tab { border: none; color: #000; }
+:root[data-skin='win98'] .tab.active { background: #c0c0c0; box-shadow: var(--raised); color: #000; }
+:root[data-skin='win98'] .badge { border: none; box-shadow: var(--sunken); padding: 2px 8px; color: #000; background: #c0c0c0; }
+:root[data-skin='win98'] .tinput { background: #fff; color: #000; border: none; box-shadow: var(--sunken); }
+:root[data-skin='win98'] .tinput:focus { box-shadow: var(--sunken); }
+:root[data-skin='win98'] .nav-active { background: transparent; box-shadow: var(--sunken); }
+:root[data-skin='win98'] .nav-item { color: #000; }
+:root[data-skin='win98'] .nav-item.active { color: #000; background: repeating-conic-gradient(#c0c0c0 0 25%, #fff 0 50%) 0 0 / 2px 2px; }
+/* classic block progress bar in a sunken well */
+:root[data-skin='win98'] .blockbar { height: 16px; border-radius: 0; background: #fff; box-shadow: var(--sunken); margin: 0; }
+:root[data-skin='win98'] .blockbar > .fill { inset: 3px auto 3px 3px; border-radius: 0; background: repeating-linear-gradient(90deg, #000080 0 8px, transparent 8px 10px); max-width: calc(100% - 6px); }
+:root[data-skin='win98'] input[type='range'].trange::-webkit-slider-runnable-track { height: 4px; border-radius: 0; background: #fff; box-shadow: var(--sunken); }
+:root[data-skin='win98'] input[type='range'].trange::-webkit-slider-thumb { width: 11px; height: 21px; margin-top: -9px; border-radius: 0; background: #c0c0c0; box-shadow: var(--raised); }
+:root[data-skin='win98'] .row-hover:hover { background: transparent; }
+:root[data-skin='win98'] .row-active { background: #000080; color: #fff; border-radius: 0; }
+:root[data-skin='win98'] .row-active * { color: #fff; }
+:root[data-skin='win98'] .check { border-radius: 0; border: none; background: #fff; box-shadow: var(--sunken); }
+:root[data-skin='win98'] .check.on { background: #fff; }
+:root[data-skin='win98'] .check.on::after { color: #000; }
+:root[data-skin='win98'] .cover-art { border-radius: 0; }
+:root[data-skin='win98'] .cover-hero { border-radius: 0; padding: 3px; background: #c0c0c0; box-shadow: var(--sunken); transform: none; }
+:root[data-skin='win98'] .cover-hero:not(.playing) { transform: none; filter: grayscale(0.5); }
+:root[data-skin='win98'] ::-webkit-scrollbar { width: 16px; height: 16px; }
+:root[data-skin='win98'] ::-webkit-scrollbar-track { background: repeating-conic-gradient(#c0c0c0 0 25%, #fff 0 50%) 0 0 / 2px 2px; }
+:root[data-skin='win98'] ::-webkit-scrollbar-thumb,
+:root[data-skin='win98'] ::-webkit-scrollbar-thumb:hover { background: #c0c0c0; box-shadow: var(--raised); }
+:root[data-skin='win98'] ::selection { background: #000080; color: #fff; }
+
+/* ── Windows 11 ─────────────────────────────────────────────────────────── */
+:root[data-skin='win11'] {
+  --font-mono: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-pixel: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --stroke: rgb(255 255 255 / 0.08);
+  --fill: rgb(255 255 255 / 0.06);
+  --fill-hover: rgb(255 255 255 / 0.09);
+  --color-crt-line: var(--stroke);
+  --color-crt-line-strong: rgb(255 255 255 / 0.12);
+}
+:root[data-skin='win11'] body { background: radial-gradient(1200px 700px at 85% -10%, #1d3557 0%, transparent 60%), radial-gradient(900px 600px at -10% 110%, #2a1f45 0%, transparent 60%), #1c1c1c; }
+:root[data-skin='win11'] .font-pixel { font-weight: 600; }
+:root[data-skin='win11'] .panel { background: rgb(43 43 43 / 0.72); border: 1px solid var(--stroke); border-radius: 8px; backdrop-filter: blur(20px); box-shadow: 0 2px 10px rgb(0 0 0 / 0.25); }
+:root[data-skin='win11'] .panel-title { color: var(--color-ph-dim); background: #2b2b2b; border-radius: 4px; border: 1px solid var(--stroke); }
+:root[data-skin='win11'] .app-header,
+:root[data-skin='win11'] .app-sidebar,
+:root[data-skin='win11'] .app-player { background: rgb(32 32 32 / 0.82); backdrop-filter: blur(30px); border-color: var(--stroke); box-shadow: none; }
+:root[data-skin='win11'] .app-header { padding-right: 0; }
+:root[data-skin='win11'] .app-logo { color: var(--accent); }
+:root[data-skin='win11'] .tbtn { border: 1px solid var(--stroke); border-radius: 4px; background: var(--fill); color: var(--color-ph); font-weight: 400; }
+:root[data-skin='win11'] .tbtn:hover { background: var(--fill-hover); color: var(--color-ph-bright); box-shadow: none; }
+:root[data-skin='win11'] .tbtn.ghost { background: transparent; border-color: transparent; }
+:root[data-skin='win11'] .tbtn.ghost:hover { background: var(--fill); }
+:root[data-skin='win11'] .tbtn.primary { background: var(--accent); border-color: transparent; color: #000; box-shadow: none; }
+:root[data-skin='win11'] .tbtn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); color: #000; }
+:root[data-skin='win11'] .tbtn.on { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); color: var(--color-ph-bright); }
+:root[data-skin='win11'] .tbtn.danger:hover { background: #c42b1c; border-color: #c42b1c; color: #fff; }
+:root[data-skin='win11'] .tab { border-radius: 4px; border: none; }
+:root[data-skin='win11'] .tab.active { background: var(--fill-hover); box-shadow: inset 0 -2px 0 var(--accent); }
+:root[data-skin='win11'] .badge { border-radius: 4px; border-color: var(--stroke); }
+:root[data-skin='win11'] .tinput { border-radius: 4px; border: 1px solid var(--stroke); background: var(--fill); box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.35); }
+:root[data-skin='win11'] .tinput:focus { background: #1f1f1f; border-color: var(--stroke); box-shadow: inset 0 -2px 0 var(--accent); }
+:root[data-skin='win11'] .nav-active { background: var(--fill-hover); border-radius: 6px; box-shadow: inset 3px 0 0 var(--accent); }
+:root[data-skin='win11'] .nav-item.active { color: var(--color-ph-bright); }
+:root[data-skin='win11'] .row-active { box-shadow: inset 3px 0 0 var(--accent); background: var(--fill); border-radius: 4px; }
+:root[data-skin='win11'] .row-hover:hover { border-radius: 4px; }
+:root[data-skin='win11'] .cover-art { border-radius: 4px; }
+:root[data-skin='win11'] .cover-hero { border-radius: 8px; }
+:root[data-skin='win11'] input[type='range'].trange::-webkit-slider-thumb { background: #454545; box-shadow: inset 0 0 0 4px #454545, inset 0 0 0 7px var(--accent); }
+/* caption buttons: full height, Segoe Fluent Icons */
+:root[data-skin='win11'] .winbtns { align-self: stretch; margin-left: 4px; }
+:root[data-skin='win11'] .winbtn { width: 46px; height: 100%; font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets'; font-size: 10px; background: transparent; }
+:root[data-skin='win11'] .winbtn:hover { background: var(--fill-hover); }
+:root[data-skin='win11'] .winbtn.close:hover { background: #c42b1c; color: #fff; }
+:root[data-skin='win11'] ::-webkit-scrollbar { width: 6px; }
+:root[data-skin='win11'] ::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.3); border-radius: 99px; }
