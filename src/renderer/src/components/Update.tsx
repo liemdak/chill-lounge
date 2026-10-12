@@ -110,7 +110,7 @@ export function UpdateBadge({ style }: { style?: React.CSSProperties }) {
   const { status: s, promptOpen } = useUpdate()
   if (promptOpen || !(s.state === 'available' || s.state === 'downloading' || s.state === 'ready')) return null
   return (
-    <button className="tbtn sm on" style={style} onClick={reopenUpdate}>
+    <button className="tbtn sm on" style={{ ...style, textTransform: 'none' }} onClick={reopenUpdate}>
       ↑ {t('update.badge', { v: s.version })}
     </button>
   )
