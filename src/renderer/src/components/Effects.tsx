@@ -1,4 +1,5 @@
-import type { WallpaperEffects } from '../../../shared/types'
+import { useState } from 'react'
+import { CUSTOM_VFX_MAX_MB, type CustomVfx, type WallpaperEffects } from '../../../shared/types'
 import { useI18n, type TKey } from '../i18n'
 import { VFX_KEYS, VFX_PRESETS, type VfxKey, type VfxLayers } from '../lib/vfx'
 import { Check, TRange } from './ui'
@@ -67,6 +68,95 @@ export function EffectsPanel({ fx }: { fx: WallpaperEffects }) {
           <Check checked={fx.scanlines} onChange={(v) => set({ scanlines: v })} label={t('wp.scanlines')} />
         </div>
       </div>
+      <CustomVfxEditor fx={fx} />
+    </div>
+  )
+}
+
+/** The user's own effect: upload a particle image or an overlay, then tune it. */
+function CustomVfxEditor({ fx }: { fx: WallpaperEffects }) {
+  const { t } = useI18n()
+  const [error, setError] = useState<string | null>(null)
+  const c = fx.custom
+  const patch = (p: Partial<CustomVfx>): void => {
+    if (c) set({ custom: { ...c, ...p } })
+  }
+  const upload = async (kind: CustomVfx['kind']): Promise<void> => {
+    setError(null)
+    try {
+      await window.lounge.wallpaper.importCustomVfx(kind)
+    } catch (e) {
+      const msg = (e as Error).message
+      setError(msg.includes('vfx-too-big') ? t('fx.err.tooBig', { max: `${CUSTOM_VFX_MAX_MB[kind]} MB` }) : t('fx.err.type'))
+    }
+  }
+  const slider = (key: 'amount' | 'size' | 'speed' | 'opacity', min: number, max: number, unit = '%') => (
+    <label className="flex flex-col gap-1 text-[11px]">
+      <span className="flex justify-between text-ph-dim">
+        {t(`fx.${key}` as TKey)}
+        <span className="text-ph-bright">
+          {c![key]}
+          {unit}
+        </span>
+      </span>
+      <TRange label={t(`fx.${key}` as TKey)} min={min} max={max} step={1} value={c![key]} onChange={(v) => patch({ [key]: v })} />
+    </label>
+  )
+
+  return (
+    <div className="border-t border-crt-line pt-3">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <span className="text-[12px] text-ph-bright">{t('fx.custom')}</span>
+        <div className="flex gap-1.5">
+          <button className="tbtn sm" onClick={() => upload('particle')}>
+            {t('fx.uploadParticle')}
+          </button>
+          <button className="tbtn sm" onClick={() => upload('overlay')}>
+            {t('fx.uploadOverlay')}
+          </button>
+          {c && (
+            <button className="tbtn sm danger" onClick={() => window.lounge.wallpaper.removeCustomVfx()}>
+              {t('fx.remove')}
+            </button>
+          )}
+        </div>
+      </div>
+      {!c && <p className="text-[11px] leading-relaxed text-ph-dim">{t('fx.customHint')}</p>}
+      {error && <p className="mt-1 text-[11px] text-magenta">{error}</p>}
+      {c && (
+        <div className="mt-2 flex flex-col gap-3">
+          <div className="truncate text-[11px] text-ph-dim">
+            {t(c.kind === 'particle' ? 'fx.particle' : 'fx.overlay')} · <span className="text-ph">{c.name}</span>
+          </div>
+          {c.kind === 'particle' ? (
+            <>
+              <div className="flex items-center gap-1.5">
+                <span className="mr-1 text-[11px] text-ph-dim">{t('fx.motion')}</span>
+                {(['fall', 'float', 'drift'] as const).map((m) => (
+                  <button key={m} className={`tab ${c.motion === m ? 'active' : ''}`} onClick={() => patch({ motion: m })}>
+                    {t(`fx.motion.${m}` as TKey)}
+                  </button>
+                ))}
+                <span className="ml-3">
+                  <Check checked={c.spin} onChange={(v) => patch({ spin: v })} label={t('fx.spin')} />
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-5">
+                {slider('amount', 0, 100)}
+                {slider('size', 8, 96, 'px')}
+                {slider('speed', 0, 100)}
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-3 items-start gap-5">
+              {slider('opacity', 10, 100)}
+              <div className="col-span-2 text-[12px]">
+                <Check checked={c.blend === 'screen'} onChange={(v) => patch({ blend: v ? 'screen' : 'normal' })} label={t('fx.blendScreen')} hint={t('fx.blendHint')} />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

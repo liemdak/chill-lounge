@@ -8,6 +8,7 @@ import {
   type ToolsProgress,
   type ToolsStatus,
   type TrackInfo,
+  type UpdateStatus,
   type WallpaperEffects,
   type WallpaperState
 } from '../shared/types'
@@ -29,7 +30,12 @@ const api = {
   },
   app: {
     version: (): Promise<string> => ipcRenderer.invoke('app:version'),
-    onUpdate: (fn: (u: { status: 'downloading' | 'ready'; version?: string }) => void): Off => on('update:status', fn),
+    /** Update state now; then follow it with onUpdate. */
+    updateStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke('update:get'),
+    onUpdate: (fn: (u: UpdateStatus) => void): Off => on('update:status', fn),
+    checkUpdate: (): Promise<UpdateStatus> => ipcRenderer.invoke('update:check'),
+    /** Only after the user agreed to update. */
+    downloadUpdate: (): void => ipcRenderer.send('update:download'),
     installUpdate: (): void => ipcRenderer.send('update:install')
   },
   dialog: {
@@ -52,6 +58,9 @@ const api = {
     setEffects: (patch: Partial<WallpaperEffects>): Promise<WallpaperState> =>
       ipcRenderer.invoke('wallpaper:setEffects', patch),
     forget: (path: string): Promise<WallpaperState> => ipcRenderer.invoke('wallpaper:forget', path),
+    /** Pick and add the user's own effect (images / videos only). Rejects with vfx-type / vfx-too-big. */
+    importCustomVfx: (kind: 'particle' | 'overlay'): Promise<WallpaperState> => ipcRenderer.invoke('vfx:import', kind),
+    removeCustomVfx: (): Promise<WallpaperState> => ipcRenderer.invoke('vfx:remove'),
     togglePause: (): Promise<WallpaperState> => ipcRenderer.invoke('wallpaper:togglePause'),
     onState: (fn: (s: WallpaperState) => void): Off => on('wallpaper:state', fn),
     /** Main window → desktop wallpaper windows: bass energy for music-reactive VFX. */

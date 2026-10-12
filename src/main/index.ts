@@ -1,8 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, shell, Tray } from 'electron'
-import { autoUpdater } from 'electron-updater'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { AUDIO_EXT, IMAGE_EXT, VIDEO_EXT, type DownloadMode, type FitMode, type Lang, type WallpaperEffects } from '../shared/types'
+import { AUDIO_EXT, IMAGE_EXT, VIDEO_EXT, type DownloadMode, type FitMode, type Lang, type WallpaperEffects, type CustomVfx } from '../shared/types'
 import { downloadDir, Downloads } from './downloads'
 import { handleMediaProtocol, registerMediaScheme } from './media-protocol'
 import { loadSettings, saveSettings } from './settings'
@@ -10,6 +9,8 @@ import { readTrackInfo } from './tags'
 import { installTools, toolsStatus, updateYtDlp } from './tools'
 import { WallpaperManager } from './wallpaper/manager'
 import { cleanCache, warmCache } from './audio-cache'
+import { cleanCustomVfx, importCustomVfx } from './custom-vfx'
+import { setupUpdater } from './updater'
 import { importCookies, isSignedIn, onAuthChange, preferCookies, signIn, signOut } from './youtube-auth'
 import { blockStatus, clearBlock, lookup, onBlockChange, prefetch } from './youtube'
 
@@ -41,7 +42,9 @@ const STRINGS = {
     pickAudio: 'Chọn bài hát',
     audio: 'Nhạc / Video',
     pickDir: 'Chọn thư mục lưu nhạc tải về',
-    pickCookies: 'Chọn file cookies.txt của YouTube'
+    pickCookies: 'Chọn file cookies.txt của YouTube',
+    pickParticle: 'Chọn ảnh làm hạt hiệu ứng',
+    pickOverlay: 'Chọn ảnh động hoặc video làm lớp phủ'
   },
   en: {
     open: 'Open Chill Lounge',
@@ -54,7 +57,9 @@ const STRINGS = {
     pickAudio: 'Choose songs',
     audio: 'Music / Video',
     pickDir: 'Choose where downloads are saved',
-    pickCookies: 'Choose a YouTube cookies.txt file'
+    pickCookies: 'Choose a YouTube cookies.txt file',
+    pickParticle: 'Choose an image for the particles',
+    pickOverlay: 'Choose an animated image or video overlay'
   }
 } satisfies Record<Lang, Record<string, string>>
 
@@ -130,22 +135,6 @@ function createTray(): void {
   tray.on('click', showMainWindow)
 }
 
-/** Check GitHub Releases for a newer build; download in the background, install on quit. */
-function setupUpdater(): void {
-  if (!app.isPackaged) return
-  const send = (status: string, version?: string): void => mainWindow?.webContents.send('update:status', { status, version })
-  autoUpdater.autoDownload = true
-  autoUpdater.autoInstallOnAppQuit = true
-  autoUpdater.on('update-available', (info) => send('downloading', info.version))
-  autoUpdater.on('update-downloaded', (info) => send('ready', info.version))
-  autoUpdater.on('error', (err) => console.warn('[updater]', err.message))
-  ipcMain.on('update:install', () => {
-    quitting = true
-    autoUpdater.quitAndInstall()
-  })
-  setTimeout(() => autoUpdater.checkForUpdates().catch(() => {}), 5000)
-}
-
 function registerIpc(): void {
   ipcMain.on('window:minimize', () => mainWindow?.minimize())
   ipcMain.on('window:toggleMaximize', () => {
@@ -185,6 +174,15 @@ function registerIpc(): void {
   ipcMain.handle('wallpaper:setAutoPause', (_e, v: boolean) => wallpaper.setAutoPause(v))
   ipcMain.handle('wallpaper:togglePause', () => wallpaper.togglePause())
   ipcMain.handle('wallpaper:setEffects', (_e, patch: Partial<WallpaperEffects>) => wallpaper.setEffects(patch))
+  ipcMain.handle('vfx:import', async (_e, kind: CustomVfx['kind']) => {
+    const custom = await importCustomVfx(mainWindow, kind, kind === 'particle' ? tr().pickParticle : tr().pickOverlay)
+    return custom ? wallpaper.setEffects({ custom }) : wallpaper.getState()
+  })
+  ipcMain.handle('vfx:remove', () => {
+    const state = wallpaper.setEffects({ custom: null })
+    cleanCustomVfx(null)
+    return state
+  })
   ipcMain.handle('wallpaper:forget', (_e, path: string) => wallpaper.forget(path))
   ipcMain.on('vfx:beat', (_e, v: number) => wallpaper.broadcast('vfx:beat', v))
 
@@ -254,7 +252,8 @@ if (!app.requestSingleInstanceLock()) {
     createMainWindow()
     createTray()
     wallpaper.restore()
-    setupUpdater()
+    cleanCustomVfx(wallpaper.getState().effects.custom?.file)
+    setupUpdater(() => mainWindow, () => (quitting = true))
   })
 
   app.on('before-quit', () => {

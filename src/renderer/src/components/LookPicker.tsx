@@ -42,6 +42,47 @@ function SkinPreview({ id }: { id: SkinId }) {
           </div>
         </div>
       )
+    case 'manga':
+      return (
+        <div className={box} style={{ background: 'radial-gradient(rgba(0,0,0,.18) 1px,transparent 1.3px) 0 0/5px 5px,#fff' }}>
+          <div className="absolute inset-x-3 top-3.5 bottom-2" style={{ background: '#fff', border: '3px solid #111', boxShadow: '4px 4px 0 #111' }}>
+            <span className="absolute -top-2.5 left-2 px-2 text-[9px] font-black italic" style={{ background: '#fff', border: '2px solid #111', borderRadius: '50%', color: '#111' }}>
+              DOKI!
+            </span>
+            <div className="mx-2 mt-5 h-2" style={{ width: '55%', border: '2px solid #111', background: 'repeating-linear-gradient(-45deg,#111 0 2px,#fff 2px 5px)' }} />
+          </div>
+        </div>
+      )
+    case 'gameboy':
+      return (
+        <div className={box} style={{ background: '#cbc7bf' }}>
+          <div className="absolute inset-x-4 top-2 bottom-3" style={{ background: '#5b5b6e', borderRadius: '5px 5px 16px 5px', padding: 5 }}>
+            <div className="h-full" style={{ background: '#9bbc0f', fontFamily: 'VT323, monospace', color: '#0f380f' }}>
+              <div className="px-1.5 pt-0.5 text-[14px] leading-none">♪ PLAY</div>
+              <div className="mx-1.5 mt-1 h-1.5" style={{ width: '60%', background: 'repeating-linear-gradient(90deg,#0f380f 0 4px,transparent 4px 6px)' }} />
+            </div>
+          </div>
+          <span className="absolute right-2 bottom-1 h-2.5 w-2.5 rounded-full" style={{ background: '#9a2257' }} />
+        </div>
+      )
+    case 'trading':
+      return (
+        <div className={box} style={{ background: '#0b0e11' }}>
+          <div className="flex gap-2 px-2 pt-1.5 text-[8px] font-bold whitespace-nowrap">
+            <span style={{ color: '#0ecb81' }}>▲ 3:45</span>
+            <span style={{ color: '#f6465d' }}>▼ 4:12</span>
+            <span style={{ color: '#0ecb81' }}>▲ 2:58</span>
+          </div>
+          <div className="absolute inset-x-2 bottom-2 flex h-9 items-end gap-[3px]">
+            {[40, 65, 50, 80, 60, 90, 70, 55, 85, 75].map((h, i) => (
+              <span key={i} className="flex-1" style={{ height: `${h}%`, background: i % 3 === 1 ? '#f6465d' : '#0ecb81' }} />
+            ))}
+          </div>
+          <span className="absolute top-1.5 right-2 rounded-sm px-1 text-[8px] font-bold" style={{ background: '#f0b90b', color: '#0b0e11' }}>
+            PLAY
+          </span>
+        </div>
+      )
     case 'win98':
       return (
         <div className={box} style={{ background: '#008080' }}>
@@ -78,7 +119,7 @@ export function LookPicker() {
   const theme = useColorTheme()
   return (
     <Panel title={t('set.look')} className="col-span-2 flex flex-col gap-4 p-4 pt-5">
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {SKIN_IDS.map((id) => {
           const on = skin === id
           return (

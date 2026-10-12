@@ -101,7 +101,7 @@ export function WallpaperScreen({ wallpaper: wp }: { wallpaper: WallpaperState |
                 <div className="text-[12px]">{t('wp.noSignalHint')}</div>
               </div>
             )}
-            {previewPath && <VfxCanvas layers={fx} reactive={fx.reactive} className="absolute inset-0 h-full w-full" />}
+            {previewPath && <VfxCanvas layers={fx} custom={fx.custom} reactive={fx.reactive} className="absolute inset-0 h-full w-full" />}
             {previewPath && fx.scanlines && <div className="scanlines absolute inset-0" />}
             <div className="absolute top-2 left-2 flex gap-2">
               {inApp && <span className="badge ok bg-crt-bg/80">{t('wpcard.inApp')}</span>}

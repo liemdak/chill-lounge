@@ -95,10 +95,31 @@ const rgbOf = (hex: string): [number, number, number] => [1, 3, 5].map((i) => pa
 // "retro" is the CRT terminal and takes any colour theme above; the others bring their own
 // palette (Glass follows Windows' light / dark mode). Skins are CSS-only ([data-skin] rules in
 // index.css) plus system or bundled fonts, so switching costs no memory.
-export type SkinId = 'retro' | 'glass' | 'anime' | 'win98' | 'win11'
-export const SKIN_IDS: SkinId[] = ['retro', 'glass', 'anime', 'win98', 'win11']
+export type SkinId = 'retro' | 'glass' | 'anime' | 'manga' | 'gameboy' | 'trading' | 'win98' | 'win11'
+export const SKIN_IDS: SkinId[] = ['retro', 'glass', 'anime', 'manga', 'gameboy', 'trading', 'win98', 'win11']
 
-export const SKIN_THEMES: Record<'glassLight' | 'glassDark' | 'anime' | 'win98' | 'win11', Theme> = {
+/** Skins whose covers are dithered pixel art (and Now Playing shows the pixel vinyl). */
+export const isPixelSkin = (s: SkinId): boolean => s === 'retro' || s === 'gameboy'
+
+export const SKIN_THEMES: Record<Exclude<SkinId, 'retro' | 'glass'> | 'glassLight' | 'glassDark', Theme> = {
+  // Black ink on white paper, one red for sound effects.
+  manga: {
+    bg: '#ffffff', panel: '#ffffff', panel2: '#f2f2f2', deep: '#cfcfcf',
+    ph: '#111111', phBright: '#000000', phDim: '#555555', phFaint: '#bbbbbb',
+    purple: '#111111', violet: '#111111', magenta: '#e0002a', cyan: '#111111'
+  },
+  // Dot-matrix LCD greens on the grey handheld.
+  gameboy: {
+    bg: '#c4cfa1', panel: '#c4cfa1', panel2: '#b4c08a', deep: '#8b956d',
+    ph: '#1f2d0f', phBright: '#0f1a07', phDim: '#4d5a2a', phFaint: '#8b956d',
+    purple: '#4d533c', violet: '#306230', magenta: '#9a2257', cyan: '#306230'
+  },
+  // Exchange terminal: yellow accents, green up, red down.
+  trading: {
+    bg: '#0b0e11', panel: '#161a1e', panel2: '#1e2329', deep: '#2b3139',
+    ph: '#eaecef', phBright: '#ffffff', phDim: '#848e9c', phFaint: '#474d57',
+    purple: '#f0b90b', violet: '#f0b90b', magenta: '#f6465d', cyan: '#0ecb81'
+  },
   glassLight: {
     bg: '#f2f2f7', panel: '#ffffff', panel2: '#f7f7fa', deep: '#d8d8e0',
     ph: '#1d1d1f', phBright: '#000000', phDim: '#6e6e73', phFaint: '#c7c7cc',
@@ -141,6 +162,8 @@ function tokens(): Theme {
 
 /** Dark → bright ramp for the canvas art (dithered covers, vinyl, spectrum). */
 export const palette = (): [number, number, number][] => {
+  // The four LCD shades, dark to light (the handheld's screen is lit, the others' are dark).
+  if (skin === 'gameboy') return ['#0f380f', '#306230', '#306230', '#8bac0f', '#9bbc0f'].map(rgbOf)
   const th = tokens()
   return [th.bg, th.deep, th.purple, th.ph, th.phBright].map(rgbOf)
 }

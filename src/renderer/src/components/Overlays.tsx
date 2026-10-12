@@ -200,8 +200,8 @@ export function WallpaperMode({ open, onClose, p, wallpaper }: { open: boolean; 
           {url && src?.kind === 'video' && <video src={url} className="absolute inset-0 h-full w-full" style={style} autoPlay loop muted />}
           {url && src?.kind === 'image' && <img src={url} className="absolute inset-0 h-full w-full" style={style} />}
           {!url && <PixelCover src={p.current?.cover ?? null} seed={p.current?.title ?? 'chill'} res={48} className="absolute inset-0 h-full w-full object-cover opacity-50" />}
-          <VfxCanvas layers={wallpaper && hasVfx(wallpaper.effects) ? wallpaper.effects : { ...NO_VFX, rain: 40 }} reactive={wallpaper?.effects.reactive} className="absolute inset-0 h-full w-full" />
-          {(wallpaper?.effects.scanlines ?? true) && <div className="scanlines absolute inset-0" />}
+          <VfxCanvas layers={wallpaper ? wallpaper.effects : NO_VFX} custom={wallpaper?.effects.custom} reactive={wallpaper?.effects.reactive} className="absolute inset-0 h-full w-full" />
+          {wallpaper?.effects.scanlines && <div className="scanlines absolute inset-0" />}
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
 
           <div className="relative flex justify-between">
@@ -307,7 +307,7 @@ export function AppBackdrop({ wallpaper }: { wallpaper: WallpaperState | null })
   return (
     <div className="app-backdrop pointer-events-none fixed inset-0 z-0 opacity-30" aria-hidden>
       {src.kind === 'video' ? <video key={url} src={url} className="h-full w-full" style={style} autoPlay loop muted /> : <img src={url} className="h-full w-full" style={style} />}
-      <VfxCanvas layers={wallpaper!.effects} reactive={wallpaper!.effects.reactive} className="absolute inset-0 h-full w-full" />
+      <VfxCanvas layers={wallpaper!.effects} custom={wallpaper!.effects.custom} reactive={wallpaper!.effects.reactive} className="absolute inset-0 h-full w-full" />
     </div>
   )
 }

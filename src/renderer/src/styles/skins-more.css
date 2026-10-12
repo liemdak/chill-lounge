@@ -1,0 +1,196 @@
+/* Manga, Game Boy and Trading skins — same approach as skins.css. */
+
+/* ── Manga (black & white) ──────────────────────────────────────────────── */
+:root[data-skin='manga'] {
+  --font-mono: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  --font-pixel: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  --ink: #111;
+  --tone: radial-gradient(#111 0.9px, transparent 1.1px) 0 0 / 4px 4px;
+  --accent: #111;
+  --color-crt-line: #111;
+  --color-crt-line-strong: #111;
+}
+:root[data-skin='manga'] body { background: radial-gradient(rgb(0 0 0 / 0.13) 1px, transparent 1.3px) 0 0 / 6px 6px, #fff; }
+:root[data-skin='manga'] .app-backdrop { opacity: 0.18; filter: grayscale(1) contrast(1.4); }
+:root[data-skin='manga'] .font-pixel { font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -0.02em; }
+:root[data-skin='manga'] .panel { background: #fff; border: 3px solid var(--ink); border-radius: 2px; box-shadow: 6px 6px 0 var(--ink); }
+/* captions as speech bubbles */
+:root[data-skin='manga'] .panel-title { background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: 50%; padding: 2px 16px; font-weight: 800; top: -1.15em; }
+:root[data-skin='manga'] .panel-title::after { content: ''; position: absolute; left: 22px; bottom: -8px; border: 7px solid transparent; border-top-color: var(--ink); border-bottom: 0; }
+:root[data-skin='manga'] .panel-right { background: #fff; }
+:root[data-skin='manga'] .app-header { background: #fff; border-bottom: 3px solid var(--ink); }
+:root[data-skin='manga'] .app-brand { font-weight: 900; font-style: italic; text-transform: uppercase; font-size: 15px; color: var(--ink); }
+:root[data-skin='manga'] .app-brand::after { content: '!!'; color: var(--color-magenta); margin-left: 2px; }
+:root[data-skin='manga'] .app-logo { color: var(--ink); }
+:root[data-skin='manga'] .app-sidebar { background: #fff; border-right: 3px solid var(--ink); }
+:root[data-skin='manga'] .app-player { background: #fff; border-top: 3px solid var(--ink); box-shadow: none; }
+:root[data-skin='manga'] .tbtn { background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: 0; font-weight: 800; box-shadow: 3px 3px 0 var(--ink); transition: transform 0.08s, box-shadow 0.08s; }
+:root[data-skin='manga'] .tbtn:hover { background: #fff; color: var(--ink); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+:root[data-skin='manga'] .tbtn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+:root[data-skin='manga'] .tbtn.ghost { border-color: transparent; box-shadow: none; background: transparent; }
+:root[data-skin='manga'] .tbtn.primary { background: var(--ink); color: #fff; }
+:root[data-skin='manga'] .tbtn.on { background: var(--tone), #fff; color: var(--ink); text-shadow: 0 0 2px #fff, 0 0 2px #fff; }
+:root[data-skin='manga'] .tbtn.danger:hover { background: var(--color-magenta); border-color: var(--ink); color: #fff; }
+:root[data-skin='manga'] .tab { border-radius: 0; font-weight: 800; }
+:root[data-skin='manga'] .tab.active { background: var(--ink); color: #fff; }
+:root[data-skin='manga'] .badge { border: 2px solid var(--ink); border-radius: 0; color: var(--ink); font-weight: 800; }
+:root[data-skin='manga'] .badge.live { background: var(--color-magenta); border-color: var(--color-magenta); color: #fff; }
+:root[data-skin='manga'] .tinput { border: 2px solid var(--ink); border-radius: 0; background: #fff; }
+:root[data-skin='manga'] .tinput:focus { box-shadow: 3px 3px 0 var(--ink); }
+:root[data-skin='manga'] .nav-active { background: var(--ink); border-radius: 0; box-shadow: none; }
+:root[data-skin='manga'] .nav-item.active { color: #fff; }
+/* speed-line progress */
+:root[data-skin='manga'] .blockbar { height: 10px; border: 2px solid var(--ink); border-radius: 0; background: #fff; margin: 2px 0; }
+:root[data-skin='manga'] .blockbar > .fill { border-radius: 0; background: repeating-linear-gradient(-45deg, var(--ink) 0 2px, #fff 2px 5px); }
+:root[data-skin='manga'] input[type='range'].trange::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--ink) var(--pct, 0%), #ccc var(--pct, 0%)); border-radius: 0; }
+:root[data-skin='manga'] input[type='range'].trange::-webkit-slider-thumb { border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--ink); }
+:root[data-skin='manga'] .row-hover:hover { background: #f0f0f0; border-radius: 0; }
+:root[data-skin='manga'] .row-active { background: var(--tone), #fff; box-shadow: inset 4px 0 0 var(--ink); border-radius: 0; color: var(--ink); text-shadow: 0 0 2px #fff, 0 0 3px #fff; }
+:root[data-skin='manga'] .check { border-radius: 0; border: 2px solid var(--ink); }
+/* covers inked: black & white, high contrast */
+:root[data-skin='manga'] .cover-art { border-radius: 0; filter: grayscale(1) contrast(1.4); }
+:root[data-skin='manga'] .cover-hero { border: 3px solid var(--ink); border-radius: 0; box-shadow: 8px 8px 0 var(--ink); }
+:root[data-skin='manga'] .winbtn { width: 22px; height: 22px; border: 2px solid var(--ink); background: #fff; color: var(--ink); margin-left: 4px; }
+:root[data-skin='manga'] .winbtn:hover { background: var(--ink); color: #fff; }
+:root[data-skin='manga'] ::-webkit-scrollbar-thumb { background: var(--ink); }
+:root[data-skin='manga'] ::selection { background: var(--ink); color: #fff; }
+
+/* ── Game Boy ───────────────────────────────────────────────────────────── */
+:root[data-skin='gameboy'] {
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-pixel: 'VT323', 'IBM Plex Mono', monospace;
+  --shell: #cbc7bf;
+  --shell-dark: #a8a49c;
+  --bezel: #5b5b6e;
+  --lcd-dark: #0f380f;
+  --accent: #306230;
+  --color-crt-line: #8b956d;
+  --color-crt-line-strong: #4d5a2a;
+}
+:root[data-skin='gameboy'] body { background: var(--shell); }
+:root[data-skin='gameboy'] .app-backdrop { opacity: 0.12; filter: grayscale(1) sepia(0.6) hue-rotate(40deg); }
+:root[data-skin='gameboy'] .font-pixel { font-weight: 400; font-size-adjust: none; letter-spacing: 0.02em; }
+/* every panel is an LCD in the dark bezel (round bottom-right corner, like the handheld) */
+:root[data-skin='gameboy'] .panel {
+  background:
+    linear-gradient(rgb(15 56 15 / 0.05) 1px, transparent 1px) 0 0 / 3px 3px,
+    linear-gradient(90deg, rgb(15 56 15 / 0.05) 1px, transparent 1px) 0 0 / 3px 3px,
+    var(--color-crt-panel);
+  border: 7px solid var(--bezel);
+  border-radius: 8px 8px 30px 8px;
+  box-shadow: inset 0 0 0 2px #8b956d;
+}
+:root[data-skin='gameboy'] .panel-title { background: var(--bezel); color: #d9d9e6; font-family: var(--font-pixel); font-size: 15px; font-weight: 400; border-radius: 3px; top: -1.05em; letter-spacing: 0.06em; text-transform: uppercase; }
+:root[data-skin='gameboy'] .panel-right { background: var(--bezel); border-radius: 3px; }
+:root[data-skin='gameboy'] .app-header,
+:root[data-skin='gameboy'] .app-sidebar,
+:root[data-skin='gameboy'] .app-player { background: var(--shell); border-color: var(--shell-dark); box-shadow: none; color: #3d3d4a; }
+:root[data-skin='gameboy'] .app-header .text-ph-dim,
+:root[data-skin='gameboy'] .app-header .text-ph,
+:root[data-skin='gameboy'] .app-player .text-ph-dim,
+:root[data-skin='gameboy'] .app-player .text-ph-bright { color: #3d3d4a; }
+:root[data-skin='gameboy'] .app-brand { font-family: 'Be Vietnam Pro', sans-serif; font-style: italic; font-weight: 800; color: #2b2f7a; letter-spacing: 0.02em; }
+:root[data-skin='gameboy'] .app-logo { color: var(--color-magenta); }
+:root[data-skin='gameboy'] .nav-item { color: #4a4855; }
+:root[data-skin='gameboy'] .nav-active { background: var(--accent); border-radius: 6px; box-shadow: none; }
+:root[data-skin='gameboy'] .nav-item.active { color: var(--color-crt-panel); }
+/* SELECT / START pills */
+:root[data-skin='gameboy'] .tbtn {
+  background: #6e6b7a; color: #ecebf2; border: none; border-radius: 99px;
+  font-family: var(--font-pixel); font-size: 16px; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase;
+  box-shadow: 0 2px 0 #46444f;
+}
+:root[data-skin='gameboy'] .tbtn.sm { font-size: 14px; }
+:root[data-skin='gameboy'] .tbtn:hover { background: #7c7988; color: #fff; box-shadow: 0 2px 0 #46444f; }
+:root[data-skin='gameboy'] .tbtn:active { transform: translateY(2px); box-shadow: none; }
+:root[data-skin='gameboy'] .tbtn.ghost { background: transparent; color: #3d3d4a; box-shadow: none; }
+:root[data-skin='gameboy'] .tbtn.ghost:hover { background: rgb(0 0 0 / 0.08); }
+/* A / B: the maroon round buttons */
+:root[data-skin='gameboy'] .tbtn.primary { background: var(--color-magenta); color: #f3dce6; box-shadow: 0 3px 0 #5e1435; }
+:root[data-skin='gameboy'] .app-player .play-btn { width: 46px; height: 46px; }
+:root[data-skin='gameboy'] .tbtn.on { background: var(--accent); color: var(--color-crt-panel); box-shadow: 0 2px 0 var(--lcd-dark); }
+:root[data-skin='gameboy'] .tab { color: var(--color-ph-dim); border-radius: 3px; text-transform: uppercase; font-family: var(--font-pixel); font-size: 15px; }
+:root[data-skin='gameboy'] .tab.active { background: var(--accent); color: var(--color-crt-panel); }
+:root[data-skin='gameboy'] .badge { border-color: #4d5a2a; border-radius: 3px; }
+:root[data-skin='gameboy'] .app-header .badge { border-color: #8f8b84; color: #4a4855; }
+:root[data-skin='gameboy'] .tinput { background: var(--color-crt-panel); border: 2px solid #4d5a2a; border-radius: 3px; }
+/* dot-matrix bars */
+:root[data-skin='gameboy'] .blockbar { height: 10px; border-radius: 0; background: repeating-linear-gradient(90deg, #8b956d 0 6px, transparent 6px 8px); }
+:root[data-skin='gameboy'] .blockbar > .fill { border-radius: 0; background: repeating-linear-gradient(90deg, var(--lcd-dark) 0 6px, transparent 6px 8px); }
+:root[data-skin='gameboy'] .app-player .blockbar { background: repeating-linear-gradient(90deg, #9a968e 0 6px, transparent 6px 8px); }
+:root[data-skin='gameboy'] .app-player .blockbar > .fill { background: repeating-linear-gradient(90deg, #2b2f7a 0 6px, transparent 6px 8px); }
+:root[data-skin='gameboy'] input[type='range'].trange::-webkit-slider-runnable-track { border-radius: 0; background: linear-gradient(90deg, #2b2f7a var(--pct, 0%), #9a968e var(--pct, 0%)); }
+:root[data-skin='gameboy'] input[type='range'].trange::-webkit-slider-thumb { border-radius: 2px; background: #6e6b7a; box-shadow: 0 2px 0 #46444f; }
+:root[data-skin='gameboy'] .row-hover:hover { background: #b4c08a; border-radius: 2px; }
+:root[data-skin='gameboy'] .row-active { background: var(--accent); color: var(--color-crt-panel); border-radius: 2px; }
+:root[data-skin='gameboy'] .row-active * { color: var(--color-crt-panel); }
+:root[data-skin='gameboy'] .check { border-radius: 2px; border-color: var(--accent); }
+:root[data-skin='gameboy'] .winbtn { width: 18px; height: 18px; border-radius: 50%; background: #6e6b7a; color: #ecebf2; margin-left: 5px; box-shadow: 0 2px 0 #46444f; }
+:root[data-skin='gameboy'] .winbtn.close { background: var(--color-magenta); box-shadow: 0 2px 0 #5e1435; }
+:root[data-skin='gameboy'] ::-webkit-scrollbar-thumb { background: #4d5a2a; }
+
+/* ── Trading ────────────────────────────────────────────────────────────── */
+:root[data-skin='trading'] {
+  --font-mono: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --font-pixel: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --accent: #f0b90b;
+  --up: #0ecb81;
+  --down: #f6465d;
+  --line: #2b3139;
+  --color-crt-line: var(--line);
+  --color-crt-line-strong: var(--line);
+}
+:root[data-skin='trading'] body { background: #0b0e11; font-variant-numeric: tabular-nums; }
+:root[data-skin='trading'] .app-backdrop { opacity: 0.15; }
+:root[data-skin='trading'] .panel { background: #161a1e; border: 1px solid var(--line); border-radius: 4px; box-shadow: none; }
+:root[data-skin='trading'] .panel-title { background: #161a1e; color: var(--color-ph-dim); border: 1px solid var(--line); border-radius: 2px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+:root[data-skin='trading'] .app-header,
+:root[data-skin='trading'] .app-sidebar,
+:root[data-skin='trading'] .app-player { background: #181a20; border-color: var(--line); box-shadow: none; }
+:root[data-skin='trading'] .app-brand { font-weight: 800; letter-spacing: 0.02em; }
+:root[data-skin='trading'] .app-logo { color: var(--accent); }
+:root[data-skin='trading'] .tbtn { background: var(--line); color: #eaecef; border: none; border-radius: 4px; font-weight: 500; }
+:root[data-skin='trading'] .tbtn:hover { background: #363c45; color: #fff; box-shadow: none; }
+:root[data-skin='trading'] .tbtn.ghost { background: transparent; }
+:root[data-skin='trading'] .tbtn.ghost:hover { background: var(--line); }
+:root[data-skin='trading'] .tbtn.primary { background: var(--accent); color: #0b0e11; font-weight: 700; box-shadow: none; }
+:root[data-skin='trading'] .tbtn.primary:hover { background: #fcd535; color: #0b0e11; }
+:root[data-skin='trading'] .tbtn.on { background: rgb(240 185 11 / 0.14); color: var(--accent); }
+:root[data-skin='trading'] .tbtn.danger:hover { background: var(--down); color: #fff; }
+:root[data-skin='trading'] .tab { border: none; border-radius: 0; color: var(--color-ph-dim); }
+:root[data-skin='trading'] .tab.active { background: transparent; color: #eaecef; box-shadow: inset 0 -2px 0 var(--accent); }
+:root[data-skin='trading'] .badge { border-radius: 2px; border-color: var(--line); }
+:root[data-skin='trading'] .badge.live { color: var(--down); background: rgb(246 70 93 / 0.1); border-color: transparent; }
+:root[data-skin='trading'] .badge.ok { color: var(--up); background: rgb(14 203 129 / 0.1); border-color: transparent; }
+:root[data-skin='trading'] .tinput { background: var(--line); border: 1px solid transparent; border-radius: 4px; }
+:root[data-skin='trading'] .tinput:focus { border-color: var(--accent); box-shadow: none; }
+:root[data-skin='trading'] .nav-active { background: var(--line); border-radius: 4px; box-shadow: inset 3px 0 0 var(--accent); }
+:root[data-skin='trading'] .nav-item.active { color: var(--accent); }
+:root[data-skin='trading'] .blockbar { height: 4px; background: var(--line); }
+:root[data-skin='trading'] .blockbar > .fill { background: var(--up); }
+:root[data-skin='trading'] input[type='range'].trange::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--accent) var(--pct, 0%), var(--line) var(--pct, 0%)); }
+:root[data-skin='trading'] input[type='range'].trange::-webkit-slider-thumb { background: var(--accent); box-shadow: 0 0 0 3px #181a20; }
+:root[data-skin='trading'] .row-hover:hover { background: #1e2329; border-radius: 2px; }
+:root[data-skin='trading'] .row-active { background: rgb(240 185 11 / 0.08); box-shadow: inset 2px 0 0 var(--accent); border-radius: 2px; }
+:root[data-skin='trading'] .check.on { background: var(--accent); border-color: var(--accent); }
+:root[data-skin='trading'] .check.on::after { color: #0b0e11; }
+:root[data-skin='trading'] .cover-art { border-radius: 4px; }
+:root[data-skin='trading'] .cover-hero { border-radius: 6px; box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgb(0 0 0 / 0.5); }
+:root[data-skin='trading'] .winbtn { width: 30px; height: 26px; border-radius: 4px; color: var(--color-ph-dim); }
+:root[data-skin='trading'] .winbtn:hover { background: var(--line); color: #fff; }
+:root[data-skin='trading'] .winbtn.close:hover { background: var(--down); }
+:root[data-skin='trading'] ::-webkit-scrollbar-thumb { background: #363c45; border-radius: 99px; }
+
+/* ticker tape of the queue (Trading header) */
+.ticker { position: relative; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.ticker-track { display: inline-flex; gap: 28px; white-space: nowrap; animation: ticker var(--ticker-time, 40s) linear infinite; }
+.ticker-item { font-size: 11px; color: #eaecef; }
+.ticker-item b { font-weight: 700; }
+.ticker-item .up { color: var(--up); }
+.ticker-item .down { color: var(--down); }
+@keyframes ticker {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}

@@ -3,7 +3,7 @@ import type { WallpaperState } from '../../../shared/types'
 import { BarScope, VinylScope } from '../components/scopes'
 import { EffectsQuick } from '../components/Effects'
 import { BlockBar, CoverImage, Panel, PixelCover, TRange, useTypewriter, VfxCanvas } from '../components/ui'
-import { useSkin } from '../lib/theme'
+import { isPixelSkin, useSkin } from '../lib/theme'
 import { Icon } from '../components/icons'
 import { useI18n } from '../i18n'
 import { fmtTime } from '../lib/store'
@@ -23,7 +23,9 @@ interface Props {
 
 export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep, onOpenWallpaperMode, onGoWallpaper }: Props) {
   const { t } = useI18n()
-  const retro = useSkin() === 'retro'
+  const skin = useSkin()
+  const retro = skin === 'retro'
+  const pixel = isPixelSkin(skin)
   const tr = p.current
   const title = useTypewriter(tr?.title ?? 'NO SIGNAL')
   const [glitch, setGlitch] = useState(false)
@@ -63,7 +65,7 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
           {/* The vinyl shrinks with the available height so the whole screen fits without scrolling. */}
           <div className="my-2 flex min-h-[150px] w-full flex-1 items-center justify-center">
             <div className="relative aspect-square h-full max-h-[340px]">
-              {retro ? (
+              {pixel ? (
                 <>
                   <VinylScope cover={tr?.cover ?? null} seed={tr?.title ?? 'chill'} playing={p.playing} className="absolute inset-0 h-full w-full" />
                   <button className="absolute inset-[30%] cursor-pointer rounded-full" onClick={p.toggle} aria-label={p.playing ? t('player.pause') : t('player.play')} />
@@ -281,7 +283,7 @@ function WallpaperCard({ wallpaper: wp, onGoWallpaper }: { wallpaper: WallpaperS
           {url && src?.kind === 'video' && <video src={url} className="h-full w-full object-cover" autoPlay loop muted style={filter} />}
           {url && src?.kind === 'image' && <img src={url} className="h-full w-full object-cover" style={filter} />}
           {!src && <div className="flex h-full items-center justify-center font-pixel text-[16px] text-ph-faint">NO WP</div>}
-          {wp && <VfxCanvas layers={wp.effects} reactive={wp.effects.reactive} className="absolute inset-0 h-full w-full" />}
+          {wp && <VfxCanvas layers={wp.effects} custom={wp.effects.custom} reactive={wp.effects.reactive} className="absolute inset-0 h-full w-full" />}
           <div className="scanlines absolute inset-0" />
         </button>
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-1.5">

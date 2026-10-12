@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { WallpaperState } from '../../../shared/types'
 import { LookPicker } from '../components/LookPicker'
+import { UpdateCheck } from '../components/Update'
 import { Check, Panel, TRange } from '../components/ui'
 import { useI18n, type TKey } from '../i18n'
 
@@ -87,6 +88,7 @@ export function SettingsScreen({ prefs, onPrefs, wallpaper }: { prefs: UiPrefs; 
         <Panel title={t('set.about')} className="col-span-2 p-4 pt-5 text-[12px] leading-relaxed">
           <div className="font-pixel text-[26px] text-ph-bright">CHILL_LOUNGE v{version}</div>
           <p className="text-ph-dim">{t('set.aboutText')}</p>
+          <UpdateCheck />
           <p className="mt-1 text-ph-faint">github.com/liemdak/chill-lounge</p>
         </Panel>
       </div>

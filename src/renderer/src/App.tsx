@@ -11,6 +11,7 @@ import { usePlayer } from './player/usePlayer'
 import { Library } from './screens/Library'
 import { NowPlaying } from './screens/NowPlaying'
 import { DownloadsScreen, useDownloads } from './screens/Downloads'
+import { UpdatePrompt } from './components/Update'
 import { ProfileScreen } from './screens/Preview'
 import { YouTubeScreen } from './screens/YouTube'
 import { SettingsScreen, type UiPrefs } from './screens/Settings'
@@ -88,7 +89,7 @@ function Shell() {
       <MediaHost />
       <AppBackdrop wallpaper={wallpaper} />
       <div className="relative z-10 flex h-full flex-col">
-        <Header wallpaper={wallpaper} />
+        <Header wallpaper={wallpaper} queue={p.queue} />
         <div className="flex min-h-0 flex-1">
           <Sidebar screen={screen} onNavigate={setScreen} />
           <main className="min-w-0 flex-1 overflow-y-auto">
@@ -113,7 +114,7 @@ function Shell() {
                   />
                 )}
                 {screen === 'library' && <Library p={p} />}
-                {screen === 'youtube' && <YouTubeScreen p={p} onCinema={() => setModal('cinema')} cinemaOpen={modal === 'cinema'} />}
+                {screen === 'youtube' && <YouTubeScreen p={p} jobs={jobs} onCinema={() => setModal('cinema')} cinemaOpen={modal === 'cinema'} />}
                 {screen === 'downloads' && <DownloadsScreen p={p} jobs={jobs} />}
                 {screen === 'wallpaper' && <WallpaperScreen wallpaper={wallpaper} />}
                 {screen === 'settings' && <SettingsScreen prefs={prefs} onPrefs={setPrefs} wallpaper={wallpaper} />}
@@ -132,6 +133,7 @@ function Shell() {
       <WallpaperMode open={modal === 'wpmode'} onClose={close} p={p} wallpaper={wallpaper} />
       <CinemaMode open={modal === 'cinema'} onClose={close} p={p} />
       <BootScreen enabled={prefs.boot} />
+      <UpdatePrompt />
       <CrtOverlay strength={prefs.crt} />
     </MotionConfig>
   )

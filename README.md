@@ -5,9 +5,6 @@
 
 ![Chill Lounge player](docs/screenshot-player.jpg)
 
-> Dự án cá nhân làm cho bạn bè. Màu sắc lấy cảm hứng từ cộng đồng Pyth — **không phải** sản phẩm chính thức của Pyth Network.
-> *A personal project for friends. Colors inspired by the Pyth community — **not** an official Pyth Network product.*
-
 ---
 
 ## 🇻🇳 Tải và cài đặt
@@ -15,7 +12,7 @@
 1. Vào [**Releases**](https://github.com/liemdak/chill-lounge/releases/latest) → tải file **`ChillLounge-Setup-x.y.z.exe`** (khoảng 100 MB).
 2. Mở file vừa tải. Windows có thể hiện màn hình xanh **"Windows protected your PC"** vì app chưa có chữ ký số trả phí — bấm **More info → Run anyway**.
 3. Chọn thư mục cài → **Install**. App có icon trên Desktop và Start Menu.
-4. Từ bản sau, app **tự cập nhật**: khi có bản mới, góc trên hiện nút **[CÀI & KHỞI ĐỘNG LẠI]**.
+4. Khi có bản mới, app hiện bảng **Có bản cập nhật mới** kèm nội dung thay đổi → **[Cập nhật ngay]** hoặc **[Để sau]**; tải xong bấm **[Khởi động lại để cài]**. Cài đặt → **[Kiểm tra cập nhật]** để kiểm tra bất cứ lúc nào.
 
 **Yêu cầu:** Windows 10 hoặc 11, 64-bit. Hình nền desktop đã thử trên Windows 11 24H2+.
 
@@ -42,7 +39,7 @@ App **không bao giờ tự đổi hình nền desktop** nếu bạn chưa đồ
 1. Go to [**Releases**](https://github.com/liemdak/chill-lounge/releases/latest) → download **`ChillLounge-Setup-x.y.z.exe`** (~100 MB).
 2. Run it. Windows may show **"Windows protected your PC"** because the app isn't signed with a paid certificate — click **More info → Run anyway**.
 3. Pick a folder → **Install**. Shortcuts are added to the Desktop and Start Menu.
-4. Later versions **update themselves**: when one is ready, an **[INSTALL & RESTART]** button appears at the top.
+4. When a new version is out, the app shows **Update available** with what changed → **[Update now]** or **[Later]**; once downloaded, **[Restart to install]**. Settings → **[Check for updates]** checks any time.
 
 **Requires:** Windows 10 or 11, 64-bit. The desktop wallpaper is tested on Windows 11 24H2+.
 
@@ -58,10 +55,11 @@ Choosing an image/video in the **Wallpaper** tab only uses it **inside the app**
 - **8 lớp hiệu ứng pixel bật chồng được** — mưa (có chớp khi mưa to), tuyết, đom đóm, trời sao + sao băng, mưa ký tự terminal, hoa rơi, sương mù dither, nhiễu VHS; 6 preset (Đêm mưa, Mùa đông, Terminal, Đêm hè, Anh đào); **nhảy theo nhạc** (cả trên desktop); độ sáng, scanline CRT.
 - **Trình phát nhạc** — đọc tên bài, nghệ sĩ, ảnh bìa và lời bài hát từ file; EQ + độ ấm băng từ; 4 lớp âm nền tạo bằng Web Audio; hẹn giờ ngủ; phím media; nhớ hàng chờ.
 - **Giao diện CRT** — font VT323 + IBM Plex Mono (đủ dấu tiếng Việt), ảnh bìa dither thành pixel art, đĩa than pixel, phổ LED, chữ đánh máy + glitch.
-- **5 giao diện** — Retro CRT, Glass (kiểu Apple), Anime lo-fi, Windows 98, Windows 11: đổi cả hình dáng, font, nút cửa sổ, icon; giao diện Retro có thêm 7 bộ màu (Tím CRT, Hổ phách, Lục phosphor, Game Boy, Vaporwave, Xanh IBM, Băng cassette). Cài đặt → Giao diện.
+- **8 giao diện** — Retro CRT, Glass, Anime lo-fi, Manga trắng đen, Game Boy, Trading, Windows 98, Windows 11: đổi cả hình dáng, font, nút cửa sổ, icon; giao diện Retro có thêm 7 bộ màu (Tím CRT, Hổ phách, Lục phosphor, Game Boy, Vaporwave, Xanh IBM, Băng cassette). Cài đặt → Giao diện.
+- **Hiệu ứng của bạn** — tải lên một ảnh nhỏ (PNG / WebP / GIF) để làm hạt rơi / bay / trôi, hoặc một lớp phủ động (GIF / WebP / APNG / WebM / MP4). Chỉ nhận ảnh và video, không chạy code.
 - **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; hiện ảnh bìa lớn, xem toàn màn hình. Các bài sắp phát được lưu sẵn vào bộ đệm (tối đa ~300 MB, tự dọn) nên chuyển bài và tua gần như tức thì.
 - **Tải về** — chọn **chỉ âm thanh (mp3)** hoặc **cả video (mp4, tới 1080p)**, có ảnh bìa và tên bài, không tải trùng, tải xong tự vào Thư viện.
-- **Song ngữ** Việt / English · **tự cập nhật** qua GitHub Releases.
+- **Song ngữ** Việt / English · **báo khi có bản mới** (xem có gì mới → cập nhật ngay hoặc để sau).
 
 > **Lưu ý YouTube:** lần đầu mở tab YouTube / Tải về, app hỏi để tải [yt-dlp](https://github.com/yt-dlp/yt-dlp), ffmpeg và Deno (~120 MB) từ GitHub. Nếu YouTube báo mạng của bạn là bot ("Sign in to confirm you're not a bot"), đăng nhập YouTube trong app (nên dùng tài khoản phụ — app chỉ lưu cookie trên máy, không lưu mật khẩu). Tải hoặc phát YouTube ngoài trình phát chính thức là trái điều khoản của YouTube — chỉ dùng cho mục đích cá nhân, và tôn trọng bản quyền của nghệ sĩ.
 

@@ -23,9 +23,49 @@ export interface WallpaperEffects {
   scanlines: boolean
   /** Particles and brightness pulse with the bass of the playing track. */
   reactive: boolean
+  /** The user's own effect (an image or video they uploaded), on top of the pixel layers. */
+  custom?: CustomVfx | null
 }
 
+/**
+ * A user-uploaded effect. Only images and videos are accepted — nothing that runs code.
+ * particle: a small image the app turns into falling / floating / drifting particles.
+ * overlay: an animated image or a video laid over the wallpaper.
+ */
+export interface CustomVfx {
+  kind: 'particle' | 'overlay'
+  /** Copy inside the app's data folder (the original can be moved or deleted). */
+  file: string
+  name: string
+  motion: 'fall' | 'float' | 'drift'
+  /** 0..100 */
+  amount: number
+  /** CSS px */
+  size: number
+  /** 0..100 */
+  speed: number
+  spin: boolean
+  /** 0..100 */
+  opacity: number
+  /** 'screen' drops a black background (common for effect videos). */
+  blend: 'normal' | 'screen'
+}
+
+export const CUSTOM_VFX_EXT = {
+  particle: ['png', 'webp', 'gif', 'jpg', 'jpeg'],
+  overlay: ['gif', 'webp', 'png', 'webm', 'mp4']
+} as const
+export const CUSTOM_VFX_MAX_MB = { particle: 2, overlay: 50 } as const
+
 export type Lang = 'vi' | 'en'
+
+/** App update state, from main/updater.ts. */
+export type UpdateStatus =
+  | { state: 'idle' | 'checking' | 'latest' | 'dev' }
+  | { state: 'available'; version: string; notes: string; date?: string }
+  | { state: 'downloading'; version: string; notes: string; percent: number; date?: string }
+  | { state: 'ready'; version: string; notes: string }
+  | { state: 'error'; message: string }
 
 export interface WallpaperState {
   /** Media chosen in the app — shown as Chill Lounge's own background. */

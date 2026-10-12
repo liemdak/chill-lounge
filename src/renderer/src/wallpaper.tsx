@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { WallpaperState } from '../../shared/types'
 import { startVfx } from './lib/vfx'
+import { CustomVfxLayer } from './components/CustomVfx'
 
 const fill = { position: 'absolute', inset: 0, width: '100%', height: '100%' } as const
 
@@ -74,6 +75,7 @@ function Wallpaper() {
         />
       )}
       <canvas ref={vfxRef} style={{ ...fill, imageRendering: 'pixelated', pointerEvents: 'none' }} />
+      <CustomVfxLayer fx={state?.effects.custom} paused={state?.paused} beat={() => (live.current?.effects.reactive ? beat.current : 0)} style={fill} />
       {state?.effects.scanlines && (
         <div style={{ ...fill, background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0 1px, transparent 1px 3px)' }} />
       )}

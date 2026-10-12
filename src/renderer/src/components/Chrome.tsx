@@ -1,11 +1,12 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { type CSSProperties, type ReactNode } from 'react'
 import { motion } from 'motion/react'
-import type { WallpaperState } from '../../../shared/types'
+import type { TrackInfo, WallpaperState } from '../../../shared/types'
 import { useI18n, type TKey } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { useSkin } from '../lib/theme'
 import type { Player } from '../player/usePlayer'
 import { Icon, type IconName } from './icons'
+import { UpdateBadge } from './Update'
 import { BarScope } from './scopes'
 import { BlockBar, Clock, PixelCover, TRange } from './ui'
 
@@ -32,20 +33,6 @@ function Glyph({ retro, text, icon, size = 18 }: { retro: boolean; text: ReactNo
   return retro ? <>{text}</> : <Icon name={icon} size={size} />
 }
 
-function UpdateBadge() {
-  const { t } = useI18n()
-  const [u, setU] = useState<{ status: 'downloading' | 'ready'; version?: string } | null>(null)
-  useEffect(() => window.lounge.app.onUpdate(setU), [])
-  if (!u) return null
-  return u.status === 'ready' ? (
-    <button className="tbtn sm on" style={noDrag} onClick={window.lounge.app.installUpdate}>
-      ↑ {t('update.ready', { v: u.version ?? '' })} · {t('update.install')}
-    </button>
-  ) : (
-    <span className="badge">{t('update.downloading', { v: u.version ?? '' })}</span>
-  )
-}
-
 /** Minimise / maximise / hide, drawn the way each skin's OS would. */
 function WindowButtons() {
   const { t } = useI18n()
@@ -66,7 +53,30 @@ function WindowButtons() {
   )
 }
 
-export function Header({ wallpaper }: { wallpaper: WallpaperState | null }) {
+/** Trading skin: the queue as a ticker tape (title, length, a ▲ / ▼ just for the look). */
+function Ticker({ queue }: { queue: TrackInfo[] }) {
+  if (!queue.length) return null
+  const items = queue.slice(0, 30).map((tr) => {
+    let h = 0
+    for (const c of tr.title) h = (h * 31 + c.charCodeAt(0)) | 0
+    const up = h % 3 !== 0
+    return (
+      <span key={tr.path} className="ticker-item">
+        ♪ <b>{tr.title.slice(0, 32)}</b> <span className={up ? 'up' : 'down'}>{up ? '▲' : '▼'} {fmtTime(tr.duration)}</span>
+      </span>
+    )
+  })
+  return (
+    <div className="ticker mx-4 min-w-0 flex-1" style={{ '--ticker-time': `${Math.max(20, items.length * 6)}s` } as CSSProperties}>
+      <div className="ticker-track">
+        {items}
+        {items.map((it) => ({ ...it, key: `${it.key}-2` }))}
+      </div>
+    </div>
+  )
+}
+
+export function Header({ wallpaper, queue = [] }: { wallpaper: WallpaperState | null; queue?: TrackInfo[] }) {
   const { t, lang, setLang } = useI18n()
   const skin = useSkin()
   const retro = skin === 'retro'
@@ -85,13 +95,14 @@ export function Header({ wallpaper }: { wallpaper: WallpaperState | null }) {
         ) : (
           <>
             {skin !== 'glass' && <Icon name="music" size={15} className="app-logo" />}
-            <span className="app-brand">Chill Lounge</span>
+            <span className="app-brand">{skin === 'gameboy' ? 'CHILL BOY' : 'Chill Lounge'}</span>
             <span className="text-[10.5px] text-ph-dim">v{__APP_VERSION__}</span>
           </>
         )}
       </div>
+      {skin === 'trading' && <Ticker queue={queue} />}
       <div className="flex items-center gap-3 text-[11px] text-ph-dim">
-        <UpdateBadge />
+        <UpdateBadge style={noDrag} />
         <span className={`badge ${desk && !wallpaper!.paused ? 'ok' : ''}`}>
           <span className="led" /> {!desk ? t('header.desktopOff') : wallpaper!.paused ? t('header.desktopPaused') : t('header.desktopOn')}
         </span>

@@ -4,8 +4,10 @@ import { ditherCover, usePaletteKey } from '../lib/dither'
 import { useI18n } from '../i18n'
 import { getBeat } from '../lib/beat'
 import { startVfx, type VfxLayers } from '../lib/vfx'
-import { useSkin } from '../lib/theme'
+import { isPixelSkin, useSkin } from '../lib/theme'
 import { Icon } from './icons'
+import { CustomVfxLayer } from './CustomVfx'
+import type { CustomVfx } from '../../../shared/types'
 
 export function Panel({ title, right, className = '', children }: { title?: string; right?: ReactNode; className?: string; children: ReactNode }) {
   return (
@@ -122,7 +124,7 @@ export function Modal({ open, title, onClose, children, width = 440 }: { open: b
 
 /** Cover art: dithered pixel art in the retro skin, the real image in the others. */
 export function PixelCover(props: { src: string | null; seed: string; res?: number; className?: string }) {
-  return useSkin() === 'retro' ? <DitheredCover {...props} /> : <CoverImage src={props.src} className={props.className} />
+  return isPixelSkin(useSkin()) ? <DitheredCover {...props} /> : <CoverImage src={props.src} className={props.className} />
 }
 
 /** The cover as is, or a soft gradient with a note when there is none. */
@@ -157,7 +159,7 @@ function DitheredCover({ src, seed, res = 32, className = '' }: { src: string | 
 }
 
 /** All pixel VFX layers on one canvas. `reactive` makes them pulse with the music. */
-export function VfxCanvas({ layers, reactive = false, paused = false, className = '' }: { layers: VfxLayers; reactive?: boolean; paused?: boolean; className?: string }) {
+export function VfxCanvas({ layers, custom, reactive = false, paused = false, className = '' }: { layers: VfxLayers; custom?: CustomVfx | null; reactive?: boolean; paused?: boolean; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const live = useRef({ layers, reactive, paused })
   live.current = { layers, reactive, paused }
@@ -170,7 +172,12 @@ export function VfxCanvas({ layers, reactive = false, paused = false, className 
       }),
     []
   )
-  return <canvas ref={ref} className={`pixelated pointer-events-none ${className}`} aria-hidden />
+  return (
+    <>
+      <canvas ref={ref} className={`pixelated pointer-events-none ${className}`} aria-hidden />
+      <CustomVfxLayer fx={custom} paused={paused} beat={() => (live.current.reactive ? getBeat() : 0)} className={className} />
+    </>
+  )
 }
 
 /** Types text out character by character whenever `text` changes. */

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import type { DownloadMode, TrackInfo } from '../../../shared/types'
+import type { DownloadJob, DownloadMode, TrackInfo } from '../../../shared/types'
+import { DownloadButton } from '../components/DownloadButton'
 import { DenoBanner, ToolsGate, useYtAuth, VideoViewer, YouTubeAccount } from '../components/Media'
 import { Panel, PixelCover } from '../components/ui'
 import { useI18n } from '../i18n'
@@ -16,6 +17,8 @@ const download = (tracks: TrackInfo[], mode: DownloadMode): void =>
 
 interface Props {
   p: Player
+  /** The download queue, to show each result's download progress. */
+  jobs: DownloadJob[]
   /** Open the fullscreen video mode. */
   onCinema: () => void
   /** The fullscreen mode is showing the video, so this small viewer stays empty. */
@@ -26,7 +29,7 @@ export function YouTubeScreen(props: Props) {
   return <ToolsGate>{(status, refresh) => <YouTubeInner {...props} deno={status.deno} onDeno={refresh} />}</ToolsGate>
 }
 
-function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno: boolean; onDeno: Parameters<typeof DenoBanner>[0]['onInstalled'] }) {
+function YouTubeInner({ p, jobs, onCinema, cinemaOpen, deno, onDeno }: Props & { deno: boolean; onDeno: Parameters<typeof DenoBanner>[0]['onInstalled'] }) {
   const { t } = useI18n()
   const [query, setQuery] = useState(() => load('yt', { query: '' }).query)
   const [results, setResults] = useState<TrackInfo[] | null>(null)
@@ -68,6 +71,12 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
   const warmOnHover = (r: TrackInfo | null): void => {
     if (hoverTimer.current) clearTimeout(hoverTimer.current)
     if (r) hoverTimer.current = setTimeout(() => window.lounge.youtube.prefetch(r.path.slice(3)), 350)
+  }
+
+  /** The latest download of a video in a format (a retry or a re-download replaces the old one). */
+  const jobFor = (videoId: string, mode: DownloadMode): DownloadJob | undefined => {
+    for (let i = jobs.length - 1; i >= 0; i--) if (jobs[i].videoId === videoId && jobs[i].mode === mode) return jobs[i]
+    return undefined
   }
 
   const queue = (tracks: TrackInfo[], playNow = false): void => {
@@ -155,12 +164,9 @@ function YouTubeInner({ p, onCinema, cinemaOpen, deno, onDeno }: Props & { deno:
                   <button className={`tbtn sm ${added.has(r.path) ? 'on' : ''}`} onClick={() => queue([r])} title={t('yt.queue')}>
                     {added.has(r.path) ? '✓' : '+'}
                   </button>
-                  <button className="tbtn sm" onClick={() => download([r], 'audio')} title={t('yt.dlAudio')}>
-                    ↓mp3
-                  </button>
-                  <button className="tbtn sm" onClick={() => download([r], 'video')} title={t('yt.dlVideo')}>
-                    ↓mp4
-                  </button>
+                  {(['audio', 'video'] as const).map((mode) => (
+                    <DownloadButton key={mode} mode={mode} job={jobFor(r.path.slice(3), mode)} onStart={() => download([r], mode)} />
+                  ))}
                 </div>
               </div>
             )

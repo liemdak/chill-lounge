@@ -80,7 +80,7 @@
 
 .winbtn { display: inline-flex; align-items: center; justify-content: center; color: var(--color-ph); }
 
-/* ── Glass (Apple) ──────────────────────────────────────────────────────── */
+/* ── Glass ──────────────────────────────────────────────────────── */
 :root[data-skin='glass'] {
   --font-mono: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
   --font-pixel: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
