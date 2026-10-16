@@ -1,127 +1,176 @@
 # Chill Lounge
 
-**Hình nền động + trình phát nhạc lo-fi cho Windows, phong cách retro CRT terminal.**
-*Live wallpaper + lo-fi music player for Windows, in a retro CRT terminal style.*
+**A live wallpaper and lo-fi music player for Windows — eight looks, pixel effects, YouTube streaming and downloads.**
 
-![Chill Lounge player](docs/screenshot-player.jpg)
+[**⬇ Download the latest version**](https://github.com/liemdak/chill-lounge/releases/latest) · Windows 10 / 11 (64-bit) · English & Vietnamese
+
+![Chill Lounge — Now Playing in the Retro CRT look](docs/retro.jpg)
+
+## Highlights
+
+- **Live wallpaper** — any image, GIF or video behind your desktop icons, or just inside the app. Pauses itself when a game goes fullscreen.
+- **Pixel effects** — rain, snow, fireflies, stars, glyph rain, petals, fog and VHS noise, stackable and pulsing with the music. **Add your own effect** from an image or a video.
+- **Music player** — local files with covers and lyrics, EQ with tape warmth, ambient sounds (rain, vinyl, fireplace, café), sleep timer, media keys.
+- **YouTube** — search or paste a link, play it alongside your own music, and download it as **mp3** or **mp4**.
+- **Eight looks** — Retro CRT, Glass, Anime lo-fi, Manga, Game Boy, Trading, Windows 98 and Windows 11. Each one changes shapes, fonts, icons and window buttons, not just colours.
+- **Updates itself** — tells you when a new version is out and installs it when you say so.
 
 ---
 
-## 🇻🇳 Tải và cài đặt
+## Install
 
-1. Vào [**Releases**](https://github.com/liemdak/chill-lounge/releases/latest) → tải file **`ChillLounge-Setup-x.y.z.exe`** (khoảng 100 MB).
-2. Mở file vừa tải. Windows có thể hiện màn hình xanh **"Windows protected your PC"** vì app chưa có chữ ký số trả phí — bấm **More info → Run anyway**.
-3. Chọn thư mục cài → **Install**. App có icon trên Desktop và Start Menu.
-4. Khi có bản mới, app hiện bảng **Có bản cập nhật mới** kèm nội dung thay đổi → **[Cập nhật ngay]** hoặc **[Để sau]**; tải xong bấm **[Khởi động lại để cài]**. Cài đặt → **[Kiểm tra cập nhật]** để kiểm tra bất cứ lúc nào.
-
-**Yêu cầu:** Windows 10 hoặc 11, 64-bit. Hình nền desktop đã thử trên Windows 11 24H2+.
-
-### Dùng thế nào
-
-| Bạn muốn | Làm |
-|---|---|
-| Nghe nhạc trong máy | Tab **Thư viện** → **[+ THÊM NHẠC]** → chọn mp3 / flac / wav / m4a / mp4 |
-| Âm nền mưa, đĩa than, lò sưởi, cà phê | Nút **≈ ÂM NỀN** ở màn Đang phát |
-| Chỉnh âm | Nút **EQ** (Lo-Fi ấm, Bass sâu, Giọng rõ, Phẳng, hoặc tự chỉnh) |
-| Hẹn giờ tắt nhạc | Nút **ZZZ** |
-| Chọn ảnh / gif / video làm nền **trong app** | Tab **Hình nền** → **[+ CHỌN FILE]** → **[DÙNG TRONG APP]** |
-| Đưa lên **desktop Windows** | Tab **Hình nền** → **[ĐẶT LÊN DESKTOP…]** → xác nhận. Gỡ lúc nào cũng được (trong app hoặc chuột phải icon ở khay) |
-| Màn hình chờ toàn màn hình (đồng hồ + mưa) | Phím **F**, thoát bằng **Esc** |
-| Hiệu ứng mưa, tuyết, đom đóm, sao… | Tab **Hình nền** → bảng **Hiệu ứng pixel**: chọn preset hoặc kéo từng lớp; bật **Nhảy theo nhạc** |
-| Nghe YouTube | Tab **YouTube** → dán link video / playlist hoặc gõ từ khóa → **▶** để phát, **+** để thêm hàng chờ, **[⛶]** để xem toàn màn hình (muốn xem video thì tải mp4) |
-| Tải nhạc / video | Nút **↓mp3** / **↓mp4** ở tab YouTube, hoặc dán link ở tab **Tải về**; bài tải xong tự vào Thư viện |
-| Đổi ngôn ngữ | Nút **VI / EN** trên thanh tiêu đề |
-
-App **không bao giờ tự đổi hình nền desktop** nếu bạn chưa đồng ý, và mặc định không tự bật lại khi mở app.
-
-## 🇬🇧 Download & install
-
-1. Go to [**Releases**](https://github.com/liemdak/chill-lounge/releases/latest) → download **`ChillLounge-Setup-x.y.z.exe`** (~100 MB).
+1. Open the [**latest release**](https://github.com/liemdak/chill-lounge/releases/latest) and download **`ChillLounge-Setup-x.y.z.exe`** (about 100 MB).
 2. Run it. Windows may show **"Windows protected your PC"** because the app isn't signed with a paid certificate — click **More info → Run anyway**.
-3. Pick a folder → **Install**. Shortcuts are added to the Desktop and Start Menu.
-4. When a new version is out, the app shows **Update available** with what changed → **[Update now]** or **[Later]**; once downloaded, **[Restart to install]**. Settings → **[Check for updates]** checks any time.
+3. Choose a folder and click **Install**. Shortcuts are added to the Desktop and the Start menu.
 
-**Requires:** Windows 10 or 11, 64-bit. The desktop wallpaper is tested on Windows 11 24H2+.
+**Requirements:** Windows 10 or 11, 64-bit, on an Intel or AMD processor. Windows on ARM (Snapdragon) runs it through Windows' x64 emulation. macOS and Linux are not supported yet.
 
-Choosing an image/video in the **Wallpaper** tab only uses it **inside the app**. Putting it on your **Windows desktop** is a separate button with a confirmation, and you can remove it any time (in the app or from the tray icon).
+### Updates
 
-![Wallpaper mode](docs/screenshot-wallpaper-mode.jpg)
+Chill Lounge checks for a new version when it starts and every few hours. When one is out it shows **Update available** with the list of changes — choose **Update now** or **Later**. Once downloaded, click **Restart to install** (or it installs the next time you quit). You can check any time in **Settings → Check for updates**.
 
----
-
-## Tính năng / Features
-
-- **Hình nền động** — ảnh, gif, video (mp4 / webm) phía sau icon desktop; nhiều màn hình; tự dừng khi chơi game toàn màn hình.
-- **8 lớp hiệu ứng pixel bật chồng được** — mưa (có chớp khi mưa to), tuyết, đom đóm, trời sao + sao băng, mưa ký tự terminal, hoa rơi, sương mù dither, nhiễu VHS; 6 preset (Đêm mưa, Mùa đông, Terminal, Đêm hè, Anh đào); **nhảy theo nhạc** (cả trên desktop); độ sáng, scanline CRT.
-- **Trình phát nhạc** — đọc tên bài, nghệ sĩ, ảnh bìa và lời bài hát từ file; EQ + độ ấm băng từ; 4 lớp âm nền tạo bằng Web Audio; hẹn giờ ngủ; phím media; nhớ hàng chờ.
-- **Giao diện CRT** — font VT323 + IBM Plex Mono (đủ dấu tiếng Việt), ảnh bìa dither thành pixel art, đĩa than pixel, phổ LED, chữ đánh máy + glitch.
-- **8 giao diện** — Retro CRT, Glass, Anime lo-fi, Manga trắng đen, Game Boy, Trading, Windows 98, Windows 11: đổi cả hình dáng, font, nút cửa sổ, icon; giao diện Retro có thêm 7 bộ màu (Tím CRT, Hổ phách, Lục phosphor, Game Boy, Vaporwave, Xanh IBM, Băng cassette). Cài đặt → Giao diện.
-- **Hiệu ứng của bạn** — tải lên một ảnh nhỏ (PNG / WebP / GIF) để làm hạt rơi / bay / trôi, hoặc một lớp phủ động (GIF / WebP / APNG / WebM / MP4). Chỉ nhận ảnh và video, không chạy code.
-- **YouTube** — dán link video / playlist hoặc tìm theo từ khóa; phát chung hàng chờ với nhạc offline, âm thanh đi qua EQ, âm nền và visualizer; hiện ảnh bìa lớn, xem toàn màn hình. Các bài sắp phát được lưu sẵn vào bộ đệm (tối đa ~300 MB, tự dọn) nên chuyển bài và tua gần như tức thì.
-- **Tải về** — chọn **chỉ âm thanh (mp3)** hoặc **cả video (mp4, tới 1080p)**, có ảnh bìa và tên bài, không tải trùng, tải xong tự vào Thư viện.
-- **Song ngữ** Việt / English · **báo khi có bản mới** (xem có gì mới → cập nhật ngay hoặc để sau).
-
-> **Lưu ý YouTube:** lần đầu mở tab YouTube / Tải về, app hỏi để tải [yt-dlp](https://github.com/yt-dlp/yt-dlp), ffmpeg và Deno (~120 MB) từ GitHub. Nếu YouTube báo mạng của bạn là bot ("Sign in to confirm you're not a bot"), đăng nhập YouTube trong app (nên dùng tài khoản phụ — app chỉ lưu cookie trên máy, không lưu mật khẩu). Tải hoặc phát YouTube ngoài trình phát chính thức là trái điều khoản của YouTube — chỉ dùng cho mục đích cá nhân, và tôn trọng bản quyền của nghệ sĩ.
-
-### Sắp có / Coming next
-
-- Hồ sơ và playlist riêng / *Profiles and playlists*
+> Versions older than 0.6 update silently instead: open the app, wait for **"vX.Y.Z ready"** at the top, then click it — or quit the app from the tray icon and it installs on its own.
 
 ---
 
-## Cho developer / For developers
+## Eight looks
+
+![The eight looks](docs/looks.jpg)
+
+Pick one in **Settings → Look**. The **Retro CRT** look also comes in seven phosphor colour themes: Purple CRT, Amber, Green phosphor, Game Boy, Vaporwave, IBM blue and Cassette.
+
+![Settings — choosing a look](docs/settings.jpg)
+
+| Look | Style |
+|---|---|
+| **Retro CRT** | Terminal on a CRT monitor: pixel fonts, scanlines, dithered pixel-art covers and a spinning pixel vinyl |
+| **Glass** | Frosted glass panels, rounded corners, coloured window dots; follows Windows' light / dark mode |
+| **Anime lo-fi** | Pastel pink and lavender, manga dots, polaroid cover, rounded "sticker" buttons |
+| **Manga** | Black ink on white paper, hard shadows, speech-bubble titles, covers inked in black & white |
+| **Game Boy** | Green LCD screens inside the grey handheld, dot-matrix bars, maroon A / B buttons |
+| **Trading** | Dark exchange terminal, yellow accents, green / red, and a ticker tape of your queue |
+| **Windows 98** | Grey 3D buttons, navy title bar, block progress bars |
+| **Windows 11** | Dark mica panels, Fluent window buttons, blue accent |
+
+---
+
+## Live wallpaper & effects
+
+![Wallpaper tab with a custom effect](docs/wallpaper.jpg)
+
+- In the **Wallpaper** tab, **Choose file** picks an image (jpg, png, webp, bmp), a GIF or a video (mp4, webm, mkv, mov). By default it is used **only inside the app**.
+- **Set on desktop…** puts it behind your desktop icons, on every monitor — only after you confirm, and you can remove it any time from the app or the tray icon. The app never changes your desktop on its own.
+- **Pixel effects** stack: drag each layer, or pick a preset (Rainy Night, Winter, Terminal, Summer Night, Sakura). Turn on **React to music** and they pulse with the bass, on the desktop too.
+- Press **F** (or **Wallpaper Mode**) for a fullscreen clock with the wallpaper, effects and a mini player.
+
+![Fullscreen wallpaper mode](docs/wallpaper-mode.jpg)
+
+### Your own effect
+
+![Your own effect settings](docs/effects.jpg)
+
+At the bottom of the effects panel:
+
+- **Particle image** — upload a small PNG, WebP or GIF (up to 2 MB): a snowflake, a leaf, a star… The app turns it into particles that **fall**, **float up** or **drift**, with amount, size, speed and spin controls.
+- **Animated overlay** — upload a GIF, WebP, APNG, WebM or MP4 (up to 50 MB) to lay over the wallpaper. **Drop black background** makes the black of effect videos transparent.
+
+Only images and videos are accepted — nothing that can run code — so a file can at worst fail to show. The app keeps its own copy, so moving or deleting the original is fine.
+
+---
+
+## Music player
+
+- **Library** → **+ Add music** reads mp3, flac, wav, ogg, m4a, aac, opus and video files (mp4, webm, mkv, mov) with their title, artist, cover and lyrics.
+- **EQ** presets (Lo-Fi Warm, Deep Bass, Clear Vocals, Flat) or your own, with a tape-warmth control.
+- **Ambient** sounds mixed under the music: rain, vinyl crackle, fireplace, café.
+- **Sleep timer**, shuffle, repeat, likes, and Windows media keys. The queue is remembered between sessions.
+
+---
+
+## YouTube & downloads
+
+![YouTube tab with downloads in progress](docs/youtube.jpg)
+
+- In the **YouTube** tab, search or paste a video / playlist link. **▶** plays, **+** adds to the queue — YouTube songs go through the same EQ, ambience and visualizer as your own files, with the video's cover on screen.
+- The playing song and the next ones are **cached** (up to about 300 MB, cleaned up automatically), so skipping and seeking are near-instant. A new song takes a few seconds to start.
+- **↓mp3** and **↓mp4** download a song as audio only or as video (up to 1080p), with title and cover. The button turns into a **progress ring**; finished downloads are added to your Library. You can also paste links in the **Downloads** tab and choose the folder there.
+- The first time, the app asks to download [yt-dlp](https://github.com/yt-dlp/yt-dlp), ffmpeg and Deno (about 120 MB) from their official GitHub releases.
+- If YouTube says **"Sign in to confirm you're not a bot"**, it has flagged your network. **Sign in to YouTube** in the app (a secondary account is recommended): only the sign-in cookies are kept on your PC — never your password — and they are only used when YouTube asks.
+
+> Playing or downloading YouTube outside its official player is against YouTube's Terms of Service. Use it for personal listening and respect the artists' rights.
+
+---
+
+## Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| **Space** | Play / pause |
+| **J** / **L** | Previous / next track |
+| **M** | Mute |
+| **F** | Fullscreen wallpaper mode |
+| **F1 – F7** | Switch screens |
+| **Esc** | Close a dialog / leave fullscreen |
+
+---
+
+## For developers
 
 ```bash
 npm install
 npm run dev        # hot reload
 npm run typecheck
-npm run dist       # build dist/ChillLounge-Setup-<version>.exe
+npm run dist       # builds dist/ChillLounge-Setup-<version>.exe
 ```
 
-> Nếu `npm install` báo lỗi tải Electron (`fetch failed`): `$env:NODE_OPTIONS='--dns-result-order=ipv4first'` rồi `node node_modules/electron/install.js`.
+> If `npm install` fails to download Electron (`fetch failed`): set `NODE_OPTIONS=--dns-result-order=ipv4first` and run `node node_modules/electron/install.js`.
 
-File mẫu: `samples/neon-test.webm` (wallpaper), `samples/lofi-test.wav` (nhạc).
+Sample files: `samples/neon-test.webm` (wallpaper), `samples/lofi-test.wav` (music). Set `CHILL_USER_DATA=<folder>` to run on a separate profile (used for the screenshots above).
 
-### Phát hành bản mới
+### Releasing
 
-1. Tăng `version` trong `package.json`, chạy `npm run dist`.
-2. Tạo Release `vX.Y.Z` trên GitHub, đính kèm **3 file** trong `dist/`: `ChillLounge-Setup-X.Y.Z.exe`, `ChillLounge-Setup-X.Y.Z.exe.blockmap`, `latest.yml` (thiếu `latest.yml` thì app cũ không tự cập nhật được).
+1. Bump `version` in `package.json` and run `npm run dist`.
+2. Create release `vX.Y.Z` on GitHub with **three files** from `dist/`: `ChillLounge-Setup-X.Y.Z.exe`, `ChillLounge-Setup-X.Y.Z.exe.blockmap` and `latest.yml` (without `latest.yml`, installed apps can't update). The release notes are what the in-app update prompt shows.
 
-### Cấu trúc
+### Project structure
 
 ```
 src/
-  main/                 Electron main process
-    index.ts            cửa sổ, tray, IPC, tự cập nhật, chữ song ngữ của main
-    media-protocol.ts   lounge-media:// — file local, và lounge-media://yt/<id> chuyển tiếp luồng YouTube (hỗ trợ tua)
-    settings.ts         %APPDATA%/Chill Lounge/settings.json
-    tags.ts             đọc tag / ảnh bìa / lời (music-metadata)
-    tools.ts            tải yt-dlp + ffmpeg về %APPDATA%/Chill Lounge/bin (khi người dùng đồng ý), tự cập nhật yt-dlp
-    youtube.ts          tra link / playlist / tìm kiếm, lấy link luồng (cache theo hạn)
-    downloads.ts        hàng chờ tải: mp3 hoặc mp4, tiến độ, hủy / thử lại
+  main/                   Electron main process
+    index.ts              windows, tray, IPC, main-process strings
+    updater.ts            update checks and the update prompt state (electron-updater)
+    media-protocol.ts     lounge-media:// — local files, YouTube audio (cache or proxy), thumbnails
+    audio-cache.ts        YouTube audio cache (upcoming tracks, LRU)
+    youtube.ts            search / links / stream lookup through yt-dlp
+    youtube-auth.ts       optional YouTube sign-in (cookies only)
+    downloads.ts          download queue: mp3 or mp4, progress, cancel / retry
+    tools.ts              fetches yt-dlp, ffmpeg and Deno on consent; keeps yt-dlp current
+    custom-vfx.ts         user-uploaded effects (checked, size-capped, copied)
+    settings.ts           %APPDATA%/Chill Lounge/settings.json
+    tags.ts               tags, covers and lyrics (music-metadata)
     wallpaper/
-      win32.ts          Win32 qua koffi: gắn cửa sổ sau icon desktop, phát hiện game fullscreen
-      manager.ts        nền trong app (source) ≠ nền desktop (desktop, cần đồng ý)
-  preload/              API cho renderer (window.lounge)
+      win32.ts            Win32 via koffi: window behind the desktop icons, fullscreen-game detection
+      manager.ts          in-app background vs. desktop wallpaper (desktop needs consent)
+  preload/                the renderer API (window.lounge)
   renderer/
-    wallpaper.html      cửa sổ hình nền desktop: media + mưa pixel + scanline
+    wallpaper.html        the desktop wallpaper window: media + effects
     src/
-      i18n.tsx          toàn bộ chữ giao diện, vi + en
-      styles/index.css  design tokens CRT (Tailwind v4 @theme) + class dùng chung
-      audio/engine.ts   Web Audio: EQ, độ ấm, analyser, âm nền
-      player/           usePlayer — hàng chờ, lặp, hẹn giờ, lưu phiên
-      lib/              dither (pixel art), vfx (8 lớp hiệu ứng pixel), beat (nhịp bass), store
-      components/       khung app, visualizer, hộp thoại, overlay CRT
-      screens/          Đang phát, Thư viện, Hình nền, Cài đặt, màn sắp có
+      i18n.tsx            every UI string, English + Vietnamese
+      styles/             CRT design tokens + the skins (skins.css, skins-more.css)
+      lib/                theme (looks & colours), vfx (pixel effects), dither, beat, store
+      audio/engine.ts     Web Audio: EQ, warmth, analyser, ambience
+      player/             usePlayer — queue, repeat, sleep timer, cache warm-up
+      components/         app chrome, visualizers, dialogs, effects, update prompt
+      screens/            Now Playing, Library, YouTube, Downloads, Wallpaper, Settings
   shared/types.ts
 ```
 
-### Ghi chú: hình nền trên Windows 11 24H2+
+### Note: desktop wallpaper on Windows 11 24H2+
 
-Từ 24H2, `SHELLDLL_DefView` (icon) và `WorkerW` đều là con của `Progman`. App gắn cửa sổ vào `Progman`, z-order giữa DefView và WorkerW (`src/main/wallpaper/win32.ts`). Những điểm dễ vấp đã xử lý:
+Since 24H2, `SHELLDLL_DefView` (the icons) and `WorkerW` are both children of `Progman`. The app parents its window to `Progman`, z-ordered between DefView and WorkerW (`src/main/wallpaper/win32.ts`). Pitfalls handled:
 
-1. `WS_EX_LAYERED` (do `setIgnoreMouseEvents`) phải gọi lại `SetLayeredWindowAttributes` sau khi đổi parent, nếu không DWM không vẽ.
-2. Chromium chừa viền resize ẩn ~10px quanh cửa sổ frameless → đo client rect và nới cửa sổ.
-3. `QUNS_BUSY` báo cả cửa sổ maximize thường; taskbar tự ẩn làm cửa sổ maximize phủ kín màn hình → chỉ coi là game khi cửa sổ foreground phủ kín màn hình **và** không có `WS_MAXIMIZE`.
-4. Chỉ dựng lại cửa sổ hình nền khi màn hình đổi kích thước / scale (debounce), không phải mỗi lần work area đổi.
-5. Khi cửa sổ fullscreen, Chromium nuốt keyDown của Esc → bắt ở `before-input-event` của main.
+1. `WS_EX_LAYERED` (from `setIgnoreMouseEvents`) needs `SetLayeredWindowAttributes` again after re-parenting, or DWM doesn't draw it.
+2. Chromium keeps a hidden ~10 px resize border around frameless windows → measure the client rect and grow the window.
+3. `QUNS_BUSY` also reports ordinary maximized windows, and an auto-hidden taskbar makes them cover the screen → only treat it as a game when the foreground window covers the screen **and** isn't `WS_MAXIMIZE`.
+4. Rebuild the wallpaper windows only when a display's size or scale changes (debounced), not on every work-area change.
+5. In fullscreen, Chromium swallows the Esc keyDown → handled in the main process's `before-input-event`.
