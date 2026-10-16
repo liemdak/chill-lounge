@@ -19,6 +19,9 @@ app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
+// Development: run on a separate profile (e.g. clean data for the README screenshots).
+if (process.env.CHILL_USER_DATA) app.setPath('userData', process.env.CHILL_USER_DATA)
+
 registerMediaScheme()
 
 let mainWindow: BrowserWindow | null = null

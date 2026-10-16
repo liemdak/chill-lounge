@@ -176,7 +176,7 @@ function DownloadsInner({ p, jobs, tools: initialTools }: { p: Player; jobs: Dow
                   </span>
                 </div>
               )}
-              {j.status === 'error' && <div className="truncate text-[10.5px] text-magenta">{j.error}</div>}
+              {j.status === 'error' && <div className="truncate text-[10.5px] text-magenta">{j.error === 'live-stream' ? t('dl.live') : j.error}</div>}
               {j.status === 'done' && j.error === 'already-downloaded' && <div className="text-[10.5px] text-ph-dim">{t('dl.already')}</div>}
             </div>
             <span className={`badge shrink-0 ${STATUS_STYLE[j.status]}`}>{t(`dl.status.${j.status}` as TKey)}</span>

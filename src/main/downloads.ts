@@ -74,7 +74,7 @@ export class Downloads {
   cancel(id: string): void {
     const job = this.jobs.find((j) => j.id === id)
     if (!job) return
-    if (job.status === 'downloading' || job.status === 'processing') this.proc?.kill()
+    if (job.status === 'downloading' || job.status === 'processing') this.stop()
     if (job.status !== 'done') this.patch(job, { status: 'canceled' })
   }
 
@@ -104,6 +104,8 @@ export class Downloads {
       '--no-warnings',
       '--encoding', 'utf-8',
       '--no-playlist',
+      // live streams never end: skip them instead of recording forever
+      '--match-filter', '!is_live',
       ...jsRuntimeArgs(),
       ...cookies.args,
       '--ffmpeg-location', binDir(),
@@ -123,6 +125,7 @@ export class Downloads {
     const proc = spawn(ytdlpPath(), args, { windowsHide: true, env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' } })
     this.proc = proc
     let errText = ''
+    let isLive = false
     let partial = ''
     proc.stdout!.setEncoding('utf8')
     proc.stderr!.setEncoding('utf8')
@@ -131,6 +134,7 @@ export class Downloads {
       const lines = partial.split(/\r?\n/)
       partial = lines.pop() ?? ''
       for (const line of lines) {
+        if (/does not pass filter \(!is_live\)/.test(line)) isLive = true
         if (line.startsWith('PROGRESS|')) {
           const [, pct, speed, eta] = line.split('|')
           const progress = parseFloat(pct)
@@ -156,6 +160,8 @@ export class Downloads {
       } else if (code === 0 && job.file && existsSync(job.file)) {
         const track = await readTrackInfo(job.file)
         this.patch(job, { status: 'done', progress: 100, track })
+      } else if (code === 0 && isLive) {
+        this.patch(job, { status: 'error', error: 'live-stream' })
       } else if (code === 0) {
         // Already in the download archive: yt-dlp skipped it.
         this.patch(job, { status: 'done', progress: 100, error: 'already-downloaded' })
@@ -167,7 +173,17 @@ export class Downloads {
     })
   }
 
+  /**
+   * Stop yt-dlp and everything it started. On Windows killing yt-dlp alone leaves its ffmpeg
+   * running (it keeps recording a stream, or converting, into the download folder).
+   */
+  private stop(): void {
+    const pid = this.proc?.pid
+    if (!pid) return
+    spawn('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true }).on('error', () => this.proc?.kill())
+  }
+
   dispose(): void {
-    this.proc?.kill()
+    this.stop()
   }
 }
