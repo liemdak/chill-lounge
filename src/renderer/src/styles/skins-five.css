@@ -1,0 +1,356 @@
+/*
+ * Raiku, Pythenians, Ghibli, GTA IV and Naruto skins — same approach as skins.css. Everything is
+ * drawn with CSS (gradients, clip-paths, inline SVG patterns): no brand logos, characters or
+ * artwork are bundled, only the looks they're inspired by.
+ */
+
+/* ── Raiku: olive ink on paper, hairlines, diagram ticks, dotted cells ──── */
+:root[data-skin='raiku'] {
+  --font-mono: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --font-pixel: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --ink: #223d0e;
+  --ink-deep: #0f1d06;
+  --paper: #efeee9;
+  --hair: color-mix(in oklab, var(--ink) 16%, var(--paper));
+  --frame: color-mix(in oklab, var(--ink) 34%, var(--paper));
+  --label: 'IBM Plex Mono', ui-monospace, monospace;
+  --accent: var(--ink);
+  --color-crt-line: var(--hair);
+  --color-crt-line-strong: var(--frame);
+}
+:root[data-skin='raiku'] body { background: var(--paper); }
+:root[data-skin='raiku'] .app-backdrop { opacity: 0.12; filter: grayscale(1) sepia(0.3) hue-rotate(40deg); }
+:root[data-skin='raiku'] .font-pixel { font-weight: 500; letter-spacing: -0.035em; }
+:root[data-skin='raiku'] .panel { position: relative; background: var(--paper); border: 1px solid var(--hair); border-radius: 0; box-shadow: none; }
+/* corner ticks, like the frames on raiku.com */
+:root[data-skin='raiku'] .panel::before {
+  content: ''; position: absolute; inset: -6px; pointer-events: none; opacity: 0.7;
+  background:
+    linear-gradient(var(--frame) 0 0) top left / 9px 1px no-repeat,
+    linear-gradient(var(--frame) 0 0) top left / 1px 9px no-repeat,
+    linear-gradient(var(--frame) 0 0) top right / 9px 1px no-repeat,
+    linear-gradient(var(--frame) 0 0) top right / 1px 9px no-repeat,
+    linear-gradient(var(--frame) 0 0) bottom left / 9px 1px no-repeat,
+    linear-gradient(var(--frame) 0 0) bottom left / 1px 9px no-repeat,
+    linear-gradient(var(--frame) 0 0) bottom right / 9px 1px no-repeat,
+    linear-gradient(var(--frame) 0 0) bottom right / 1px 9px no-repeat;
+}
+:root[data-skin='raiku'] .panel-title { background: var(--paper); color: var(--ink); font-family: var(--label); font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; padding: 0 8px; }
+:root[data-skin='raiku'] .panel-title::before { content: '■ '; color: var(--ink); }
+:root[data-skin='raiku'] .panel-right { background: var(--paper); }
+:root[data-skin='raiku'] .app-header,
+:root[data-skin='raiku'] .app-sidebar,
+:root[data-skin='raiku'] .app-player { background: var(--paper); border-color: var(--hair); box-shadow: none; }
+:root[data-skin='raiku'] .app-brand { font-weight: 800; font-style: italic; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+:root[data-skin='raiku'] .app-logo { color: var(--ink); }
+:root[data-skin='raiku'] .tbtn { background: transparent; color: var(--ink); border: 1px solid var(--frame); border-radius: 0; font-weight: 500; }
+:root[data-skin='raiku'] .tbtn:hover { background: color-mix(in oklab, var(--ink) 7%, var(--paper)); color: var(--ink-deep); box-shadow: none; }
+:root[data-skin='raiku'] .tbtn.ghost { border-color: transparent; }
+:root[data-skin='raiku'] .tbtn.primary { background: var(--ink); border-color: var(--ink); color: var(--paper); box-shadow: none; }
+:root[data-skin='raiku'] .tbtn.primary:hover { background: var(--ink-deep); color: var(--paper); }
+:root[data-skin='raiku'] .tbtn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+:root[data-skin='raiku'] .tab { border: none; border-radius: 0; color: color-mix(in oklab, var(--ink) 60%, var(--paper)); font-family: var(--label); font-size: 11px; text-transform: uppercase; }
+:root[data-skin='raiku'] .tab.active { background: transparent; color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+:root[data-skin='raiku'] .badge { border-radius: 0; border-color: var(--frame); color: var(--ink); font-family: var(--label); text-transform: uppercase; }
+:root[data-skin='raiku'] .led { border-radius: 0; }
+:root[data-skin='raiku'] .tinput { background: transparent; border: 1px solid var(--frame); border-radius: 0; color: var(--ink-deep); }
+:root[data-skin='raiku'] .tinput:focus { border-color: var(--ink); box-shadow: none; }
+:root[data-skin='raiku'] .nav-active { background: var(--ink); border-radius: 0; box-shadow: none; }
+:root[data-skin='raiku'] .nav-item.active { color: var(--paper); }
+/* progress as dotted cells, filled solid */
+:root[data-skin='raiku'] .blockbar { height: 12px; border-radius: 0; border: 1px solid var(--frame); background: radial-gradient(var(--frame) 0.7px, transparent 0.9px) 0 0 / 3px 3px; margin: 0; }
+:root[data-skin='raiku'] .blockbar > .fill { border-radius: 0; background: var(--ink); }
+:root[data-skin='raiku'] input[type='range'].trange::-webkit-slider-runnable-track { border-radius: 0; height: 2px; background: linear-gradient(90deg, var(--ink) var(--pct, 0%), var(--frame) var(--pct, 0%)); }
+:root[data-skin='raiku'] input[type='range'].trange::-webkit-slider-thumb { border-radius: 0; width: 10px; height: 14px; margin-top: -6px; background: var(--ink); box-shadow: none; }
+:root[data-skin='raiku'] .row-hover:hover { background: color-mix(in oklab, var(--ink) 5%, var(--paper)); border-radius: 0; }
+:root[data-skin='raiku'] .row-active { background: color-mix(in oklab, var(--ink) 9%, var(--paper)); box-shadow: inset 2px 0 0 var(--ink); border-radius: 0; color: var(--ink-deep); }
+:root[data-skin='raiku'] .check { border-radius: 0; border: 1px solid var(--ink); }
+:root[data-skin='raiku'] .check.on { background: var(--ink); }
+:root[data-skin='raiku'] .cover-art { border-radius: 0; }
+:root[data-skin='raiku'] .cover-hero { border-radius: 0; box-shadow: 0 0 0 1px var(--frame), 10px 10px 0 -1px color-mix(in oklab, var(--ink) 12%, var(--paper)); }
+:root[data-skin='raiku'] .winbtn { width: 28px; height: 24px; color: var(--ink); }
+:root[data-skin='raiku'] .winbtn:hover { background: var(--ink); color: var(--paper); }
+:root[data-skin='raiku'] ::-webkit-scrollbar-thumb { background: var(--frame); border-radius: 0; }
+:root[data-skin='raiku'] ::selection { background: var(--ink); color: var(--paper); }
+
+/* ── Pythenians: night temple — Pyth purple, gold meander, marble plaques ─ */
+:root[data-skin='pythenians'] {
+  --font-mono: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  --font-pixel: 'Cormorant Garamond', Georgia, serif;
+  --gold: #e8c25a;
+  --gold-soft: rgb(232 194 90 / 0.4);
+  --marble: linear-gradient(135deg, #f7f4fc 0%, #e4def0 38%, #f4f0fa 52%, #d9d1ea 78%, #f3eff9 100%);
+  --meander: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M0 19h19V1H3v14h12V5H7v6h4' fill='none' stroke='%23e8c25a' stroke-width='1.7'/%3E%3C/svg%3E");
+  --accent: #9d86ff;
+  --color-crt-line: var(--gold-soft);
+  --color-crt-line-strong: rgb(232 194 90 / 0.6);
+}
+:root[data-skin='pythenians'] body {
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgb(122 90 248 / 0.35), transparent 70%),
+    radial-gradient(700px 500px at -10% 110%, rgb(232 194 90 / 0.14), transparent 70%),
+    #0f0b1f;
+}
+:root[data-skin='pythenians'] .app-backdrop { opacity: 0.25; }
+:root[data-skin='pythenians'] .font-pixel { font-weight: 700; font-size-adjust: 0.42; letter-spacing: 0.01em; }
+:root[data-skin='pythenians'] h1.font-pixel,
+:root[data-skin='pythenians'] h2.font-pixel { color: #fbf3d6; text-shadow: 0 0 18px rgb(232 194 90 / 0.35); }
+/* gold Greek-key band along the top of every panel */
+:root[data-skin='pythenians'] .panel {
+  background: var(--meander) 0 0 / 11px 11px repeat-x, linear-gradient(180deg, #241a47, #1b1436);
+  border: 1px solid var(--gold-soft); border-top: 0; border-radius: 3px; padding-top: max(1.25rem, 18px);
+  box-shadow: 0 12px 30px rgb(122 90 248 / 0.18);
+}
+:root[data-skin='pythenians'] .panel-title {
+  background: var(--marble); color: #2a1f4d; border: 1px solid var(--gold); border-radius: 2px;
+  font-family: var(--font-pixel); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; top: -0.55em;
+}
+:root[data-skin='pythenians'] .panel-right { background: transparent; }
+:root[data-skin='pythenians'] .app-header {
+  background: var(--meander) 0 100% / 9px 9px repeat-x, #140f2b; border-bottom: 0; padding-bottom: 6px;
+}
+:root[data-skin='pythenians'] .app-sidebar,
+:root[data-skin='pythenians'] .app-player { background: #140f2b; border-color: var(--gold-soft); box-shadow: none; }
+:root[data-skin='pythenians'] .app-brand { font-family: var(--font-pixel); font-size: 18px; font-weight: 700; letter-spacing: 0.06em; color: var(--gold); }
+:root[data-skin='pythenians'] .app-brand::after { content: ' ϟ'; color: #c9b8ff; }
+:root[data-skin='pythenians'] .app-logo { color: var(--gold); }
+:root[data-skin='pythenians'] .tbtn { background: rgb(157 134 255 / 0.12); color: #e9e4f7; border: 1px solid rgb(232 194 90 / 0.3); border-radius: 3px; }
+:root[data-skin='pythenians'] .tbtn:hover { background: rgb(157 134 255 / 0.24); color: #fff; box-shadow: 0 0 12px rgb(157 134 255 / 0.35); }
+:root[data-skin='pythenians'] .tbtn.ghost { background: transparent; border-color: transparent; }
+:root[data-skin='pythenians'] .tbtn.primary { background: linear-gradient(180deg, #8a6dff, #5b3fd6); color: #fff3cf; border-color: var(--gold); box-shadow: 0 0 16px rgb(122 90 248 / 0.45); }
+:root[data-skin='pythenians'] .tbtn.on { background: rgb(232 194 90 / 0.16); color: var(--gold); border-color: var(--gold); }
+:root[data-skin='pythenians'] .tab { border-radius: 2px; color: #a99fd0; }
+:root[data-skin='pythenians'] .tab.active { background: rgb(232 194 90 / 0.14); color: var(--gold); border-color: var(--gold-soft); }
+:root[data-skin='pythenians'] .badge { border-radius: 2px; border-color: var(--gold-soft); color: #cbc6ec; }
+:root[data-skin='pythenians'] .tinput { background: #120d26; border: 1px solid var(--gold-soft); border-radius: 3px; }
+:root[data-skin='pythenians'] .tinput:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(232 194 90 / 0.15); }
+/* the active page glows like a halo */
+:root[data-skin='pythenians'] .nav-active { background: linear-gradient(180deg, #7a5af8, #4d34b8); border-radius: 6px; box-shadow: inset 0 0 0 1px var(--gold), 0 0 18px rgb(232 194 90 / 0.35); }
+:root[data-skin='pythenians'] .nav-item.active { color: #fff3cf; }
+:root[data-skin='pythenians'] .blockbar { height: 6px; background: #33265f; }
+:root[data-skin='pythenians'] .blockbar > .fill { background: linear-gradient(90deg, #7a5af8, var(--gold)); }
+:root[data-skin='pythenians'] input[type='range'].trange::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--gold) var(--pct, 0%), #33265f var(--pct, 0%)); }
+:root[data-skin='pythenians'] input[type='range'].trange::-webkit-slider-thumb { background: var(--marble); box-shadow: 0 0 0 2px var(--gold); }
+:root[data-skin='pythenians'] .row-active { background: rgb(122 90 248 / 0.22); box-shadow: inset 2px 0 0 var(--gold); border-radius: 3px; }
+:root[data-skin='pythenians'] .check.on { background: var(--gold); border-color: var(--gold); }
+:root[data-skin='pythenians'] .check.on::after { color: #1b1436; }
+/* covers sit in temple arches */
+:root[data-skin='pythenians'] .cover-art { border-radius: 50% 50% 4px 4px / 34% 34% 4px 4px; }
+:root[data-skin='pythenians'] .cover-hero {
+  border-radius: 50% 50% 6px 6px / 30% 30% 6px 6px; border: 3px solid var(--gold);
+  box-shadow: 0 0 0 7px rgb(232 194 90 / 0.12), 0 0 46px rgb(232 194 90 / 0.4), 0 18px 40px rgb(0 0 0 / 0.5);
+}
+:root[data-skin='pythenians'] .cover-hero .cover-art { border-radius: 0; }
+:root[data-skin='pythenians'] .winbtn { width: 28px; height: 24px; color: var(--gold); }
+:root[data-skin='pythenians'] .winbtn:hover { background: rgb(232 194 90 / 0.14); }
+:root[data-skin='pythenians'] ::-webkit-scrollbar-thumb { background: rgb(232 194 90 / 0.4); border-radius: 99px; }
+
+/* ── Ghibli: watercolour sky, rolling hills, cream paper, brown ink ─────── */
+:root[data-skin='ghibli'] {
+  --font-mono: 'Nunito', 'Segoe UI', sans-serif;
+  --font-pixel: 'Patrick Hand', 'Nunito', sans-serif;
+  --leaf: #6aa84f;
+  --leaf-dark: #4f8a37;
+  --sepia: #b79f78;
+  --accent: var(--leaf);
+  --color-crt-line: rgb(183 159 120 / 0.55);
+  --color-crt-line-strong: rgb(183 159 120 / 0.85);
+}
+/* sky with drifting clouds over two green hills */
+:root[data-skin='ghibli'] body {
+  font-weight: 600;
+  background:
+    radial-gradient(130% 60% at 12% 112%, #8cc063 0 40%, transparent 40.5%),
+    radial-gradient(120% 55% at 92% 118%, #6aa84f 0 40%, transparent 40.5%),
+    radial-gradient(70px 30px at 18% 16%, #fff 70%, transparent 72%),
+    radial-gradient(54px 34px at 23% 13%, #fff 70%, transparent 72%),
+    radial-gradient(60px 26px at 27% 17%, #fff 70%, transparent 72%),
+    radial-gradient(80px 30px at 72% 10%, #fff 70%, transparent 72%),
+    radial-gradient(60px 36px at 77% 7%, #fff 70%, transparent 72%),
+    radial-gradient(70px 28px at 82% 11%, #fff 70%, transparent 72%),
+    linear-gradient(180deg, #8ec9f0 0%, #c4e4f8 45%, #f4f0dc 80%);
+  background-attachment: fixed;
+}
+:root[data-skin='ghibli'] .app-backdrop { opacity: 0.22; }
+:root[data-skin='ghibli'] .font-pixel { font-weight: 400; font-size-adjust: 0.45; letter-spacing: 0.01em; }
+:root[data-skin='ghibli'] h2.font-pixel { color: #2e2418; text-shadow: 0 2px 0 rgb(255 255 255 / 0.7); }
+:root[data-skin='ghibli'] .panel {
+  background: radial-gradient(rgb(183 159 120 / 0.09) 1px, transparent 1.5px) 0 0 / 7px 7px, #fbf6e9;
+  border: 2px solid var(--sepia); border-radius: 16px 20px 14px 22px / 20px 14px 22px 16px;
+  box-shadow: 0 6px 0 rgb(95 154 69 / 0.18), 0 14px 28px rgb(74 59 42 / 0.12);
+}
+/* leaf-shaped labels */
+:root[data-skin='ghibli'] .panel-title { background: var(--leaf); color: #fff; border-radius: 0 14px 0 14px; font-family: var(--font-pixel); font-size: 16px; font-weight: 400; top: -0.9em; padding: 0 14px; }
+:root[data-skin='ghibli'] .panel-right { background: transparent; }
+:root[data-skin='ghibli'] .app-header { background: rgb(255 255 255 / 0.62); backdrop-filter: blur(10px); border-bottom: 2px solid rgb(183 159 120 / 0.5); }
+:root[data-skin='ghibli'] .app-sidebar,
+:root[data-skin='ghibli'] .app-player { background: rgb(251 246 233 / 0.92); border-color: rgb(183 159 120 / 0.55); box-shadow: none; }
+:root[data-skin='ghibli'] .app-brand { font-family: var(--font-pixel); font-size: 20px; font-weight: 400; color: #4a3b2a; }
+:root[data-skin='ghibli'] .app-brand::after { content: ' ☁'; color: #8ec9f0; }
+:root[data-skin='ghibli'] .app-logo { color: var(--leaf); }
+:root[data-skin='ghibli'] .tbtn { background: #fff; color: #4a3b2a; border: 2px solid #d4c29c; border-radius: 12px; font-weight: 700; box-shadow: 0 2px 0 #d4c29c; }
+:root[data-skin='ghibli'] .tbtn:hover { background: #fffdf6; color: var(--leaf-dark); border-color: var(--leaf); box-shadow: 0 2px 0 var(--leaf); }
+:root[data-skin='ghibli'] .tbtn.ghost { background: transparent; border-color: transparent; box-shadow: none; }
+:root[data-skin='ghibli'] .tbtn.primary { background: var(--leaf); color: #fff; border-color: var(--leaf-dark); box-shadow: 0 3px 0 var(--leaf-dark); }
+:root[data-skin='ghibli'] .tbtn.on { background: #e3f1fb; color: #2f6f99; border-color: #8ec9f0; box-shadow: 0 2px 0 #8ec9f0; }
+:root[data-skin='ghibli'] .tab { border-radius: 10px; font-weight: 700; }
+:root[data-skin='ghibli'] .tab.active { background: #eaf4df; color: var(--leaf-dark); border-color: var(--leaf); }
+:root[data-skin='ghibli'] .badge { border-radius: 99px; border-color: #d4c29c; background: #fff; }
+:root[data-skin='ghibli'] .tinput { background: #fff; border: 2px solid #d4c29c; border-radius: 12px; }
+:root[data-skin='ghibli'] .tinput:focus { border-color: var(--leaf); box-shadow: 0 0 0 4px #eaf4df; }
+:root[data-skin='ghibli'] .nav-active { background: var(--leaf); border-radius: 0 20px 0 20px; box-shadow: 0 3px 0 var(--leaf-dark); }
+:root[data-skin='ghibli'] .nav-item.active { color: #fff; }
+:root[data-skin='ghibli'] .blockbar { height: 8px; background: #ece2c8; }
+:root[data-skin='ghibli'] .blockbar > .fill { background: linear-gradient(90deg, #a6d478, var(--leaf)); }
+:root[data-skin='ghibli'] input[type='range'].trange::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--leaf) var(--pct, 0%), #ece2c8 var(--pct, 0%)); }
+:root[data-skin='ghibli'] input[type='range'].trange::-webkit-slider-thumb { background: #fff; box-shadow: 0 0 0 3px var(--leaf); }
+:root[data-skin='ghibli'] .row-active { background: #eaf4df; color: var(--leaf-dark); }
+:root[data-skin='ghibli'] .check.on { background: var(--leaf); border-color: var(--leaf); }
+:root[data-skin='ghibli'] .cover-art { border-radius: 10px; }
+:root[data-skin='ghibli'] .cover-hero { border: 8px solid #fff; border-radius: 8px; transform: rotate(1.2deg); box-shadow: 0 16px 30px rgb(74 59 42 / 0.25); }
+:root[data-skin='ghibli'] .cover-hero:not(.playing) { transform: rotate(-1deg) scale(0.95); }
+:root[data-skin='ghibli'] .winbtn { width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #8a7458; margin-left: 5px; box-shadow: 0 2px 0 #d4c29c; }
+:root[data-skin='ghibli'] .winbtn.close { color: #d9583b; }
+:root[data-skin='ghibli'] ::-webkit-scrollbar-thumb { background: #cdbb93; border-radius: 99px; }
+
+/* ── GTA IV: Liberty City at dusk, pause-menu tabs, HUD bars ────────────── */
+:root[data-skin='gta'] {
+  --font-mono: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  --font-pixel: 'Anton', 'Impact', sans-serif;
+  --hud: #5d9bd1;
+  --money: #7fbf5f;
+  --accent: var(--hud);
+  --color-crt-line: rgb(255 255 255 / 0.12);
+  --color-crt-line-strong: rgb(255 255 255 / 0.2);
+}
+:root[data-skin='gta'] body { background: linear-gradient(180deg, #161d27 0%, #263040 38%, #5a4436 66%, #c0703a 80%, #2a1e18 92%, #0b0e12 100%); background-attachment: fixed; }
+/* skyline with lit windows along the bottom of the screen */
+:root[data-skin='gta'] body::before {
+  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 32vh; pointer-events: none; z-index: 0;
+  background: radial-gradient(#f2c66d 0.9px, transparent 1.3px) 0 0 / 9px 12px, #0b0e12;
+  clip-path: polygon(0 100%, 0 40%, 6% 40%, 6% 25%, 11% 25%, 11% 45%, 15% 45%, 15% 10%, 18% 10%, 18% 30%, 24% 30%, 24% 55%, 29% 55%, 29% 20%, 33% 20%, 33% 0, 35% 0, 35% 20%, 39% 20%, 39% 50%, 45% 50%, 45% 35%, 52% 35%, 52% 15%, 56% 15%, 56% 45%, 62% 45%, 62% 28%, 66% 28%, 66% 5%, 69% 5%, 69% 28%, 74% 28%, 74% 52%, 80% 52%, 80% 22%, 86% 22%, 86% 40%, 92% 40%, 92% 12%, 96% 12%, 96% 35%, 100% 35%, 100% 100%);
+  opacity: 0.9;
+}
+:root[data-skin='gta'] .app-backdrop { opacity: 0.18; filter: saturate(0.6); }
+:root[data-skin='gta'] .font-pixel { font-weight: 400; font-size-adjust: 0.5; text-transform: uppercase; letter-spacing: 0.01em; }
+:root[data-skin='gta'] .panel { background: rgb(12 15 19 / 0.93); border: 1px solid rgb(255 255 255 / 0.1); border-radius: 0; box-shadow: 0 10px 30px rgb(0 0 0 / 0.45); }
+/* white menu tab, black type */
+:root[data-skin='gta'] .panel-title { background: #e8e8e3; color: #0d1014; font-family: var(--font-pixel); font-size: 13px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 0; padding: 0 10px; top: -0.8em; }
+:root[data-skin='gta'] .panel-right { background: transparent; }
+:root[data-skin='gta'] .app-header,
+:root[data-skin='gta'] .app-sidebar,
+:root[data-skin='gta'] .app-player { background: rgb(8 10 13 / 0.97); border-color: rgb(255 255 255 / 0.08); box-shadow: none; }
+:root[data-skin='gta'] .app-brand { font-family: var(--font-pixel); font-size: 17px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.03em; color: #fff; }
+:root[data-skin='gta'] .app-logo { color: var(--money); }
+:root[data-skin='gta'] .tbtn { background: rgb(255 255 255 / 0.07); color: #e8e8e3; border: 1px solid rgb(255 255 255 / 0.1); border-radius: 0; text-transform: uppercase; letter-spacing: 0.03em; }
+:root[data-skin='gta'] .tbtn:hover { background: #e8e8e3; color: #0d1014; box-shadow: none; }
+:root[data-skin='gta'] .tbtn.ghost { background: transparent; border-color: transparent; }
+:root[data-skin='gta'] .tbtn.ghost:hover { background: rgb(255 255 255 / 0.1); color: #fff; }
+:root[data-skin='gta'] .tbtn.primary { background: #e8e8e3; color: #0d1014; border-color: #e8e8e3; font-weight: 700; }
+:root[data-skin='gta'] .tbtn.on { background: var(--hud); color: #08121c; border-color: var(--hud); }
+:root[data-skin='gta'] .tab { border-radius: 0; text-transform: uppercase; color: #9aa3ab; font-family: var(--font-pixel); font-size: 13px; letter-spacing: 0.04em; }
+:root[data-skin='gta'] .tab.active { background: #e8e8e3; color: #0d1014; border-color: #e8e8e3; }
+:root[data-skin='gta'] .badge { border-radius: 0; border-color: rgb(255 255 255 / 0.18); text-transform: uppercase; }
+:root[data-skin='gta'] .badge.ok { color: var(--money); }
+:root[data-skin='gta'] .tinput { background: rgb(0 0 0 / 0.5); border: 1px solid rgb(255 255 255 / 0.18); border-radius: 0; }
+:root[data-skin='gta'] .tinput:focus { border-color: #e8e8e3; box-shadow: none; }
+:root[data-skin='gta'] .nav-active { background: #e8e8e3; border-radius: 0; box-shadow: none; }
+:root[data-skin='gta'] .nav-item.active { color: #0d1014; }
+:root[data-skin='gta'] .nav-label { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+/* HUD health / armour bars */
+:root[data-skin='gta'] .blockbar { height: 7px; border-radius: 0; background: rgb(93 155 209 / 0.22); }
+:root[data-skin='gta'] .blockbar > .fill { border-radius: 0; background: var(--hud); }
+:root[data-skin='gta'] input[type='range'].trange::-webkit-slider-runnable-track { border-radius: 0; background: linear-gradient(90deg, var(--money) var(--pct, 0%), rgb(127 191 95 / 0.22) var(--pct, 0%)); }
+:root[data-skin='gta'] input[type='range'].trange::-webkit-slider-thumb { border-radius: 0; width: 8px; height: 14px; margin-top: -5px; background: #e8e8e3; box-shadow: none; }
+:root[data-skin='gta'] .row-hover:hover { background: rgb(255 255 255 / 0.06); border-radius: 0; }
+:root[data-skin='gta'] .row-active { background: rgb(255 255 255 / 0.12); box-shadow: inset 3px 0 0 #e8e8e3; border-radius: 0; }
+:root[data-skin='gta'] .check { border-radius: 0; }
+:root[data-skin='gta'] .check.on { background: var(--money); border-color: var(--money); }
+/* covers framed like the loading-screen art */
+:root[data-skin='gta'] .cover-art { border-radius: 0; }
+:root[data-skin='gta'] .cover-hero { border: 7px solid #f2f2ee; border-radius: 0; transform: rotate(-1.5deg); box-shadow: 0 20px 40px rgb(0 0 0 / 0.6); }
+:root[data-skin='gta'] .cover-hero:not(.playing) { transform: rotate(-1.5deg) scale(0.95); filter: grayscale(0.6); }
+:root[data-skin='gta'] .winbtn { width: 32px; height: 26px; color: #e8e8e3; }
+:root[data-skin='gta'] .winbtn:hover { background: #e8e8e3; color: #0d1014; }
+:root[data-skin='gta'] ::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.25); border-radius: 0; }
+
+/* ── Naruto: ninja scrolls, orange & black, metal headband plate ──────── */
+:root[data-skin='naruto'] {
+  --font-mono: 'Nunito', 'Segoe UI', sans-serif;
+  --font-pixel: 'Baloo 2', 'Nunito', sans-serif;
+  --orange: #ff7a1a;
+  --ink: #120a03;
+  --wood: #5b3a1f;
+  --cream: #fff1d6;
+  --accent: var(--orange);
+  --color-crt-line: rgb(91 58 31 / 0.35);
+  --color-crt-line-strong: rgb(91 58 31 / 0.6);
+}
+:root[data-skin='naruto'] body {
+  font-weight: 600;
+  background:
+    repeating-radial-gradient(circle at 88% 14%, rgb(255 122 26 / 0.1) 0 2px, transparent 2px 24px),
+    repeating-radial-gradient(circle at 6% 92%, rgb(212 42 30 / 0.07) 0 2px, transparent 2px 30px),
+    #fff4e0;
+}
+:root[data-skin='naruto'] .app-backdrop { opacity: 0.15; }
+:root[data-skin='naruto'] .font-pixel { font-weight: 800; font-size-adjust: 0.48; letter-spacing: 0; }
+/* scrolls: parchment between two wooden rollers */
+:root[data-skin='naruto'] .panel {
+  background: linear-gradient(90deg, rgb(91 58 31 / 0.08), transparent 6%, transparent 94%, rgb(91 58 31 / 0.08)), linear-gradient(180deg, #f8eacb, #f0dcb2);
+  border-block: 9px solid var(--wood); border-inline: 1px solid #c9a46a; border-radius: 5px;
+  box-shadow: 0 6px 0 rgb(0 0 0 / 0.08);
+}
+:root[data-skin='naruto'] .panel-title { background: var(--orange); color: var(--ink); border: 2px solid var(--ink); border-radius: 4px; font-family: var(--font-pixel); font-size: 13px; font-weight: 800; top: -1.25em; padding: 0 10px; }
+:root[data-skin='naruto'] .panel-right { background: transparent; top: -1.1rem; }
+:root[data-skin='naruto'] .app-header { background: #161210; border-bottom: 4px solid var(--orange); }
+:root[data-skin='naruto'] .app-sidebar,
+:root[data-skin='naruto'] .app-player { background: #161210; border-color: var(--orange); box-shadow: none; }
+/* the dark chrome needs light text */
+:root[data-skin='naruto'] .app-header .text-ph-dim,
+:root[data-skin='naruto'] .app-header .text-ph,
+:root[data-skin='naruto'] .app-player .text-ph-dim,
+:root[data-skin='naruto'] .app-player .text-ph-bright,
+:root[data-skin='naruto'] .app-player .tbtn.ghost,
+:root[data-skin='naruto'] .nav-item { color: var(--cream); }
+:root[data-skin='naruto'] .app-header .badge,
+:root[data-skin='naruto'] .app-header .tab { color: var(--cream); border-color: rgb(255 241 214 / 0.3); }
+:root[data-skin='naruto'] .app-header .tab.active { color: var(--ink); }
+:root[data-skin='naruto'] .app-brand { font-family: var(--font-pixel); font-size: 19px; font-weight: 800; color: var(--orange); }
+:root[data-skin='naruto'] .app-brand::after { content: ' 🍥'; }
+:root[data-skin='naruto'] .app-logo { color: var(--orange); }
+:root[data-skin='naruto'] .tbtn { background: #fff7ea; color: var(--ink); border: 2px solid var(--ink); border-radius: 8px; font-family: var(--font-pixel); font-weight: 700; box-shadow: 2px 2px 0 var(--ink); }
+:root[data-skin='naruto'] .tbtn:hover { background: #ffe2c2; color: var(--ink); box-shadow: 3px 3px 0 var(--ink); transform: translate(-1px, -1px); }
+:root[data-skin='naruto'] .tbtn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+:root[data-skin='naruto'] .tbtn.ghost { background: transparent; border-color: transparent; box-shadow: none; }
+:root[data-skin='naruto'] .tbtn.ghost:hover { background: rgb(255 122 26 / 0.15); transform: none; }
+:root[data-skin='naruto'] .tbtn.primary { background: var(--orange); color: var(--ink); }
+:root[data-skin='naruto'] .tbtn.on { background: #1f5fa8; color: #fff; }
+:root[data-skin='naruto'] .tab { border-radius: 6px; font-family: var(--font-pixel); font-weight: 700; }
+:root[data-skin='naruto'] .tab.active { background: var(--orange); color: var(--ink); border-color: var(--ink); }
+:root[data-skin='naruto'] .badge { border-radius: 4px; border: 2px solid var(--ink); color: var(--ink); font-weight: 800; }
+:root[data-skin='naruto'] .badge.live { background: #d42a1e; border-color: #d42a1e; color: #fff; }
+:root[data-skin='naruto'] .tinput { background: #fff7ea; border: 2px solid var(--ink); border-radius: 8px; }
+:root[data-skin='naruto'] .tinput:focus { box-shadow: 3px 3px 0 var(--orange); }
+/* the active page is a metal headband plate on its blue cloth */
+:root[data-skin='naruto'] .nav-active {
+  background: linear-gradient(180deg, #f1f4f8, #b9c1cc 55%, #8e98a6); border-radius: 6px;
+  box-shadow: 0 0 0 3px #1f5fa8, inset 0 1px 0 #fff, inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+:root[data-skin='naruto'] .nav-item.active { color: #1b1f27; }
+:root[data-skin='naruto'] .blockbar { height: 10px; border: 2px solid var(--ink); border-radius: 99px; background: #f0dcb2; margin: 2px 0; }
+:root[data-skin='naruto'] .blockbar > .fill { background: repeating-linear-gradient(-45deg, var(--orange) 0 6px, #ff9a4a 6px 12px); }
+:root[data-skin='naruto'] .app-player .blockbar { border-color: var(--cream); background: #2a221d; }
+:root[data-skin='naruto'] input[type='range'].trange::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--orange) var(--pct, 0%), #e2c48b var(--pct, 0%)); }
+:root[data-skin='naruto'] input[type='range'].trange::-webkit-slider-thumb { background: #fff; box-shadow: 0 0 0 2px var(--ink); }
+:root[data-skin='naruto'] .row-hover:hover { background: rgb(255 122 26 / 0.12); }
+:root[data-skin='naruto'] .row-active { background: rgb(255 122 26 / 0.2); box-shadow: inset 3px 0 0 var(--ink); color: var(--ink); }
+:root[data-skin='naruto'] .check { border: 2px solid var(--ink); border-radius: 4px; }
+:root[data-skin='naruto'] .check.on { background: var(--orange); border-color: var(--ink); }
+:root[data-skin='naruto'] .check.on::after { color: var(--ink); }
+:root[data-skin='naruto'] .cover-art { border-radius: 8px; border: 2px solid var(--ink); }
+:root[data-skin='naruto'] .cover-hero { border: 4px solid var(--ink); border-radius: 10px; box-shadow: 9px 9px 0 var(--orange); }
+:root[data-skin='naruto'] .cover-hero .cover-art { border: 0; }
+:root[data-skin='naruto'] .winbtn { width: 24px; height: 24px; border-radius: 50%; color: var(--cream); margin-left: 4px; }
+:root[data-skin='naruto'] .winbtn:hover { background: var(--orange); color: var(--ink); }
+:root[data-skin='naruto'] ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 99px; }

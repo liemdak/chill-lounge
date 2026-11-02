@@ -83,6 +83,59 @@ function SkinPreview({ id }: { id: SkinId }) {
           </span>
         </div>
       )
+    case 'raiku':
+      return (
+        <div className={box} style={{ background: '#efeee9', color: '#223d0e', fontFamily: 'IBM Plex Mono, monospace' }}>
+          <div className="absolute inset-x-3 top-3 bottom-2" style={{ border: '1px solid #c9cbbd' }}>
+            <div className="px-1.5 pt-1 text-[8px] tracking-widest">■ BLOCK BEING BUILT</div>
+            <div className="mx-1.5 mt-1.5 flex gap-[3px]">
+              {[0, 0, 1, 0, 1, 1, 0, 1].map((on, i) => (
+                <span key={i} className="h-3.5 w-3.5" style={on ? { background: '#223d0e' } : { border: '1px solid #b9bfae', background: 'radial-gradient(#9aa58a .6px, transparent .8px) 0 0/3px 3px' }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    case 'pythenians':
+      return (
+        <div className={box} style={{ background: 'radial-gradient(circle at 80% 0%, rgba(122,90,248,.55), transparent 60%), #0f0b1f' }}>
+          <div className="absolute inset-x-0 top-0 h-2" style={{ background: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M0 19h19V1H3v14h12V5H7v6h4' fill='none' stroke='%23e8c25a' stroke-width='1.7'/%3E%3C/svg%3E\") 0 0/8px 8px repeat-x" }} />
+          <div className="absolute top-3.5 left-1/2 h-12 w-10 -translate-x-1/2" style={{ borderRadius: '50% 50% 3px 3px / 40% 40% 3px 3px', border: '2px solid #e8c25a', background: 'linear-gradient(135deg,#f7f4fc,#d9d1ea)', boxShadow: '0 0 14px rgba(232,194,90,.55)' }} />
+          <span className="absolute bottom-1.5 left-2 text-[9px] font-bold tracking-widest" style={{ color: '#e8c25a', fontFamily: 'Cormorant Garamond, serif' }}>
+            PYTH ϟ
+          </span>
+        </div>
+      )
+    case 'ghibli':
+      return (
+        <div className={box} style={{ background: 'radial-gradient(130% 70% at 15% 120%, #8cc063 0 40%, transparent 41%), radial-gradient(120% 60% at 95% 125%, #6aa84f 0 40%, transparent 41%), radial-gradient(22px 10px at 25% 25%, #fff 70%, transparent 72%), radial-gradient(18px 12px at 32% 20%, #fff 70%, transparent 72%), radial-gradient(24px 10px at 72% 30%, #fff 70%, transparent 72%), linear-gradient(#8ec9f0, #dcefff)' }}>
+          <span className="absolute top-2 right-2 rounded-tr-[10px] rounded-bl-[10px] px-2 text-[11px] text-white" style={{ background: '#6aa84f', fontFamily: 'Patrick Hand, sans-serif' }}>
+            ☁ meadow
+          </span>
+        </div>
+      )
+    case 'gta':
+      return (
+        <div className={box} style={{ background: 'linear-gradient(180deg, #1c2633, #4b3a33 60%, #c0703a 80%, #0b0e12)' }}>
+          <div className="absolute inset-x-0 bottom-0 h-7" style={{ background: 'radial-gradient(#f2c66d .8px, transparent 1.1px) 0 0/6px 8px, #0b0e12', clipPath: 'polygon(0 100%,0 40%,12% 40%,12% 10%,20% 10%,20% 50%,30% 50%,30% 0,36% 0,36% 30%,48% 30%,48% 60%,58% 60%,58% 15%,66% 15%,66% 45%,78% 45%,78% 5%,86% 5%,86% 35%,100% 35%,100% 100%)' }} />
+          <div className="absolute top-2 left-2 flex gap-1 text-[9px]" style={{ fontFamily: 'Anton, Impact, sans-serif' }}>
+            <span className="px-1.5" style={{ background: '#e8e8e3', color: '#0d1014' }}>MAP</span>
+            <span className="px-1.5 text-white/70">BRIEF</span>
+            <span className="px-1.5 text-white/70">STATS</span>
+          </div>
+        </div>
+      )
+    case 'naruto':
+      return (
+        <div className={box} style={{ background: 'repeating-radial-gradient(circle at 85% 15%, rgba(255,122,26,.18) 0 2px, transparent 2px 12px), #fff4e0' }}>
+          <div className="absolute inset-x-3 top-3 bottom-2.5" style={{ background: 'linear-gradient(#f8eacb,#f0dcb2)', borderTop: '6px solid #5b3a1f', borderBottom: '6px solid #5b3a1f', borderRadius: 3 }}>
+            <span className="absolute -top-2.5 left-2 rounded-[3px] border-2 border-black px-1.5 text-[9px] font-black" style={{ background: '#ff7a1a', fontFamily: 'Baloo 2, sans-serif' }}>
+              🍥 scroll
+            </span>
+            <div className="mx-2 mt-4 h-2 rounded-full border-2 border-black" style={{ width: '55%', background: 'repeating-linear-gradient(-45deg,#ff7a1a 0 4px,#ff9a4a 4px 8px)' }} />
+          </div>
+        </div>
+      )
     case 'win98':
       return (
         <div className={box} style={{ background: '#008080' }}>

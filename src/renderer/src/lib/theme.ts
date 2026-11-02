@@ -95,8 +95,21 @@ const rgbOf = (hex: string): [number, number, number] => [1, 3, 5].map((i) => pa
 // "retro" is the CRT terminal and takes any colour theme above; the others bring their own
 // palette (Glass follows Windows' light / dark mode). Skins are CSS-only ([data-skin] rules in
 // index.css) plus system or bundled fonts, so switching costs no memory.
-export type SkinId = 'retro' | 'glass' | 'anime' | 'manga' | 'gameboy' | 'trading' | 'win98' | 'win11'
-export const SKIN_IDS: SkinId[] = ['retro', 'glass', 'anime', 'manga', 'gameboy', 'trading', 'win98', 'win11']
+export type SkinId =
+  | 'retro'
+  | 'glass'
+  | 'anime'
+  | 'manga'
+  | 'gameboy'
+  | 'trading'
+  | 'raiku'
+  | 'pythenians'
+  | 'ghibli'
+  | 'gta'
+  | 'naruto'
+  | 'win98'
+  | 'win11'
+export const SKIN_IDS: SkinId[] = ['retro', 'glass', 'anime', 'manga', 'gameboy', 'trading', 'raiku', 'pythenians', 'ghibli', 'gta', 'naruto', 'win98', 'win11']
 
 /** Skins whose covers are dithered pixel art (and Now Playing shows the pixel vinyl). */
 export const isPixelSkin = (s: SkinId): boolean => s === 'retro' || s === 'gameboy'
@@ -119,6 +132,36 @@ export const SKIN_THEMES: Record<Exclude<SkinId, 'retro' | 'glass'> | 'glassLigh
     bg: '#0b0e11', panel: '#161a1e', panel2: '#1e2329', deep: '#2b3139',
     ph: '#eaecef', phBright: '#ffffff', phDim: '#848e9c', phFaint: '#474d57',
     purple: '#f0b90b', violet: '#f0b90b', magenta: '#f6465d', cyan: '#0ecb81'
+  },
+  // After raiku.com: olive ink on warm paper, hairlines and diagram ticks.
+  raiku: {
+    bg: '#efeee9', panel: '#efeee9', panel2: '#e6e5df', deep: '#c9cbbd',
+    ph: '#223d0e', phBright: '#0f1d06', phDim: '#5b6b4a', phFaint: '#b9bfae',
+    purple: '#223d0e', violet: '#223d0e', magenta: '#8a2e14', cyan: '#223d0e'
+  },
+  // After Pyth's Pythenians: a night temple in Pyth purple, gold and marble.
+  pythenians: {
+    bg: '#0f0b1f', panel: '#1b1436', panel2: '#241a47', deep: '#33265f',
+    ph: '#e9e4f7', phBright: '#ffffff', phDim: '#a99fd0', phFaint: '#4b3f78',
+    purple: '#7a5af8', violet: '#9d86ff', magenta: '#e8c25a', cyan: '#cbc6ec'
+  },
+  // Watercolour countryside: sky, grass, cream paper, brown ink.
+  ghibli: {
+    bg: '#dcefff', panel: '#fbf6e9', panel2: '#f3ead3', deep: '#d9cfae',
+    ph: '#4a3b2a', phBright: '#2e2418', phDim: '#8a7458', phFaint: '#d8c9a6',
+    purple: '#5f9a45', violet: '#6aa84f', magenta: '#d9583b', cyan: '#3f8fc2'
+  },
+  // Liberty City at dusk: grey-blue night, HUD blue, money green.
+  gta: {
+    bg: '#0d1014', panel: '#14181d', panel2: '#1c2229', deep: '#2a323b',
+    ph: '#e8e8e3', phBright: '#ffffff', phDim: '#9aa3ab', phFaint: '#3d4650',
+    purple: '#5d9bd1', violet: '#5d9bd1', magenta: '#d0503c', cyan: '#7fbf5f'
+  },
+  // Ninja scrolls: parchment, orange, black ink, headband blue.
+  naruto: {
+    bg: '#fff4e0', panel: '#f6e6c4', panel2: '#efd9ae', deep: '#e2c48b',
+    ph: '#2b1d10', phBright: '#120a03', phDim: '#7a5a37', phFaint: '#d6b98a',
+    purple: '#ff7a1a', violet: '#ff7a1a', magenta: '#d42a1e', cyan: '#1f5fa8'
   },
   glassLight: {
     bg: '#f2f2f7', panel: '#ffffff', panel2: '#f7f7fa', deep: '#d8d8e0',
