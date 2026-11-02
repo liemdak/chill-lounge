@@ -12,6 +12,7 @@ import { Library } from './screens/Library'
 import { NowPlaying } from './screens/NowPlaying'
 import { DownloadsScreen, useDownloads } from './screens/Downloads'
 import { UpdatePrompt } from './components/Update'
+import { SkinBackdrop, TrackBanner } from './components/SkinArt'
 import { ProfileScreen } from './screens/Preview'
 import { YouTubeScreen } from './screens/YouTube'
 import { SettingsScreen, type UiPrefs } from './screens/Settings'
@@ -88,6 +89,7 @@ function Shell() {
     <MotionConfig reducedMotion="user">
       <MediaHost />
       <AppBackdrop wallpaper={wallpaper} />
+      <SkinBackdrop />
       <div className="relative z-10 flex h-full flex-col">
         <Header wallpaper={wallpaper} queue={p.queue} />
         <div className="flex min-h-0 flex-1">
@@ -134,6 +136,7 @@ function Shell() {
       <CinemaMode open={modal === 'cinema'} onClose={close} p={p} />
       <BootScreen enabled={prefs.boot} />
       <UpdatePrompt />
+      <TrackBanner trackKey={p.current?.path ?? null} />
       <CrtOverlay strength={prefs.crt} />
     </MotionConfig>
   )

@@ -5,6 +5,7 @@ import { EffectsQuick } from '../components/Effects'
 import { BlockBar, CoverImage, Panel, PixelCover, TRange, useTypewriter, VfxCanvas } from '../components/ui'
 import { isPixelSkin, useSkin } from '../lib/theme'
 import { Icon } from '../components/icons'
+import { HeroDecor, RaikuBlocks } from '../components/SkinArt'
 import { useI18n } from '../i18n'
 import { fmtTime } from '../lib/store'
 import { EQ_PRESETS, type Player } from '../player/usePlayer'
@@ -64,7 +65,7 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
 
           {/* The vinyl shrinks with the available height so the whole screen fits without scrolling. */}
           <div className="my-2 flex min-h-[150px] w-full flex-1 items-center justify-center">
-            <div className="relative aspect-square h-full max-h-[340px]">
+            <div className={`hero relative aspect-square h-full max-h-[340px] ${p.playing ? 'hero-playing' : ''}`}>
               {pixel ? (
                 <>
                   <VinylScope cover={tr?.cover ?? null} seed={tr?.title ?? 'chill'} playing={p.playing} className="absolute inset-0 h-full w-full" />
@@ -75,10 +76,11 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
                   <CoverImage src={tr?.cover ?? null} className="h-full w-full" />
                 </button>
               )}
+              <HeroDecor time={p.time} />
             </div>
           </div>
 
-          <BarScope playing={p.playing} bands={40} rows={8} className="h-9 w-full max-w-[460px]" />
+          {skin === 'raiku' ? <RaikuBlocks playing={p.playing} /> : <BarScope playing={p.playing} bands={40} rows={8} className="h-9 w-full max-w-[460px]" />}
 
           <div className="mt-3 flex w-full items-end justify-between gap-4">
             <div className="min-w-0">

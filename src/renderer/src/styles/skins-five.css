@@ -85,19 +85,20 @@
   --color-crt-line: var(--gold-soft);
   --color-crt-line-strong: rgb(232 194 90 / 0.6);
 }
+/* the bright violet of the Pythenians artwork */
 :root[data-skin='pythenians'] body {
   background:
-    radial-gradient(900px 500px at 80% -10%, rgb(122 90 248 / 0.35), transparent 70%),
-    radial-gradient(700px 500px at -10% 110%, rgb(232 194 90 / 0.14), transparent 70%),
-    #0f0b1f;
+    radial-gradient(900px 600px at 78% 8%, rgb(167 120 255 / 0.75), transparent 65%),
+    radial-gradient(800px 600px at 8% 100%, rgb(214 80 200 / 0.35), transparent 70%),
+    linear-gradient(160deg, #5a2ee0 0%, #3a1aa8 45%, #22107a 100%);
 }
-:root[data-skin='pythenians'] .app-backdrop { opacity: 0.25; }
+:root[data-skin='pythenians'] .app-backdrop { opacity: 0.18; }
 :root[data-skin='pythenians'] .font-pixel { font-weight: 700; font-size-adjust: 0.42; letter-spacing: 0.01em; }
 :root[data-skin='pythenians'] h1.font-pixel,
 :root[data-skin='pythenians'] h2.font-pixel { color: #fbf3d6; text-shadow: 0 0 18px rgb(232 194 90 / 0.35); }
 /* gold Greek-key band along the top of every panel */
 :root[data-skin='pythenians'] .panel {
-  background: var(--meander) 0 0 / 11px 11px repeat-x, linear-gradient(180deg, #241a47, #1b1436);
+  background: var(--meander) 0 0 / 11px 11px repeat-x, linear-gradient(180deg, rgb(36 26 71 / 0.9), rgb(27 20 54 / 0.9));
   border: 1px solid var(--gold-soft); border-top: 0; border-radius: 3px; padding-top: max(1.25rem, 18px);
   box-shadow: 0 12px 30px rgb(122 90 248 / 0.18);
 }
