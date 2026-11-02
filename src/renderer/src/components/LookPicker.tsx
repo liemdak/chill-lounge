@@ -1,5 +1,6 @@
 import { useI18n, type TKey } from '../i18n'
 import { applySkin, applyTheme, SKIN_IDS, THEME_IDS, THEMES, useColorTheme, useSkin, type SkinId } from '../lib/theme'
+import { PYTHENIANS } from './SkinArt'
 import { Panel } from './ui'
 
 const RAISED = 'inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf'
@@ -100,7 +101,7 @@ function SkinPreview({ id }: { id: SkinId }) {
       return (
         <div className={box} style={{ background: 'radial-gradient(circle at 80% 0%, rgba(122,90,248,.55), transparent 60%), #0f0b1f' }}>
           <div className="absolute inset-x-0 top-0 h-2" style={{ background: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M0 19h19V1H3v14h12V5H7v6h4' fill='none' stroke='%23e8c25a' stroke-width='1.7'/%3E%3C/svg%3E\") 0 0/8px 8px repeat-x" }} />
-          <div className="absolute top-3.5 left-1/2 h-12 w-10 -translate-x-1/2" style={{ borderRadius: '50% 50% 3px 3px / 40% 40% 3px 3px', border: '2px solid #e8c25a', background: 'linear-gradient(135deg,#f7f4fc,#d9d1ea)', boxShadow: '0 0 14px rgba(232,194,90,.55)' }} />
+          <img src={PYTHENIANS[4]} alt="" className="absolute top-2.5 left-1/2 h-14 w-14 -translate-x-1/2 rounded-full object-cover" style={{ border: '2px solid #e8c25a', boxShadow: '0 0 14px rgba(232,194,90,.55)' }} />
           <span className="absolute bottom-1.5 left-2 text-[9px] font-bold tracking-widest" style={{ color: '#e8c25a', fontFamily: 'Cormorant Garamond, serif' }}>
             PYTH ϟ
           </span>

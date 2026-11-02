@@ -76,7 +76,7 @@ export function NowPlaying({ p, wallpaper, onOpenAmbient, onOpenEQ, onOpenSleep,
                   <CoverImage src={tr?.cover ?? null} className="h-full w-full" />
                 </button>
               )}
-              <HeroDecor time={p.time} />
+              <HeroDecor time={p.time} trackKey={tr?.path ?? null} />
             </div>
           </div>
 

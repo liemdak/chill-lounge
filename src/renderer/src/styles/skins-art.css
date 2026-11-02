@@ -97,11 +97,21 @@
 /* ── Pythenians ─────────────────────────────────────────────────────────── */
 .py-scene { position: absolute; inset: 0; }
 .py-tag { position: absolute; font-family: 'Patrick Hand', cursive; color: rgb(255 255 255 / 0.06); -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.11); white-space: nowrap; }
-/* mirrored so the lightning spear stands on the outside, away from the cover */
-.py-mascot { position: absolute; right: calc(100% - 4%); bottom: -10%; height: 118%; scale: -1 1; filter: drop-shadow(0 12px 18px rgb(0 0 0 / 0.5)); }
-.hero-playing .py-mascot { animation: py-bob 2.6s ease-in-out infinite; }
-@keyframes py-bob { 50% { transform: translateY(-6px); } }
-.py-bolt { opacity: calc(0.3 + var(--beat, 0) * 1.4); filter: drop-shadow(0 0 6px #b9d8ff) drop-shadow(0 0 12px #9d86ff); }
+/* the owner's NFTs in a gold Greek-key medallion that glows with the bass */
+.py-medal {
+  position: absolute; right: calc(100% + 26px); top: 50%; width: 74%; aspect-ratio: 1; border-radius: 50%; padding: 11px;
+  transform: translateY(-50%);
+  background: var(--meander) 0 0 / 12px 12px, radial-gradient(circle, #f6d27a, #b98a22);
+  border: 3px solid #f3d27a;
+  box-shadow: 0 0 0 4px rgb(27 20 54 / 0.9), 0 0 calc(16px + var(--beat, 0) * 46px) rgb(232 194 90 / calc(0.35 + var(--beat, 0) * 0.55)), 0 16px 34px rgb(0 0 0 / 0.45);
+}
+.py-medal img {
+  position: absolute; inset: 11px; width: calc(100% - 22px); height: calc(100% - 22px); border-radius: 50%; object-fit: cover;
+  box-shadow: inset 0 0 0 2px #2a1f4d; opacity: 0; transform: scale(0.94); transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.py-medal img.on { opacity: 1; transform: scale(1); }
+.hero-playing .py-medal { animation: py-float 3.2s ease-in-out infinite; }
+@keyframes py-float { 50% { transform: translateY(calc(-50% - 7px)); } }
 
 /* ── Raiku ──────────────────────────────────────────────────────────────── */
 .raiku-blocks { display: flex; width: 100%; max-width: 560px; flex-direction: column; gap: 6px; }
@@ -109,5 +119,5 @@
 .raiku-blocks canvas { width: 100%; height: auto; }
 
 @media (prefers-reduced-motion: reduce) {
-  .gh-cloud, .gh-leaf, .gh-smoke, .nr-swirl, .nr-shuriken, .gta-rain, .gta-radar-sweep, .py-mascot { animation: none !important; }
+  .gh-cloud, .gh-leaf, .gh-smoke, .nr-swirl, .nr-shuriken, .gta-rain, .gta-radar-sweep, .py-medal { animation: none !important; }
 }

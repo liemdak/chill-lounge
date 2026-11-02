@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { getBeat } from '../lib/beat'
 import { useSkin, type SkinId } from '../lib/theme'
+import pythenian1 from '../assets/pythenians/pythenian-1.webp'
+import pythenian2 from '../assets/pythenians/pythenian-2.webp'
+import pythenian3 from '../assets/pythenians/pythenian-3.webp'
+import pythenian4 from '../assets/pythenians/pythenian-4.webp'
+import pythenian5 from '../assets/pythenians/pythenian-5.webp'
+
+/** The owner's own Pythenians NFTs (used with their permission). */
+export const PYTHENIANS = [pythenian1, pythenian2, pythenian3, pythenian4, pythenian5]
 
 // Illustrations and HUD pieces for the themed skins (Pythenians, Ghibli, Naruto, GTA IV, Raiku).
-// All drawn here as SVG / CSS — original art in the spirit of each theme, nothing copied.
+// Drawn here as SVG / CSS in the spirit of each theme. The one exception is the Pythenians
+// medallion, which shows the app owner's own Pythenians NFTs (assets/pythenians).
 // Motion that follows the music reads the beat through the --beat CSS variable (set once per
 // frame below), so none of it re-renders React.
 
@@ -203,54 +212,17 @@ export function SkinBackdrop() {
 
 /* ── Pieces around the Now Playing cover ───────────────────────────────── */
 
-/** An original Pythenian-style mascot: grey chibi, winged gold helmet, purple toga, lightning spear. */
-function Pythenian() {
+/** The owner's Pythenians NFTs, in a gold Greek-key medallion beside the cover — a new one each track. */
+function PytheniansMedallion({ trackKey }: { trackKey: string | null }) {
+  let h = 0
+  for (const c of trackKey ?? '') h = (h * 31 + c.charCodeAt(0)) | 0
+  const current = Math.abs(h) % PYTHENIANS.length
   return (
-    <svg className="py-mascot" viewBox="0 0 220 300" aria-hidden>
-      <defs>
-        <linearGradient id="py-gold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffe08a" />
-          <stop offset="1" stopColor="#d9a520" />
-        </linearGradient>
-      </defs>
-      {/* spear and its lightning */}
-      <g className="py-spear">
-        <line x1="182" y1="40" x2="182" y2="290" stroke="url(#py-gold)" strokeWidth="7" strokeLinecap="round" />
-        <path d="M182 4 L196 40 L182 52 L168 40Z" fill="url(#py-gold)" stroke="#8a6410" strokeWidth="2.5" />
-        <path className="py-bolt" d="M196 0 L186 22 L198 22 L184 48" fill="none" stroke="#e9f4ff" strokeWidth="3.5" strokeLinejoin="round" />
-      </g>
-      {/* toga + tunic */}
-      <path d="M40 300 C40 230 70 205 110 205 C150 205 180 230 180 300Z" fill="#f4f1f8" stroke="#141018" strokeWidth="4" />
-      <path d="M62 222 C110 250 150 240 176 214 L184 300 L120 300 C110 270 80 250 62 222Z" fill="#7a3fd0" stroke="#141018" strokeWidth="4" />
-      <path d="M86 240 C118 262 150 256 172 236" fill="none" stroke="#4b1f86" strokeWidth="3" />
-      <path d="M60 226 L120 226" stroke="#7a5af8" strokeWidth="5" strokeDasharray="6 4" />
-      <circle cx="152" cy="222" r="13" fill="url(#py-gold)" stroke="#141018" strokeWidth="4" />
-      <circle cx="152" cy="222" r="5" fill="#7a3fd0" />
-      {/* hand on the spear */}
-      <circle cx="182" cy="208" r="13" fill="#b9b9c4" stroke="#141018" strokeWidth="4" />
-      {/* head */}
-      <path d="M58 130 C58 76 162 76 162 130 C162 180 132 200 110 200 C88 200 58 180 58 130Z" fill="#b9b9c4" stroke="#141018" strokeWidth="4" />
-      <ellipse cx="56" cy="138" rx="10" ry="14" fill="#b9b9c4" stroke="#141018" strokeWidth="4" />
-      <path d="M84 168 Q110 160 124 170" fill="none" stroke="#7d2a8f" strokeWidth="2" opacity="0.5" />
-      {/* big round eyes */}
-      {[86, 132].map((cx) => (
-        <g key={cx}>
-          <circle cx={cx} cy="138" r="21" fill="#fff" stroke="#141018" strokeWidth="4" />
-          <circle cx={cx + 3} cy="141" r="13" fill="#141018" />
-          <circle cx={cx + 8} cy="135" r="5" fill="#fff" />
-          <circle cx={cx - 1} cy="147" r="2.5" fill="#fff" />
-        </g>
+    <div className="py-medal" aria-hidden>
+      {PYTHENIANS.map((src, i) => (
+        <img key={src} src={src} alt="" draggable={false} className={i === current ? 'on' : ''} />
       ))}
-      <path d="M100 180 Q110 186 120 180" fill="none" stroke="#141018" strokeWidth="4" strokeLinecap="round" />
-      {/* winged gold helmet */}
-      <path d="M56 112 C64 60 156 60 164 112 C140 98 80 98 56 112Z" fill="url(#py-gold)" stroke="#141018" strokeWidth="4" />
-      <rect x="62" y="104" width="96" height="14" rx="6" fill="url(#py-gold)" stroke="#141018" strokeWidth="4" />
-      <circle cx="110" cy="111" r="8" fill="#7a5af8" stroke="#141018" strokeWidth="3" />
-      <path d="M58 104 C30 92 18 60 26 34 C40 52 56 64 70 92Z" fill="url(#py-gold)" stroke="#141018" strokeWidth="4" />
-      <path d="M162 104 C190 92 202 60 194 34 C180 52 164 64 150 92Z" fill="url(#py-gold)" stroke="#141018" strokeWidth="4" />
-      <path d="M34 50 L58 86 M42 44 L62 80" stroke="#b07d12" strokeWidth="2.5" />
-      <path d="M186 50 L162 86 M178 44 L158 80" stroke="#b07d12" strokeWidth="2.5" />
-    </svg>
+    </div>
   )
 }
 
@@ -338,9 +310,9 @@ function GhibliWindow() {
 }
 
 /** Decoration around the Now Playing cover for the art skins. */
-export function HeroDecor({ time }: { time: number }) {
+export function HeroDecor({ time, trackKey }: { time: number; trackKey: string | null }) {
   const skin = useSkin()
-  if (skin === 'pythenians') return <Pythenian />
+  if (skin === 'pythenians') return <PytheniansMedallion trackKey={trackKey} />
   if (skin === 'naruto')
     return (
       <>
